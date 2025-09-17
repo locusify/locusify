@@ -1,4 +1,4 @@
-<img src="./assets/logo/locusify.png" alt="Locusify Logo" width="200">
+<img src="./locusify.png" alt="Locusify Logo" width="200">
 
 # Locusify
 

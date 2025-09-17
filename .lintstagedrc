@@ -1,5 +1,5 @@
 {
   "*.{js,jsx,ts,tsx,mjs,cjs}": [
-    "expo lint"
+    "eslint --fix"
   ]
 }

@@ -24,16 +24,16 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when w
 
 ```
 Locusify/                     # React application with web support
-├── app/                      # application directory
 ├── packages/                 # Monorepo packages for modular architecture
 │   ├── core/                 # Core utilities and shared functionality
 │   ├── image-processor/      # Image processing and analysis
 │   ├── share/                # Sharing and export functionality
 │   ├── track/                # Route tracking and mapping
+│   ├── app/                  # application directory
 │   └── vlog/                 # Vlog generation and editing
 ├── .claude/                  # Claude Code configuration
 ├── PRPs/                     # Product Requirements and Progress docs
-└── README.md                # Project overview
+└── README.md                 # Project overview
 ```
 
 ## ⚙️ Claude Code Configuration
