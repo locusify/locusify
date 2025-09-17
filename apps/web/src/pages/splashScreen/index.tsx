@@ -82,7 +82,7 @@ const SplashScreen: FC = () => {
       </div>
 
       {/* Bottom accent */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-8 flex justify-center left-0 right-0">
         <div
           className={cn(
             'transition-all duration-1000 delay-1000',
