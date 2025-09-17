@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+# 推送前运行类型检查和测试
+echo "推送前检查..."
+pnpm typecheck

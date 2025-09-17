@@ -1,0 +1,26 @@
+{
+  "name": "locusify",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.15.0",
+  "author": "caterpi11ar",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CaterpillarSoft/locusify"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "preinstall": "npx only-allow pnpm",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint --fix"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^5.3.0",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "eslint": "^9.25.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
+    "typescript": "~5.9.2"
+  }
+}
