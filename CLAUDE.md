@@ -23,13 +23,14 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when w
 **Project Structure:**
 
 ```
-Locusify/                     # React application with web support
+Locusify/                     
+├── apps/                     # React application with web support
+│   ├── web/                  # Web application
 ├── packages/                 # Monorepo packages for modular architecture
 │   ├── core/                 # Core utilities and shared functionality
 │   ├── image-processor/      # Image processing and analysis
 │   ├── share/                # Sharing and export functionality
 │   ├── track/                # Route tracking and mapping
-│   ├── app/                  # application directory
 │   └── vlog/                 # Vlog generation and editing
 ├── .claude/                  # Claude Code configuration
 ├── PRPs/                     # Product Requirements and Progress docs
@@ -44,12 +45,12 @@ The project leverages Claude Code's multi-agent architecture for domain-specific
 
 #### Available Agents (`/.claude/agents/`)
 
-| Agent                  | Role                | Primary Responsibilities                                        |
-| ---------------------- | ------------------- | --------------------------------------------------------------- |
-| **product-manager**    | Strategy & Planning | Requirements analysis, PRP generation |
-| **ui-ux-designer**     | Design & UX         | User experience, design systems        |
-| **frontend-developer** | Implementation      | React web architecture, cross-platform optimization     |
-| **code-reviewer**      | Quality Assurance   | Security analysis, performance review, production readiness     |
+| Agent                  | Role                | Primary Responsibilities                                    |
+| ---------------------- | ------------------- | ----------------------------------------------------------- |
+| **product-manager**    | Strategy & Planning | Requirements analysis, PRP generation                       |
+| **ui-ux-designer**     | Design & UX         | User experience, design systems                             |
+| **frontend-developer** | Implementation      | React web architecture, cross-platform optimization         |
+| **code-reviewer**      | Quality Assurance   | Security analysis, performance review, production readiness |
 
 #### Available Commands (`/.claude/commands/`)
 
@@ -71,12 +72,12 @@ graph LR
 
 #### Stage Details
 
-| Stage                | Agent                | Deliverables                                              |
-| -------------------- | -------------------- | --------------------------------------------------------- |
-| **1. Requirements**  | `@product-manager`    | PRP documents, user stories, acceptance criteria          |
-| **2. Design**        | `@ui-ux-designer`     | Wireframes, UI mockups, interaction flows                 |
-| **3. Architecture**  | `@frontend-developer` | Technical specs, web deployment, API design, data models  |
-| **4. Quality**       | `@code-reviewer`      | Testing strategy, security review, performance benchmarks |
+| Stage               | Agent                 | Deliverables                                              |
+| ------------------- | --------------------- | --------------------------------------------------------- |
+| **1. Requirements** | `@product-manager`    | PRP documents, user stories, acceptance criteria          |
+| **2. Design**       | `@ui-ux-designer`     | Wireframes, UI mockups, interaction flows                 |
+| **3. Architecture** | `@frontend-developer` | Technical specs, web deployment, API design, data models  |
+| **4. Quality**      | `@code-reviewer`      | Testing strategy, security review, performance benchmarks |
 
 **Automation:** All PRPs saved to `/PRPs/[YYYY-MM-DD]/` with structured documentation and automatic progress tracking.
 
