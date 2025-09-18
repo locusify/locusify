@@ -2,13 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(dir:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm type-check:*)",
+      "Bash(tsc --noEmit)",
+      "Bash(cat:*)",
+      "Bash(pnpm dev:*)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "shadcn"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

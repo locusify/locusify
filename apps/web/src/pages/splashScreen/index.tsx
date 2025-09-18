@@ -7,6 +7,13 @@ const SplashScreen: FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
+    /**
+     * @description Dynamically import i18n to initialize the language
+     */
+    import('@/i18n')
+  }, [])
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true)
     }, 500)
@@ -15,7 +22,12 @@ const SplashScreen: FC = () => {
   }, [])
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+    <div
+      className={cn(
+        'flex h-screen w-screen flex-col items-center justify-center',
+        'bg-white text-primary/80',
+      )}
+    >
       {/* Logo Section */}
       <div
         className={cn(
@@ -32,9 +44,9 @@ const SplashScreen: FC = () => {
           />
         </div>
         {/* Animated pulse rings */}
-        <div className="absolute inset-0 -z-10 animate-ping rounded-2xl bg-white/10" />
+        <div className="absolute inset-0 -z-10 animate-ping rounded-2xl bg-primary/10" />
         <div
-          className="absolute inset-0 -z-20 animate-pulse rounded-2xl bg-white/5"
+          className="absolute inset-0 -z-20 animate-pulse rounded-2xl bg-primary/5"
           style={{ animationDelay: '0.5s' }}
         />
       </div>
@@ -46,7 +58,7 @@ const SplashScreen: FC = () => {
           isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
         )}
       >
-        <h1 className="text-5xl font-bold tracking-widest">Locusify</h1>
+        <h1 className="text-6xl font-black">Locusify</h1>
       </div>
 
       {/* Tagline */}
@@ -56,7 +68,7 @@ const SplashScreen: FC = () => {
           isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
         )}
       >
-        <p className="text-center text-lg font-light text-white/90">
+        <p className="text-center text-lg font-light">
           Transform your photos into journeys
         </p>
       </div>
@@ -69,13 +81,13 @@ const SplashScreen: FC = () => {
         )}
       >
         <div className="flex space-x-1">
-          <div className="h-2 w-2 animate-bounce rounded-full bg-white/60" />
+          <div className="h-2 w-2 animate-bounce rounded-full bg-primary/60" />
           <div
-            className="h-2 w-2 animate-bounce rounded-full bg-white/60"
+            className="h-2 w-2 animate-bounce rounded-full bg-primary/60"
             style={{ animationDelay: '0.1s' }}
           />
           <div
-            className="h-2 w-2 animate-bounce rounded-full bg-white/60"
+            className="h-2 w-2 animate-bounce rounded-full bg-primary/60"
             style={{ animationDelay: '0.2s' }}
           />
         </div>
@@ -89,7 +101,7 @@ const SplashScreen: FC = () => {
             isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
           )}
         >
-          <div className="flex items-center space-x-2 text-sm text-white/70">
+          <div className="flex items-center space-x-2 text-sm text-primary/70">
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
