@@ -28,7 +28,6 @@ Locusify/
 │   ├── web/                  # Web application
 ├── packages/                 # Monorepo packages for modular architecture
 │   ├── core/                 # Core utilities and shared functionality
-│   ├── image-processor/      # Image processing and analysis
 │   ├── share/                # Sharing and export functionality
 │   ├── track/                # Route tracking and mapping
 │   └── vlog/                 # Vlog generation and editing
