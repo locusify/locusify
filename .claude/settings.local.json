@@ -8,7 +8,8 @@
       "Bash(pnpm type-check:*)",
       "Bash(tsc --noEmit)",
       "Bash(cat:*)",
-      "Bash(pnpm dev:*)"
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []
