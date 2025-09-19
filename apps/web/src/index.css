@@ -10,6 +10,8 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
+  --font-family-sans: 'Inconsolata Variable', monospace;
+
   /* Using your brand colors from colors.ts */
   --color-primary: #13ACF0;
   --color-primary-hover: #0891B2;
@@ -53,5 +55,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-family-sans);
   }
 }

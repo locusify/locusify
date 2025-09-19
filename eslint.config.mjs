@@ -4,5 +4,6 @@ export default antfu({
   ignores: ['node_modules', 'dist', '*.md'],
   rules: {
     'no-console': 'off',
+    'eslint-comments/no-duplicate-disable': 'off',
   },
 })
