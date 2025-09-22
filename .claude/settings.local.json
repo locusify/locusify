@@ -10,7 +10,8 @@
       "Bash(cat:*)",
       "Bash(pnpm dev:*)",
       "Bash(pnpm add:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.figma.com)"
     ],
     "deny": [],
     "ask": []
