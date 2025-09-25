@@ -10,7 +10,7 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when w
 
 **Frontend Tech Stack:**
 
-- React 19 - Latest React version with Compiler
+- React 18 - Latest React version with Compiler
 - TypeScript - Complete type safety
 - Vite - Modern build tool
 - Tailwind CSS - Atomic CSS framework
