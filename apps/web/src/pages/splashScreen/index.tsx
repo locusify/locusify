@@ -33,16 +33,6 @@ const SplashScreen: FC = () => {
         <img src={logoUrl} alt="Locusify Logo" className="h-full w-full" />
       </div>
 
-      {/* Brand Name */}
-      <div
-        className={cn(
-          'mb-4 transition-all duration-1000 delay-300',
-          isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
-        )}
-      >
-        <h1 className="text-6xl font-black">Locusify</h1>
-      </div>
-
       {/* Loading Animation */}
       <div
         className={cn(
