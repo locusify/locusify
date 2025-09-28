@@ -1,12 +1,10 @@
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
 import logoUrl from '@/assets/locusify.png'
 import { cn } from '@/lib/utils'
 
 const SplashScreen: FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
-  const navigate = useNavigate()
 
   useEffect(() => {
     /**
@@ -18,8 +16,7 @@ const SplashScreen: FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true)
-      navigate('/workspace')
-    }, 2000)
+    }, 200)
 
     return () => clearTimeout(timer)
   }, [])
