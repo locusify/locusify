@@ -1,10 +1,12 @@
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 import logoUrl from '@/assets/locusify.png'
 import { cn } from '@/lib/utils'
 
 const SplashScreen: FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     /**
@@ -16,19 +18,15 @@ const SplashScreen: FC = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true)
-    }, 500)
+      navigate('/workspace')
+    }, 2000)
 
     return () => clearTimeout(timer)
   }, [])
 
   return (
-    <div
-      className={cn(
-        'flex flex-col items-center h-screen w-screen pt-40 bg-white text-primary/80',
-      )}
-    >
+    <div className="flex flex-col items-center h-screen w-screen pt-40 bg-white text-primary/80">
       {/* Logo Section */}
-      {/* Locusify Logo */}
       <div className="flex h-40 w-40 items-center justify-center">
         <img src={logoUrl} alt="Locusify Logo" className="h-full w-full" />
       </div>

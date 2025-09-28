@@ -1,9 +1,6 @@
 import { createBrowserRouter } from 'react-router'
-import { env } from '@/lib/env'
 import SplashScreen from '@/pages/splashScreen'
-
-/** Base URL for frontend */
-const basename = env.BASE_URL
+import Workspace from '@/pages/workspace'
 
 /** Routes */
 export const routes = [
@@ -11,7 +8,11 @@ export const routes = [
     path: '/',
     element: <SplashScreen />,
   },
+  {
+    path: '/workspace',
+    element: <Workspace />,
+  },
 ]
 
 /** Router */
-export const router = createBrowserRouter(routes, { basename })
+export const router = createBrowserRouter(routes)
