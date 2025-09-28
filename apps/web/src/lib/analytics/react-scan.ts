@@ -10,4 +10,4 @@ async function initialize() {
   console.log('React Scan initialized')
 }
 
-initialize()
+export default initialize

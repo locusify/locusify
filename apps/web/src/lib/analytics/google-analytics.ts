@@ -20,7 +20,7 @@ async function initialize() {
   console.log('Google Analytics initialized')
 }
 
-initialize()
+export default initialize
 
 /**
  * TODO: Add event tracking

@@ -6,6 +6,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   /** API base URL for backend services */
   API_URL: z.url().optional(),
+  /** Base URL for frontend */
+  BASE_URL: z.url().optional(),
   /** Google Analytics tracking ID */
   GA_TRACKING_ID: z.string().optional(),
 })
@@ -18,6 +20,7 @@ function validateEnv(): Env {
     return envSchema.parse({
       NODE_ENV: import.meta.env.NODE_ENV,
       API_URL: import.meta.env.VITE_API_URL,
+      BASE_URL: import.meta.env.VITE_BASE_URL,
       GA_TRACKING_ID: import.meta.env.VITE_GA_TRACKING_ID,
     })
   }
