@@ -9,10 +9,7 @@
       "Bash(tsc --noEmit)",
       "Bash(cat:*)",
       "Bash(pnpm dev:*)",
-      "Bash(pnpm add:*)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.figma.com)",
-      "WebFetch(domain:www.npmjs.com)"
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []
