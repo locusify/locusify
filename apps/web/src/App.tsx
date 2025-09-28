@@ -1,9 +1,18 @@
 import type { FC } from 'react'
-import SplashScreen from './pages/splashScreen'
+import { ErrorBoundary } from 'react-error-boundary'
+import { RouterProvider } from 'react-router'
+import router from './router'
 
 const App: FC = () => {
   return (
-    <SplashScreen />
+    <ErrorBoundary
+      fallbackRender={({ error }) => <div>{error.message}</div>}
+      onReset={() => {
+        window.location.reload()
+      }}
+    >
+      <RouterProvider router={router} />
+    </ErrorBoundary>
   )
 }
 

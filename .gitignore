@@ -1,2 +1,7 @@
 node_modules/
 dist/
+
+# Environment variables
+.env.development
+.env.production
+.env.test

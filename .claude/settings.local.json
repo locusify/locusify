@@ -11,7 +11,8 @@
       "Bash(pnpm dev:*)",
       "Bash(pnpm add:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:www.figma.com)"
+      "WebFetch(domain:www.figma.com)",
+      "WebFetch(domain:www.npmjs.com)"
     ],
     "deny": [],
     "ask": []

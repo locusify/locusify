@@ -5,7 +5,9 @@ const envSchema = z.object({
   /** Node.js environment mode */
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   /** API base URL for backend services */
-  VITE_API_URL: z.url().optional(),
+  API_URL: z.url().optional(),
+  /** Google Analytics tracking ID */
+  GA_TRACKING_ID: z.string().optional(),
 })
 
 export type Env = z.infer<typeof envSchema>
@@ -15,7 +17,8 @@ function validateEnv(): Env {
   try {
     return envSchema.parse({
       NODE_ENV: import.meta.env.NODE_ENV,
-      VITE_API_URL: import.meta.env.VITE_API_URL,
+      API_URL: import.meta.env.VITE_API_URL,
+      GA_TRACKING_ID: import.meta.env.VITE_GA_TRACKING_ID,
     })
   }
   catch (error) {
