@@ -7,13 +7,6 @@ const SplashScreen: FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    /**
-     * @description Dynamically import i18n to initialize the language
-     */
-    import('@/i18n')
-  }, [])
-
-  useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true)
     }, 200)

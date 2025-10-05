@@ -62,6 +62,8 @@ i18n
     },
     defaultNS: 'app',
     resources,
+    keySeparator: false, // 禁用key分隔符，支持扁平化key
+    nsSeparator: false, // 禁用命名空间分隔符
   })
 
 /**
