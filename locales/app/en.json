@@ -2,5 +2,10 @@
   "error.404.title": "404",
   "error.404.message": "Page Not Found",
   "error.404.description": "Sorry, the page you are looking for does not exist",
-  "error.404.backHome": "Back to Home"
+  "error.404.backHome": "Back to Home",
+  "explore.title": "Explore",
+  "explore.editorsChoice": "EDITORS' CHOICE",
+  "explore.collections": "Collections",
+  "explore.searchPlaceholder": "Search people & places",
+  "explore.nowTraveling": "Now traveling"
 }
