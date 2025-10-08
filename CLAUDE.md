@@ -19,6 +19,7 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when w
 - TanStack Query - Data fetching and caching
 - React Router 7 - Routing management
 - i18next - Internationalization
+- Supabase - Backend as a Service
 
 **Project Structure:**
 
