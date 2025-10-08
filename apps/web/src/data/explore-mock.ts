@@ -20,21 +20,6 @@ export const mockExploreData: ExploreData = {
     },
     {
       id: '2',
-      title: 'The Neverending Journey',
-      backgroundImage: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=600&fit=crop',
-      user: {
-        id: 'vins-natha',
-        name: 'Vins et Natha Take',
-        description: 'Blazing trails and crossing borders in the saddle of a motorbike.',
-      },
-      badge: {
-        color: 'gray-600',
-        text: 'explore.editorsChoice',
-      },
-      status: 'explore.nowTraveling',
-    },
-    {
-      id: '3',
       title: 'Island Hopping Adventure',
       backgroundImage: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=600&fit=crop',
       gradientFrom: 'blue-400',
