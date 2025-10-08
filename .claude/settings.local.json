@@ -9,10 +9,24 @@
       "Bash(tsc --noEmit)",
       "Bash(cat:*)",
       "Bash(pnpm dev:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(pnpm create:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm run:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(pnpm remove:*)",
+      "WebFetch(domain:localhost)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "D:\\code\\web\\src\\lib",
+      "D:\\code\\web\\src\\components",
+      "D:\\code\\web\\src\\types",
+      "D:\\code\\web\\src\\data",
+      "D:\\code\\web\\src\\assets"
+    ]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
