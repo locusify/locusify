@@ -9,59 +9,41 @@ const EditorsChoiceCardComponent: FC<{ card: EditorsChoiceCard }> = ({ card }) =
   const { t } = useTranslation()
 
   return (
-    <div className="relative min-w-[280px] h-[400px] rounded-2xl overflow-hidden">
-      {/* 渐变背景 */}
-      {card.gradientFrom && card.gradientTo && (
-        <div className={`absolute inset-0 bg-gradient-to-b from-${card.gradientFrom} to-${card.gradientTo}`} />
-      )}
-
-      {/* 背景图片 */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url('${card.backgroundImage}')`,
-        }}
-      />
-      <div className="absolute inset-0 bg-black/20" />
-
-      {/* 徽章 */}
-      <div className="absolute top-4 left-4">
-        <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 aspect-square bg-white rounded-full flex items-center justify-center">
-              <div className={`w-2 aspect-square bg-${card.badge.color} rounded-full`} />
-            </div>
-            <span className="text-white text-sm font-medium">{t(card.badge.text)}</span>
-          </div>
-        </div>
+    <div className="relative flex flex-col rounded-2xl overflow-hidden box-border outline-solid outline-transparent focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 shadow-medium transition-transform-background motion-reduce:transition-none w-full min-w-[280px] h-[400px]">
+      {/* 顶部标题区域 */}
+      <div className="flex p-3 w-full justify-start shrink-0 overflow-inherit subpixel-antialiased rounded-t-large absolute z-10 top-1 flex-col items-start">
+        <p className="text-tiny text-white/80 uppercase font-bold">{card.badge.text}</p>
+        <p className="text-white font-medium text-2xl">
+          {card.title}
+        </p>
       </div>
 
-      {/* 内容 */}
-      <div className="absolute bottom-0 left-0 right-0 p-6">
-        <h3 className="text-white text-2xl font-bold mb-2">
-          {card.title.split(' ').map((word, index, array) => (
-            <span key={index}>
-              {word}
-              {index < array.length - 1 && <br />}
-            </span>
-          ))}
-        </h3>
+      {/* 背景图片 */}
+      <img
+        className="absolute inset-0 w-full h-full object-cover object-center opacity-100 shadow-none transition-transform-opacity motion-reduce:transition-none duration-300 z-0"
+        alt={card.title}
+        src={card.backgroundImage}
+      />
 
-        {card.status && (
-          <div className="text-white/90 text-sm mb-4">{t(card.status)}</div>
-        )}
+      {/* 遮罩层 */}
+      <div className="absolute inset-0 bg-black/15" />
+      {/* 底部毛玻璃效果栏 */}
+      <div className="p-3 h-auto flex w-full items-center overflow-hidden subpixel-antialiased rounded-b-large backdrop-blur backdrop-saturate-150 absolute bg-white/30 bottom-0 border-t border-zinc-100/50 z-10 justify-between">
+        <div className="flex items-center text-sm">
 
-        <div className="flex items-center space-x-3 mt-4">
-          <div className="w-8 aspect-square bg-white rounded-full flex items-center justify-center">
-            <User size={16} className="text-gray-600" />
-          </div>
-          <div>
-            <div className="text-white font-medium">{card.user.name}</div>
-            {card.user.description && (
-              <div className="text-white/80 text-sm">{card.user.description}</div>
-            )}
-          </div>
+          <p className="text-black text-tiny font-medium">{card.user.name}</p>
+          {card.status && (
+            <p className="text-black/60 text-tiny">{t(card.status)}</p>
+          )}
+
         </div>
+
+        <button
+          type="button"
+          className="z-0 text-sm group relative inline-flex items-center justify-center box-border appearance-none select-none whitespace-nowrap font-normal subpixel-antialiased overflow-hidden tap-highlight-transparent outline-solid outline-transparent focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 px-3 min-w-16 h-8 gap-2 rounded-full transition-transform-colors-opacity motion-reduce:transition-none bg-black text-white hover:opacity-80 active:scale-[0.97] text-tiny"
+        >
+          {t('explore.viewDetails')}
+        </button>
       </div>
     </div>
   )
