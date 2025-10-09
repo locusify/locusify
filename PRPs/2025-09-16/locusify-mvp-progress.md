@@ -160,19 +160,13 @@
 ## 🚀 Next Actions
 
 ### Immediate Next Steps (This Week)
-1. **Technology Migration Planning** - Next.js 迁移技术方案已制定 ✅
-2. **Begin Next.js Migration** - 启动从 React + Vite 到 Next.js 15 的技术迁移
-3. **Continue Design Phase** - Engage @ui-ux-designer for wireframe creation
+1. **Continue Design Phase** - Engage @ui-ux-designer for wireframe creation
+2. **API Integration Planning** - Design architecture for maps and cloud services
 
 ### Upcoming Milestones (Next 4-5 Weeks)
-1. **Next.js Migration Completion** - 完成技术栈迁移 (预计 4-5 周)
-   - 项目结构迁移 (1 周)
-   - 路由系统迁移 (1 周) 
-   - 国际化迁移 (3 天)
-   - 构建部署配置 (2 天)
-   - 功能验证优化 (3 天)
-2. **Core Components Development** - Build foundational React components using Tailwind CSS
-3. **Design System Integration** - Connect design mockups with implemented infrastructure
+1. **Core Components Development** - Build foundational React components using Tailwind CSS
+2. **Design System Integration** - Connect design mockups with implemented infrastructure
+3. **API Architecture Implementation** - Integrate photo processing and route mapping services
 
 ### Key Dependencies
 - **Architecture Completion:** Requires API integration architecture and component hierarchy
@@ -184,14 +178,13 @@
 ## 📝 Notes and Decisions
 
 ### Key Decisions Made
-- **Platform Priority:** Next.js 15 (App Router) 为便于个人开发和更好的 SSR/SEO 支持
+- **Platform Priority:** React 19 + Vite for fast development and optimal web performance
 - **Core Features:** Focus on photo upload, route mapping, and video generation
 - **Target Users:** Travel content creators and memory keepers
 - **Success Metrics:** Emphasize user completion rates and content quality
-- **Infrastructure Stack:** Next.js 15 + TypeScript + Tailwind CSS V4 + Zustand + Supabase
+- **Infrastructure Stack:** React 19 + Vite + TypeScript + Tailwind CSS V4 + Zustand + Supabase
 - **State Management:** Zustand selected for lightweight, flexible state management
 - **Styling Approach:** Tailwind CSS V4 with utility-first approach and brand color integration
-- **Technology Migration:** 从 React + Vite 迁移到 Next.js 以提升开发效率和部署便利性
 
 ### Open Questions for Next Phase
 - Cloud service provider selection (AWS vs Google Cloud vs Azure)?
