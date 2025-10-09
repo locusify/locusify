@@ -1,8 +1,7 @@
 {
-  "error.404.title": "404",
-  "error.404.message": "页面未找到",
-  "error.404.description": "抱歉，您访问的页面不存在",
-  "error.404.backHome": "返回首页",
+  "error.404.title": "页面未找到",
+  "error.404.description": "找不到所请求的页面",
+  "error.404.back": "返回",
   "explore.title": "探索",
   "explore.editorsChoice": "编辑推荐",
   "explore.collections": "精选合集",
