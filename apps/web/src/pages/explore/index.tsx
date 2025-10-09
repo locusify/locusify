@@ -13,7 +13,7 @@ const EditorsChoiceCardComponent: FC<{ card: EditorsChoiceCard }> = ({ card }) =
 
       {/* 背景图片 */}
       <img
-        className="absolute inset-0 w-full h-full object-cover object-center opacity-100 shadow-none transition-transform-opacity duration-300 z-0"
+        className="absolute inset-0 size-full object-cover object-center opacity-100 shadow-none transition-transform-opacity duration-300 z-0"
         alt={card.title}
         src={card.backgroundImage}
       />

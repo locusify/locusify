@@ -15,10 +15,10 @@ const SplashScreen: FC = () => {
   }, [])
 
   return (
-    <div className="flex flex-col items-center h-screen w-screen pt-40 bg-white text-primary/80">
+    <div className="flex flex-col items-center size-screen pt-40 bg-white text-primary/80">
       {/* Logo Section */}
-      <div className="flex h-40 w-40 items-center justify-center">
-        <img src={logoUrl} alt="Locusify Logo" className="h-full w-full" />
+      <div className="flex size-40 items-center justify-center">
+        <img src={logoUrl} alt="Locusify Logo" className="size-full" />
       </div>
 
       {/* Loading Animation */}
@@ -29,13 +29,13 @@ const SplashScreen: FC = () => {
         )}
       >
         <div className="flex space-x-1">
-          <div className="h-2 w-2 animate-bounce rounded-full bg-primary/60" />
+          <div className="size-2 animate-bounce rounded-full bg-primary/60" />
           <div
-            className="h-2 w-2 animate-bounce rounded-full bg-primary/60"
+            className="size-2 animate-bounce rounded-full bg-primary/60"
             style={{ animationDelay: '0.1s' }}
           />
           <div
-            className="h-2 w-2 animate-bounce rounded-full bg-primary/60"
+            className="size-2 animate-bounce rounded-full bg-primary/60"
             style={{ animationDelay: '0.2s' }}
           />
         </div>
