@@ -4,7 +4,7 @@ export const mockExploreData: ExploreData = {
   editorsChoice: [
     {
       id: '1',
-      title: 'Exploring Czechia by train',
+      title: 'Exploring Czechia',
       backgroundImage: 'https://images.unsplash.com/photo-1541849546-216549ae216d?w=400&h=600&fit=crop',
       gradientFrom: 'teal-400',
       gradientTo: 'teal-600',
@@ -20,7 +20,7 @@ export const mockExploreData: ExploreData = {
     },
     {
       id: '2',
-      title: 'Island Hopping Adventure',
+      title: 'Island Adventure',
       backgroundImage: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=600&fit=crop',
       gradientFrom: 'blue-400',
       gradientTo: 'blue-600',

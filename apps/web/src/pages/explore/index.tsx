@@ -9,7 +9,7 @@ const EditorsChoiceCardComponent: FC<{ card: EditorsChoiceCard }> = ({ card }) =
   const { t } = useTranslation()
 
   return (
-    <div className="relative flex flex-col justify-end rounded-2xl overflow-hidden box-border outline-solid outline-transparent shadow-medium transition-transform-background w-[280px] flex-shrink-0 h-[400px]">
+    <div className="relative flex flex-col justify-end rounded-2xl overflow-hidden box-border outline-solid outline-transparent shadow-medium transition-transform-background w-[280px] shrink-0 h-[400px]">
 
       {/* 背景图片 */}
       <img
@@ -71,13 +71,8 @@ const CollectionComponent: FC<{ collection: Collection }> = ({ collection }) => 
 
       {/* 徽章 */}
       <div className="absolute top-4 left-4">
-        <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 aspect-square bg-white rounded-full flex items-center justify-center">
-              <div className={`w-2 aspect-square bg-${collection.badge.color} rounded-full`} />
-            </div>
-            <span className="text-white text-sm font-medium">{t(collection.badge.text).toUpperCase()}</span>
-          </div>
+        <div className="bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium px-1">
+          {t(collection.badge.text).toUpperCase()}
         </div>
       </div>
 
