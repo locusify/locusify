@@ -2,6 +2,7 @@
   "error.404.title": "Page Not Found",
   "error.404.description": "The requested page could not be found.",
   "error.404.back": "Go back",
+
   "explore.title": "Explore",
   "explore.editorsChoice": "EDITORS' CHOICE",
   "explore.collections": "Collections",
