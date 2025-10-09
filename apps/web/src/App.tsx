@@ -1,7 +1,7 @@
 import type { FC } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { RouterProvider } from 'react-router'
-import { router } from './router'
+import { router } from './routers'
 
 const App: FC = () => {
   return (

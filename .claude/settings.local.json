@@ -16,7 +16,10 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(pnpm remove:*)",
-      "WebFetch(domain:localhost)"
+      "WebFetch(domain:localhost)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(del users.csv oauth_accounts.csv user_localizations.csv constraints_and_indexes.csv)",
+      "Bash(pnpm list:*)"
     ],
     "deny": [],
     "ask": [],

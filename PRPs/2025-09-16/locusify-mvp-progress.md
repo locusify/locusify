@@ -2,7 +2,7 @@
 
 **Project:** Locusify MVP Development
 **Created:** September 16, 2025
-**Last Updated:** September 18, 2025
+**Last Updated:** January 9, 2025
 **Status:** Architecture Phase In Progress
 
 ---
@@ -13,7 +13,7 @@
 |-------|---------|----------|-----------------|-------------|
 | **1. Requirements** | ✅ Complete | 100% | 2025-09-16 | Ready for Design phase |
 | **2. Design** | 🎨 In Progress | 25% | TBD | Color theme completed |
-| **3. Architecture** | 🏗️ In Progress | 40% | TBD | Infrastructure setup complete |
+| **3. Architecture** | 🏗️ In Progress | 55% | TBD | Database schema & Auth API pending |
 | **4. Quality** | ⏳ Pending | 0% | TBD | Awaiting Code Reviewer |
 
 ---
@@ -104,7 +104,21 @@
   - Type-safe state management patterns established
   - Centralized state architecture for internationalization
 
+- **Database Architecture** - Supabase PostgreSQL schema complete
+  - User authentication tables designed (`account`, `account_oauth`, `account_localization`)
+  - PostgreSQL schema with foreign key constraints and cascade deletion
+  - snake_case naming convention following PostgreSQL best practices
+  - Database tables created in Supabase production environment
+  - **SQL Files:** `database/account.sql`, `database/account_oauth.sql`, `database/account_localization.sql`
+
 ### ⏳ Remaining Tasks
+
+- **User Authentication System** - Next immediate task
+  - Supabase Auth API integration with TypeScript
+  - Email/password authentication flow
+  - OAuth integration (Google, GitHub, Apple)
+  - User session management and token handling
+  - Multi-language user profile support
 
 - **Technical Architecture Design**
   - API integration architecture (maps, cloud services)
@@ -118,8 +132,8 @@
   - Security and privacy implementation
 
 **Assigned Agent:** @frontend-developer
-**Dependencies:** Design completion (partial), Infrastructure ✅
-**Progress:** Infrastructure complete (40%), API architecture pending
+**Dependencies:** Design completion (partial), Infrastructure ✅, Database ✅
+**Progress:** Infrastructure + Database complete (55%), Auth API implementation next
 **Estimated Duration:** 1-2 weeks remaining
 
 ---
@@ -152,7 +166,7 @@
 |-----------------|--------|---------|--------|
 | **Requirements Completion** | 100% | 100% | ✅ |
 | **Design Progress** | TBD | 25% | 🎨 |
-| **Architecture Progress** | TBD | 40% | 🏗️ |
+| **Architecture Progress** | TBD | 55% | 🏗️ |
 | **Quality Assurance** | TBD | 0% | ⏳ |
 
 ---
@@ -160,8 +174,9 @@
 ## 🚀 Next Actions
 
 ### Immediate Next Steps (This Week)
-1. **Continue Design Phase** - Engage @ui-ux-designer for wireframe creation
-2. **API Integration Planning** - Design architecture for maps and cloud services
+1. **User Authentication System** - Implement Supabase Auth API with TypeScript
+2. **Auth API Documentation** - Create comprehensive API design and usage guide
+3. **Continue Design Phase** - Engage @ui-ux-designer for wireframe creation
 
 ### Upcoming Milestones (Next 4-5 Weeks)
 1. **Core Components Development** - Build foundational React components using Tailwind CSS
@@ -199,6 +214,49 @@
 
 ---
 
-**Current Stage:** Architecture Phase (40% complete)
-**Next Stage Ready:** Component Development and API Integration
+**Current Stage:** Architecture Phase (55% complete)
+**Next Stage Ready:** User Authentication System Implementation
 **Expected Timeline:** Complete MVP development within 6-8 weeks from current progress
+
+---
+
+## 🔐 Database Schema Overview
+
+### Authentication Tables (Supabase PostgreSQL)
+
+```
+account (主表)
+├── id (UUID, PK)
+├── email (VARCHAR, UNIQUE, nullable)
+├── password_hash (VARCHAR, nullable)
+├── email_verified (BOOLEAN, default: false)
+├── auth_method (VARCHAR, default: 'email')
+├── default_locale (VARCHAR, default: 'en')
+├── default_timezone (VARCHAR, default: 'UTC')
+├── last_login_at (TIMESTAMPTZ)
+├── logout_at (TIMESTAMPTZ)
+├── created_at (TIMESTAMPTZ)
+└── updated_at (TIMESTAMPTZ)
+
+account_oauth (OAuth 绑定)
+├── id (UUID, PK)
+├── user_id (UUID, FK → account.id, CASCADE)
+├── provider (VARCHAR: google/github/apple)
+├── provider_id (VARCHAR)
+├── created_at (TIMESTAMPTZ)
+└── updated_at (TIMESTAMPTZ)
+
+account_localization (多语言配置)
+├── id (UUID, PK)
+├── user_id (UUID, FK → account.id, CASCADE)
+├── locale (VARCHAR: en/zh-CN/zh-TW)
+├── display_name (VARCHAR)
+├── created_at (TIMESTAMPTZ)
+└── updated_at (TIMESTAMPTZ)
+```
+
+**Key Features:**
+- Foreign key constraints with CASCADE deletion
+- Unique constraints on email, OAuth provider combinations
+- Support for multiple authentication methods
+- Multi-language user profile support

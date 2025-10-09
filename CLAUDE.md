@@ -21,12 +21,21 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when w
 - i18next - Internationalization
 - Supabase - Backend as a Service
 
+**Backend Tech Stack:**
+
+- **Database:** PostgreSQL 17+ (Supabase)
+- **Authentication:** Supabase Auth (Email + OAuth: Google/GitHub/Apple)
+- **Storage:** Supabase Storage (Photo/Video uploads)
+- **Edge Functions:** Deno Runtime (TypeScript serverless functions)
+- **Real-time:** Supabase Realtime (WebSocket subscriptions)
+
 **Project Structure:**
 
 ```
-Locusify/                     
+Locusify/
 ├── apps/                     # React application with web support
-│   ├── web/                  # Web application
+│   ├── web/                  # Web application (React + Vite)
+│   └── supabase/             # Supabase backend service
 ├── packages/                 # Monorepo packages for modular architecture
 │   ├── core/                 # Core utilities and shared functionality
 │   ├── share/                # Sharing and export functionality
@@ -146,3 +155,52 @@ pnpm type-check         # Run TypeScript type checking
 pnpm add <package-name>
 pnpm add -D <dev-package-name>
 ```
+
+### Supabase Development
+
+**Prerequisites:**
+- Supabase CLI installed globally
+- PostgreSQL 17+ (managed by Supabase)
+
+**Supabase Commands:**
+```bash
+# Navigate to Supabase directory
+cd apps/supabase
+
+# Start local Supabase services (includes Edge Functions runtime)
+supabase start
+
+# Stop services
+supabase stop
+
+# Database operations
+supabase db reset               # Reset local database and apply migrations
+supabase db push                # Push migrations to remote
+supabase migration new <name>   # Create new migration
+
+# Edge Functions
+supabase functions new <name>           # Create new Edge Function
+supabase functions serve <name>         # Run function locally
+supabase functions deploy <name>        # Deploy to production
+
+# Environment secrets
+supabase secrets set KEY=value          # Set production secret
+supabase secrets list                   # List all secrets
+```
+
+**Database Schema:**
+- `account` - User account table (email/OAuth authentication)
+- `account_oauth` - OAuth provider bindings (Google/GitHub/Apple)
+- `account_localization` - Multi-language user profiles
+
+**Edge Functions Use Cases:**
+- Photo EXIF extraction and route generation
+- AI-powered vlog generation (Runway ML, Stability AI)
+- Reverse geocoding (Google Maps API)
+- Third-party API integrations
+- Webhook handlers
+
+**Documentation:**
+- Backend architecture: `apps/supabase/README.md`
+- Authentication API: `apps/supabase/docs/auth-api-design.md`
+- Edge Functions guide: `apps/supabase/docs/edge-functions-architecture.md`

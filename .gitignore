@@ -8,3 +8,7 @@ dist/
 
 # claude
 .claude/settings.local.json
+
+# Supabase
+.branches
+.temp

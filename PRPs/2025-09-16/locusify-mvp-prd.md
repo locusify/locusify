@@ -231,7 +231,7 @@
 **User Story:** As a traveler, I want an automatically generated video of my trip so that I can share my travel story without video editing skills.
 
 **Acceptance Criteria:**
-- Create 60-90 second video slideshow from uploaded photos
+- Create 5-30 second video slideshow from uploaded photos
 - Arrange photos chronologically with smooth transitions
 - Add background music from curated travel-themed library
 - Include animated route map segment showing travel progression
