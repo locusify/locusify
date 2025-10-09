@@ -24,7 +24,7 @@ const SplashScreen: FC = () => {
       {/* Loading Animation */}
       <div
         className={cn(
-          'transition-all duration-1000 delay-700',
+          'transition-all duration-1000 delay-700 mt-8',
           isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0',
         )}
       >
