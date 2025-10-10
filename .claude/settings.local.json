@@ -19,7 +19,14 @@
       "WebFetch(domain:localhost)",
       "WebFetch(domain:supabase.com)",
       "Bash(del users.csv oauth_accounts.csv user_localizations.csv constraints_and_indexes.csv)",
-      "Bash(pnpm list:*)"
+      "Bash(pnpm list:*)",
+      "Bash(supabase db reset:*)",
+      "Bash(supabase status:*)",
+      "mcp__shadcn__get_project_registries",
+      "mcp__shadcn__search_items_in_registries",
+      "mcp__shadcn__get_add_command_for_items",
+      "Bash(pnpm dlx shadcn@latest add:*)",
+      "Bash(pnpm tsc:*)"
     ],
     "deny": [],
     "ask": [],

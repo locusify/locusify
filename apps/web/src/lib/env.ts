@@ -19,13 +19,16 @@ export type Env = z.infer<typeof envSchema>
 /** Validate environment variables */
 function validateEnv(): Env {
   try {
-    return envSchema.parse({
+    const parsedEnv = envSchema.parse({
       NODE_ENV: import.meta.env.NODE_ENV,
       API_URL: import.meta.env.VITE_API_URL,
       GA_TRACKING_ID: import.meta.env.VITE_GA_TRACKING_ID,
       SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
       SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
     })
+
+    console.log('loaded env:', parsedEnv)
+    return parsedEnv
   }
   catch (error) {
     console.error('❌ Environment validation failed:', error)
