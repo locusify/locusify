@@ -3,7 +3,7 @@ import { createBrowserRouter } from 'react-router'
 import NotFound from '@/pages/error/404'
 import { ErrorElement } from '@/pages/error/ErrorElement'
 import Explore from '@/pages/explore'
-import SplashScreen from '@/pages/splashScreen'
+import SplashScreen from '@/pages/splashScreen/page'
 
 /** Routes */
 export const routes: RouteObject[] = [

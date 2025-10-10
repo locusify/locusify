@@ -12,7 +12,7 @@ Expert web developer specializing in React with Vite, and modern web application
 ## Capabilities
 
 ### Core React Web Expertise
-- React 18+ features including concurrent features, Suspense, and transitions
+- React 19 features including concurrent features, Suspense, and transitions
 - Modern component development with TypeScript
 - Advanced hooks (useEffect with cleanup, useCallback, useMemo, custom hooks)
 - Component architecture with performance optimization (React.memo, useMemo, useCallback)

@@ -2,17 +2,9 @@ import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import logoUrl from '@/assets/locusify.png'
-import { LoginForm } from '@/components/login-form'
-import { SignupForm } from '@/components/signup-form'
 import { Button } from '@/components/ui/button'
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer'
-import supabase from '@/lib/supabase'
+import { useAuthState } from '@/hooks/useAuthState'
+import { AuthDrawer } from './components/auth-drawer'
 
 type AuthMode = 'login' | 'signup' | null
 
@@ -32,51 +24,33 @@ async function loadSplashResources() {
 
 const SplashScreen: FC = () => {
   const navigate = useNavigate()
-  const [isReady, setIsReady] = useState(false)
-  const [hasSession, setHasSession] = useState(false)
+  const { hasSession, isReady } = useAuthState()
   const [authMode, setAuthMode] = useState<AuthMode>(null)
+  const [resourcesLoaded, setResourcesLoaded] = useState(false)
 
-  // Initialize: Check authentication and load resources
+  // Load splash resources
   useEffect(() => {
-    const initialize = async () => {
+    const loadResources = async () => {
       try {
-        // Run authentication check and resource loading in parallel
-        const [sessionResult] = await Promise.all([
-          supabase.auth.getSession(),
-          loadSplashResources(), // Load ads, config, etc.
-        ])
-
-        const { data: { session } } = sessionResult
-
-        setHasSession(!!session)
-        setIsReady(true)
+        await loadSplashResources()
       }
       catch (error) {
-        console.error('Initialization error:', error)
-        setIsReady(true) // Still mark as ready to show auth buttons
+        console.error('Error loading splash resources:', error)
+      }
+      finally {
+        setResourcesLoaded(true)
       }
     }
 
-    initialize()
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && isReady) {
-        navigate('/explore', { replace: true })
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [navigate, isReady])
+    loadResources()
+  }, [])
 
   // Navigate when ready and has session
   useEffect(() => {
-    if (isReady && hasSession) {
+    if (isReady && resourcesLoaded && hasSession) {
       navigate('/explore', { replace: true })
     }
-  }, [isReady, hasSession, navigate])
+  }, [isReady, resourcesLoaded, hasSession, navigate])
 
   const handleCloseDrawer = () => {
     setAuthMode(null)
@@ -87,6 +61,8 @@ const SplashScreen: FC = () => {
     setAuthMode(null)
   }
 
+  const showContent = isReady && resourcesLoaded
+
   return (
     <div className="relative flex flex-col items-center min-h-screen bg-white text-primary/80 px-6">
       {/* Logo and Loading Section - Top positioned */}
@@ -96,7 +72,7 @@ const SplashScreen: FC = () => {
         </div>
 
         {/* Loading Animation - Always show while not ready */}
-        {!isReady && (
+        {!showContent && (
           <div className="transition-all duration-1000">
             <div className="flex space-x-1">
               {Array.from({ length: 3 }).map((_, index) => (
@@ -115,7 +91,7 @@ const SplashScreen: FC = () => {
       <div className="flex-1" />
 
       {/* Auth Buttons - Fixed at bottom with fade-in animation */}
-      {isReady && !hasSession && (
+      {showContent && !hasSession && (
         <div className="w-full max-w-md pb-safe mb-8 space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <Button
             className="text-white w-full"
@@ -136,42 +112,12 @@ const SplashScreen: FC = () => {
       )}
 
       {/* Login/Signup Drawer */}
-      <Drawer
-        open={authMode !== null}
-        onOpenChange={handleCloseDrawer}
-      >
-        <DrawerContent>
-          <div className="mx-auto w-full max-w-md overflow-y-auto max-h-[80vh] pb-8">
-            <DrawerHeader>
-              <DrawerTitle>
-                {authMode === 'login' ? 'Login to your account' : 'Create an account'}
-              </DrawerTitle>
-              <DrawerDescription>
-                {authMode === 'login'
-                  ? 'Enter your email and password to login'
-                  : 'Enter your information to create a new account'}
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="px-4">
-              {authMode === 'login'
-                ? (
-                    <LoginForm
-                      showTitle={false}
-                      onSuccess={handleAuthSuccess}
-                      onSwitchToSignup={() => setAuthMode('signup')}
-                    />
-                  )
-                : (
-                    <SignupForm
-                      showTitle={false}
-                      onSuccess={handleAuthSuccess}
-                      onSwitchToLogin={() => setAuthMode('login')}
-                    />
-                  )}
-            </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      <AuthDrawer
+        mode={authMode}
+        onClose={handleCloseDrawer}
+        onAuthSuccess={handleAuthSuccess}
+        onSwitchMode={setAuthMode}
+      />
     </div>
   )
 }
