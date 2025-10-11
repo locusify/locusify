@@ -52,15 +52,18 @@ const SplashScreen: FC = () => {
     }
   }, [isReady, resourcesLoaded, hasSession, navigate])
 
+  /** Handle close drawer */
   const handleCloseDrawer = () => {
     setAuthMode(null)
   }
 
+  /** Handle auth success */
   const handleAuthSuccess = () => {
     // Close drawer, auth state change will trigger navigation
     setAuthMode(null)
   }
 
+  /** Show content when resources are loaded and ready */
   const showContent = isReady && resourcesLoaded
 
   return (

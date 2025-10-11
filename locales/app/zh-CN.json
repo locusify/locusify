@@ -8,5 +8,8 @@
   "explore.collections": "精选合集",
   "explore.searchPlaceholder": "搜索用户和地点",
   "explore.nowTraveling": "正在旅行",
-  "explore.viewDetails": "查看"
+  "explore.viewDetails": "查看",
+
+  "navbar.home": "首页",
+  "navbar.profile": "我的"
 }

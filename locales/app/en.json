@@ -8,5 +8,8 @@
   "explore.collections": "Collections",
   "explore.searchPlaceholder": "Search people & places",
   "explore.nowTraveling": "Now traveling",
-  "explore.viewDetails": "View"
+  "explore.viewDetails": "View",
+
+  "navbar.home": "Home",
+  "navbar.profile": "My"
 }
