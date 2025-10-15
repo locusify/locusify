@@ -12,9 +12,6 @@ import { env } from '@/lib/env'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { StepNavigation } from './StepNavigation'
 
-/** Animation status */
-type AnimationStatus = 'idle' | 'playing' | 'paused' | 'completed'
-
 /** Speed options - duration multiplier for moveAlong API */
 const SPEED_OPTIONS = [
   { labelKey: 'workspace.replay.speed.slow', value: 2.0 },
@@ -25,14 +22,11 @@ const SPEED_OPTIONS = [
 
 export const TrajectoryReplayStep: FC = () => {
   const { t } = useTranslation()
-  const {
-    gpsData,
-    goToPreviousStep,
-  } = useWorkspaceStore()
+  const { gpsData, goToPreviousStep } = useWorkspaceStore()
 
-  const [status, setStatus] = useState<AnimationStatus>('idle')
   const [speedMultiplier, setSpeedMultiplier] = useState(1.0) // Duration multiplier (1.0 = normal)
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
   const markerRef = useRef<AMap.Marker | null>(null)
   const mapRef = useRef<AMap.Map | null>(null)
 
@@ -42,9 +36,10 @@ export const TrajectoryReplayStep: FC = () => {
       .filter(d => d.hasValidGps && d.gps)
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
-    const trajectory: [number, number][] = validGpsData.map(
-      d => [d.gps!.longitude, d.gps!.latitude],
-    )
+    const trajectory: [number, number][] = validGpsData.map(d => [
+      d.gps!.longitude,
+      d.gps!.latitude,
+    ])
 
     const waypoints = validGpsData.map(d => ({
       position: [d.gps!.longitude, d.gps!.latitude] as [number, number],
@@ -60,14 +55,7 @@ export const TrajectoryReplayStep: FC = () => {
 
   // Calculate map center and zoom
   const mapConfig = useMemo(() => {
-    if (trajectory.length === 0) {
-      return {
-        center: [106.530635, 29.544606] as [number, number],
-        zoom: 15,
-      }
-    }
-
-    // Calculate center point
+    // Calculate zoom level based on bounding box
     const lats = trajectory.map(([_, lat]) => lat)
     const lngs = trajectory.map(([lng]) => lng)
 
@@ -76,10 +64,6 @@ export const TrajectoryReplayStep: FC = () => {
     const minLng = Math.min(...lngs)
     const maxLng = Math.max(...lngs)
 
-    const centerLat = (minLat + maxLat) / 2
-    const centerLng = (minLng + maxLng) / 2
-
-    // Calculate zoom level based on bounding box
     const latDiff = maxLat - minLat
     const lngDiff = maxLng - minLng
     const maxDiff = Math.max(latDiff, lngDiff)
@@ -104,7 +88,7 @@ export const TrajectoryReplayStep: FC = () => {
       zoom = 7
 
     return {
-      center: [centerLng, centerLat] as [number, number],
+      center: trajectory[0] as [number, number],
       zoom,
     }
   }, [trajectory])
@@ -114,62 +98,32 @@ export const TrajectoryReplayStep: FC = () => {
     return waypoints[currentPhotoIndex]?.photoUrl || logoUrl
   }, [waypoints, currentPhotoIndex])
 
-  /** Create custom marker content element with photo - use callback ref pattern */
-  const createMarkerContent = useCallback((): HTMLDivElement => {
-    const container = document.createElement('div')
-    // Use different sizes for mobile and desktop
-    const isMobile = window.innerWidth < 768
-    const sizeClass = isMobile ? 'w-24 h-24' : 'w-32 h-32'
-
-    container.className = `${sizeClass} rounded-2xl bg-white shadow-2xl flex items-center justify-center p-2 border-4 border-primary ring-4 ring-primary/20`
-
-    const img = document.createElement('img')
-    img.src = currentPhotoUrl
-    img.className = 'w-full h-full object-cover rounded-xl'
-    img.alt = 'Current position'
-
-    container.appendChild(img)
-    return container
-  }, [currentPhotoUrl])
-
-  /** Update marker content when photo changes */
-  useEffect(() => {
-    const marker = markerRef.current
-    if (marker && status !== 'idle') {
-      const newContent = createMarkerContent()
-      marker.setContent(newContent)
-    }
-  }, [currentPhotoUrl, createMarkerContent, status])
-
-  /** Start animation using AMap's moveAlong API */
+  /** Start animation using moveAlong API */
   const startAnimation = useCallback(() => {
     const marker = markerRef.current
     if (!marker)
       return
 
-    if (status === 'completed' || status === 'idle') {
+    if (!isPlaying) {
       // Start from beginning
       setCurrentPhotoIndex(0)
       marker.setPosition(trajectory[0])
+      setIsPlaying(true)
 
-      // Use AMap's moveAlong API for smooth animation
-      // Base duration: 2 seconds per segment, adjusted by speed multiplier
-      const baseDurationPerSegment = 2000
-      const totalDuration = (trajectory.length - 1) * baseDurationPerSegment * speedMultiplier
+      // Use moveAlong for smooth animation
+      const durationPerPhoto = 2000 // 2 seconds per photo
+      const totalDuration = trajectory.length * durationPerPhoto * speedMultiplier
 
       marker.moveAlong(trajectory, {
         duration: totalDuration,
-        autoRotation: false, // Don't rotate the marker
+        autoRotation: false,
       })
-
-      setStatus('playing')
     }
-    else if (status === 'paused') {
+    else {
       // Resume from paused position
       marker.resumeMove()
-      setStatus('playing')
     }
-  }, [status, trajectory, speedMultiplier])
+  }, [isPlaying, trajectory, speedMultiplier])
 
   /** Pause animation */
   const pauseAnimation = useCallback(() => {
@@ -178,7 +132,7 @@ export const TrajectoryReplayStep: FC = () => {
       return
 
     marker.pauseMove()
-    setStatus('paused')
+    setIsPlaying(false)
   }, [])
 
   /** Reset animation */
@@ -188,69 +142,22 @@ export const TrajectoryReplayStep: FC = () => {
       return
 
     marker.stopMove()
+    setIsPlaying(false)
     marker.setPosition(trajectory[0])
     setCurrentPhotoIndex(0)
-    setStatus('idle')
   }, [trajectory])
 
-  /** Update speed when speedMultiplier changes */
+  /** Update speed when speedMultiplier changes during playback */
   useEffect(() => {
-    if (status === 'playing') {
-      // Restart with new speed
+    if (isPlaying) {
+      // Stop current animation and restart with new speed
       const marker = markerRef.current
       if (marker) {
         marker.stopMove()
         startAnimation()
       }
     }
-  }, [speedMultiplier, status, startAnimation])
-
-  /** Auto-update photo index and map center during playback using polling */
-  useEffect(() => {
-    if (status !== 'playing')
-      return
-
-    const marker = markerRef.current
-    if (!marker)
-      return
-
-    // 使用定时器轮询更新当前位置和照片索引
-    const interval = setInterval(() => {
-      const currentPos = marker.getPosition()
-      if (currentPos) {
-        let closestIndex = 0
-        let minDistance = Number.POSITIVE_INFINITY
-
-        trajectory.forEach((point, index) => {
-          const distance = Math.sqrt(
-            (currentPos.getLng() - point[0]) ** 2
-            + (currentPos.getLat() - point[1]) ** 2,
-          )
-          if (distance < minDistance) {
-            minDistance = distance
-            closestIndex = index
-          }
-        })
-
-        setCurrentPhotoIndex(closestIndex)
-
-        // Auto-center map on marker position (optional)
-        // const map = mapRef.current
-        // if (map) {
-        //   map.setCenter([currentPos.getLng(), currentPos.getLat()])
-        // }
-
-        // 检查是否到达终点
-        if (closestIndex === trajectory.length - 1) {
-          setStatus('completed')
-        }
-      }
-    }, 100) // 每100ms更新一次
-
-    return () => {
-      clearInterval(interval)
-    }
-  }, [status, trajectory])
+  }, [isPlaying, speedMultiplier, startAnimation])
 
   /** Cleanup on unmount */
   useEffect(() => {
@@ -280,7 +187,7 @@ export const TrajectoryReplayStep: FC = () => {
         </div>
 
         <div className="p-8 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-          <AlertCircle className="h-12 w-12 text-yellow-600 mx-auto mb-3" />
+          <AlertCircle className="size-12 text-yellow-600 mx-auto mb-3" />
           <p className="text-sm font-medium text-yellow-900 mb-1">
             {t('workspace.replay.noData', {
               defaultValue: 'No trajectory data available',
@@ -294,10 +201,7 @@ export const TrajectoryReplayStep: FC = () => {
           </p>
         </div>
 
-        <StepNavigation
-          onBack={goToPreviousStep}
-          showNext={false}
-        />
+        <StepNavigation onBack={goToPreviousStep} showNext={false} />
       </div>
     )
   }
@@ -305,7 +209,10 @@ export const TrajectoryReplayStep: FC = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Map Container */}
-      <div className="flex-1 relative rounded-lg overflow-hidden border border-gray-200 shadow-sm" style={{ minHeight: '400px' }}>
+      <div
+        className="flex-1 relative rounded-lg overflow-hidden border border-gray-200 shadow-sm"
+        style={{ minHeight: '400px' }}
+      >
         <APILoader
           akey={env.AMAP_KEY}
           version="2.0"
@@ -329,8 +236,8 @@ export const TrajectoryReplayStep: FC = () => {
             <Polyline
               path={trajectory}
               strokeColor="#1677ff"
-              strokeWeight={5}
-              strokeOpacity={0.7}
+              strokeWeight={4}
+              strokeOpacity={0.6}
             />
 
             {/* Moving marker with photo - position is managed by moveAlong API */}
@@ -345,8 +252,15 @@ export const TrajectoryReplayStep: FC = () => {
                 }}
                 position={trajectory[currentPhotoIndex]}
                 anchor="center"
-                content={createMarkerContent()}
-              />
+              >
+                <div className="size-24 md:size-32 rounded-2xl bg-white shadow-2xl flex items-center justify-center p-2 border-4 border-primary ring-4 ring-primary/20">
+                  <img
+                    src={currentPhotoUrl}
+                    className="size-full object-cover rounded-xl"
+                    alt="Current position"
+                  />
+                </div>
+              </Marker>
             )}
 
             {/* End marker */}
@@ -371,7 +285,9 @@ export const TrajectoryReplayStep: FC = () => {
             <div
               className="bg-primary h-1.5 md:h-2 rounded-full transition-all duration-300"
               style={{
-                width: `${((currentPhotoIndex) / (trajectory.length - 1)) * 100}%`,
+                width: `${
+                  (currentPhotoIndex / (trajectory.length - 1)) * 100
+                }%`,
               }}
             />
           </div>
@@ -393,7 +309,6 @@ export const TrajectoryReplayStep: FC = () => {
             })}
           </div>
         </div>
-
       </div>
 
       {/* Control Panel and Navigation - Fixed at bottom */}
@@ -402,7 +317,7 @@ export const TrajectoryReplayStep: FC = () => {
         <div className="bg-white border border-gray-200 rounded-lg px-4 py-3">
           <div className="flex items-center justify-center gap-3">
             {/* Playback controls */}
-            {status === 'playing'
+            {isPlaying
               ? (
                   <Button
                     variant="outline"
@@ -419,7 +334,6 @@ export const TrajectoryReplayStep: FC = () => {
                     variant="default"
                     size="icon"
                     onClick={startAnimation}
-                    disabled={status === 'completed'}
                     className="size-10"
                     title={t('workspace.controls.play', { defaultValue: 'Play' })}
                   >
@@ -439,7 +353,10 @@ export const TrajectoryReplayStep: FC = () => {
 
             {/* Speed selector */}
             <div className="flex items-center gap-2 ml-2">
-              <label htmlFor="speed-select" className="text-sm text-gray-600 whitespace-nowrap">
+              <label
+                htmlFor="speed-select"
+                className="text-sm text-gray-600 whitespace-nowrap"
+              >
                 {t('workspace.controls.speed', { defaultValue: 'Speed' })}
               </label>
               <select
