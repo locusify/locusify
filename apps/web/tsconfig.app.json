@@ -16,6 +16,7 @@
       "@/*": ["./src/*"],
       "#/*": ["../../*"]
     },
+    "types": ["@amap/amap-jsapi-types"],
     "allowImportingTsExtensions": true,
 
     /* Linting */

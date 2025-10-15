@@ -26,10 +26,10 @@ const Navbar: FC = () => {
       path: '/explore',
     },
     {
-      id: 'add',
+      id: 'workspace',
       icon: Plus,
-      label: t('navbar.add', { defaultValue: '添加' }),
-      path: '/add',
+      label: t('navbar.workspace', { defaultValue: '工作区' }),
+      path: '/workspace',
       isAction: true,
     },
     {

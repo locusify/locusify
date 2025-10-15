@@ -12,6 +12,10 @@ const envSchema = z.object({
   SUPABASE_URL: z.url(),
   /** Supabase anon key */
   SUPABASE_ANON_KEY: z.string(),
+  /** Amap API Key */
+  AMAP_KEY: z.string(),
+  /** Amap Security Code */
+  AMAP_SECURITY_CODE: z.string(),
 })
 
 export type Env = z.infer<typeof envSchema>
@@ -25,6 +29,8 @@ function validateEnv(): Env {
       GA_TRACKING_ID: import.meta.env.VITE_GA_TRACKING_ID,
       SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
       SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      AMAP_KEY: import.meta.env.VITE_AMAP_KEY,
+      AMAP_SECURITY_CODE: import.meta.env.VITE_AMAP_SECURITY_CODE,
     })
 
     console.log('loaded env:', parsedEnv)

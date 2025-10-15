@@ -29,17 +29,16 @@
       "Bash(pnpm tsc:*)",
       "Bash(pnpm lint:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:uiwjs.github.io)",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:lbs.amap.com)",
+      "Bash(pnpm ls:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": [],
-    "additionalDirectories": [
-      "D:\\code\\web\\src\\lib",
-      "D:\\code\\web\\src\\components",
-      "D:\\code\\web\\src\\types",
-      "D:\\code\\web\\src\\data",
-      "D:\\code\\web\\src\\assets"
-    ]
+    "additionalDirectories": []
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [

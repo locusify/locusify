@@ -5,6 +5,7 @@ import NotFound from '@/pages/error/404'
 import { ErrorElement } from '@/pages/error/ErrorElement'
 import Explore from '@/pages/explore'
 import SplashScreen from '@/pages/splashScreen/page'
+import Workspace from '@/pages/workspace'
 
 /** Routes */
 export const routes: RouteObject[] = [
@@ -22,8 +23,8 @@ export const routes: RouteObject[] = [
         element: <Explore />,
       },
       {
-        path: '/add',
-        element: <div>Add Page</div>,
+        path: '/workspace',
+        element: <Workspace />,
       },
       {
         path: '/profile',
