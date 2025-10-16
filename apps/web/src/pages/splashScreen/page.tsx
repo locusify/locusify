@@ -67,9 +67,9 @@ const SplashScreen: FC = () => {
   const showContent = isReady && resourcesLoaded
 
   return (
-    <div className="relative flex flex-col items-center min-h-screen bg-white text-primary/80 px-6">
+    <div className="relative flex justify-between flex-col items-center h-screen bg-white text-primary/80 px-6 py-30">
       {/* Logo and Loading Section - Top positioned */}
-      <div className="flex flex-col items-center w-full pt-32">
+      <div className="flex flex-col items-center w-full">
         <div className="flex size-40 items-center justify-center mb-8">
           <img src={logoUrl} alt="Locusify Logo" className="size-full" />
         </div>
@@ -89,9 +89,6 @@ const SplashScreen: FC = () => {
           </div>
         )}
       </div>
-
-      {/* Spacer to push buttons to bottom */}
-      <div className="flex-1" />
 
       {/* Auth Buttons - Fixed at bottom with fade-in animation */}
       {showContent && !hasSession && (
