@@ -67,7 +67,7 @@ const SplashScreen: FC = () => {
   const showContent = isReady && resourcesLoaded
 
   return (
-    <div className="relative flex justify-between flex-col items-center h-screen bg-white text-primary/80 px-6 py-30">
+    <div className="relative flex justify-between flex-col items-center h-dvh bg-white text-primary/80 px-6 py-30">
       {/* Logo and Loading Section - Top positioned */}
       <div className="flex flex-col items-center w-full">
         <div className="flex size-40 items-center justify-center mb-8">

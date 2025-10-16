@@ -30,7 +30,7 @@ export const ErrorElement: FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-col">
       {/* Header spacer */}
       <div className="h-16" />
 

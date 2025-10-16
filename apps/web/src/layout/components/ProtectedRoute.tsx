@@ -31,7 +31,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
   // 如果认证状态未就绪，显示加载状态
   if (!isReady) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-dvh">
         <Spinner />
       </div>
     )
@@ -40,7 +40,7 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
   // 如果未登录，不渲染子组件（即将跳转）
   if (!hasSession) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-dvh">
         <Spinner />
       </div>
     )

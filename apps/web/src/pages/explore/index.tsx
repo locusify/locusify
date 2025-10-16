@@ -93,7 +93,7 @@ const Explore: FC = () => {
   const { editorsChoice, collections } = mockExploreData
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-dvh bg-gray-50">
       {/* Content */}
       <div className="px-6 py-6">
         {/* Title */}
