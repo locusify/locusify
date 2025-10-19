@@ -33,7 +33,7 @@ function validateEnv(): Env {
       AMAP_SECURITY_CODE: import.meta.env.VITE_AMAP_SECURITY_CODE,
     })
 
-    console.log('loaded env:', parsedEnv)
+    console.log('loaded env successfully')
     return parsedEnv
   }
   catch (error) {
