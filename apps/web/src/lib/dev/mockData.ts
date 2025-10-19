@@ -4,7 +4,6 @@
  */
 
 import type { PhotoGpsData, UploadedPhoto } from '@/types/workspace'
-import { env } from '../env'
 
 /**
  * 测试照片的 GPS 坐标数据
@@ -130,11 +129,4 @@ export function generateMockGpsData(photos: UploadedPhoto[]): PhotoGpsData[] {
       hasValidGps: true,
     }
   })
-}
-
-/**
- * 检查是否为开发模式
- */
-export function isDevelopmentMode(): boolean {
-  return env.NODE_ENV === 'development'
 }

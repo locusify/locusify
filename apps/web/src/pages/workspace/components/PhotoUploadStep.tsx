@@ -1,7 +1,8 @@
 import type { FC } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { generateMockGpsData, generateMockPhotos, isDevelopmentMode } from '@/lib/dev/mockData'
+import { generateMockGpsData, generateMockPhotos } from '@/lib/dev/mockData'
+import { env } from '@/lib/env'
 import { extractGpsFromPhoto } from '@/lib/exif/parser'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { PhotoDropzone } from './PhotoDropzone'
@@ -135,7 +136,7 @@ export const PhotoUploadStep: FC = () => {
       />
 
       {/* Development Mode: Load Mock Data Button */}
-      {isDevelopmentMode() && photos.length === 0 && (
+      {env.NODE_ENV === 'development' && (
         <div className="flex items-center justify-center">
           <button
             type="button"
