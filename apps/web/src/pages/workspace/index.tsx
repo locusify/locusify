@@ -1,10 +1,10 @@
 import type { FC } from 'react'
 import { useTranslation } from 'react-i18next'
-import { GpsExtractionStep } from '@/components/workspace/GpsExtractionStep'
-import { PhotoUploadStep } from '@/components/workspace/PhotoUploadStep'
-import { StepIndicator } from '@/components/workspace/StepIndicator'
-import { TrajectoryReplayStep } from '@/components/workspace/TrajectoryReplayStep'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
+import { GpsExtractionStep } from './components/GpsExtractionStep'
+import { PhotoUploadStep } from './components/PhotoUploadStep'
+import { StepIndicator } from './components/StepIndicator'
+import { TrajectoryReplayStep } from './components/TrajectoryReplayStep'
 
 const Workspace: FC = () => {
   const { t } = useTranslation()
