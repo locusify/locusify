@@ -167,7 +167,7 @@ export const PhotoDropzone: FC<PhotoDropzoneProps> = ({
         >
           <Upload
             className={cn(
-              'h-8 w-8',
+              'size-8',
               isDragging && !disabled ? 'text-blue-500' : 'text-gray-500',
             )}
           />
@@ -214,7 +214,7 @@ export const PhotoDropzone: FC<PhotoDropzoneProps> = ({
           multiple
           onChange={handleFileInputChange}
           disabled={disabled}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="absolute inset-0 size-full opacity-0 cursor-pointer"
           aria-label={t('workspace.upload.fileInput', {
             defaultValue: 'Select photos to upload',
           })}

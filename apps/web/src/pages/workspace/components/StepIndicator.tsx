@@ -81,7 +81,7 @@ export const StepIndicator: FC<StepIndicatorProps> = ({
                   <div
                     className={cn(
                       'flex items-center justify-center shrink-0',
-                      'h-7 w-7 md:h-8 md:w-8 rounded-full border-2',
+                      'size-7 md:size-8 rounded-full border-2',
                       'transition-all duration-200 z-10',
                       isCompleted && 'bg-primary border-primary',
                       isCurrent && 'bg-white border-primary',
@@ -90,7 +90,7 @@ export const StepIndicator: FC<StepIndicatorProps> = ({
                   >
                     {isCompleted
                       ? (
-                          <Check className="h-3 w-3 md:h-4 md:w-4 text-white" />
+                          <Check className="size-3 md:size-4 text-white" />
                         )
                       : (
                           <span

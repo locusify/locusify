@@ -86,7 +86,7 @@ const GlassDock: FC<{ icons: DockIcon[], href?: string }> = ({
           key={index}
           src={icon.src}
           alt={icon.alt}
-          className="w-16 h-16 transition-all duration-700 hover:scale-110 cursor-pointer"
+          className="size-16 transition-all duration-700 hover:scale-110 cursor-pointer"
           style={{
             transformOrigin: 'center center',
             transitionTimingFunction: 'cubic-bezier(0.175, 0.885, 0.32, 2.2)',

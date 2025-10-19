@@ -24,7 +24,7 @@ export const UploadProgressBar: FC<UploadProgressBarProps> = ({
   return (
     <div className="w-full p-4 bg-blue-50 border border-blue-200 rounded-lg">
       <div className="flex items-center gap-3 mb-2">
-        {isUploading && <Loader2 className="h-4 w-4 text-primary animate-spin" />}
+        {isUploading && <Loader2 className="size-4 text-primary animate-spin" />}
         <p className="text-sm font-medium text-primary">
           {isUploading
             ? t('workspace.upload.progress', {

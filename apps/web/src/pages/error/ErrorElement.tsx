@@ -39,9 +39,9 @@ export const ErrorElement: FC = () => {
         <div className="w-full max-w-lg">
           {/* Error icon and status */}
           <div className="mb-8 text-center">
-            <div className="bg-background-secondary mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full">
+            <div className="bg-background-secondary mb-4 inline-flex size-16 items-center justify-center rounded-full">
               <svg
-                className="text-red h-8 w-8"
+                className="text-red size-8"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}

@@ -84,7 +84,7 @@ export const GpsDataTable: FC<GpsDataTableProps> = ({ gpsData }) => {
                   <img
                     src={data.photo.previewUrl}
                     alt={data.photo.file.name}
-                    className="w-10 h-10 md:w-12 md:h-12 rounded object-cover shrink-0"
+                    className="size-10 md:size-12 rounded object-cover shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
@@ -109,10 +109,10 @@ export const GpsDataTable: FC<GpsDataTableProps> = ({ gpsData }) => {
                 <div className="flex justify-center" title={data.hasValidGps ? t('workspace.gps.status.valid', { defaultValue: 'GPS OK' }) : t('workspace.gps.status.missing', { defaultValue: 'No GPS' })}>
                   {data.hasValidGps
                     ? (
-                        <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
+                        <CheckCircle2 className="size-5 md:size-6 text-green-600" />
                       )
                     : (
-                        <AlertCircle className="h-5 w-5 md:h-6 md:w-6 text-red-600" />
+                        <AlertCircle className="size-5 md:size-6 text-red-600" />
                       )}
                 </div>
               </td>

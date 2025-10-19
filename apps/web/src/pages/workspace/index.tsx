@@ -25,7 +25,7 @@ const Workspace: FC = () => {
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-gray-50">
+    <div className="size-full flex flex-col bg-gray-50">
       {/* Header - Hidden on mobile */}
       <div className="bg-white border-b px-4 md:px-6 py-3 md:py-4 shrink-0 hidden md:block">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">

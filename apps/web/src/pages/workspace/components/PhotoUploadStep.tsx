@@ -1,12 +1,11 @@
 import type { FC } from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { extractGpsFromPhoto } from '@/lib/exif/parser'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { PhotoDropzone } from './PhotoDropzone'
 import { PhotoPreviewGrid } from './PhotoPreviewGrid'
 import { StepNavigation } from './StepNavigation'
-import { UploadProgressBar } from './UploadProgressBar'
 
 export const PhotoUploadStep: FC = () => {
   const { t } = useTranslation()
@@ -14,15 +13,13 @@ export const PhotoUploadStep: FC = () => {
   const {
     photos,
     gpsData,
-    isUploading,
+    loading,
     addPhotos,
     removePhoto,
     setGpsData,
-    setIsExtractingGps,
+    setLoading,
     goToNextStep,
   } = useWorkspaceStore()
-
-  const [isProcessingGps, setIsProcessingGps] = useState(false)
 
   // Handle file selection
   const handleFilesSelected = useCallback(
@@ -45,8 +42,7 @@ export const PhotoUploadStep: FC = () => {
 
     // Extract GPS for all photos in parallel
     const extractAllGps = async () => {
-      setIsProcessingGps(true)
-      setIsExtractingGps(true)
+      setLoading(true)
 
       try {
         // Process all photos in parallel
@@ -67,8 +63,7 @@ export const PhotoUploadStep: FC = () => {
         console.error('Failed to extract GPS data:', error)
       }
       finally {
-        setIsProcessingGps(false)
-        setIsExtractingGps(false)
+        setLoading(false)
       }
     }
 
@@ -83,8 +78,7 @@ export const PhotoUploadStep: FC = () => {
     [removePhoto],
   )
 
-  // Calculate upload statistics
-  const uploadedCount = photos.filter(p => p.uploadStatus === 'completed').length
+  // Calculate total and processed counts
   const totalCount = photos.length
 
   // Calculate GPS statistics
@@ -92,7 +86,7 @@ export const PhotoUploadStep: FC = () => {
   const processedCount = gpsData.length
 
   // Check if can proceed to next step (need at least 2 photos with valid GPS)
-  const canProceed = validGpsCount >= 2 && !isUploading && !isProcessingGps
+  const canProceed = validGpsCount >= 2 && !loading
 
   return (
     <div className="flex flex-col gap-6">
@@ -100,7 +94,7 @@ export const PhotoUploadStep: FC = () => {
       <div>
         <h2 className="text-xl font-semibold text-gray-900">
           {t('workspace.upload.title', {
-            defaultValue: 'Upload Your Photos',
+            defaultValue: 'Select Your Photos',
           })}
         </h2>
         <p className="text-sm text-gray-600 mt-1">
@@ -111,19 +105,10 @@ export const PhotoUploadStep: FC = () => {
         </p>
       </div>
 
-      {/* Upload progress */}
-      {totalCount > 0 && (
-        <UploadProgressBar
-          current={uploadedCount}
-          total={totalCount}
-          isUploading={isUploading}
-        />
-      )}
-
       {/* Dropzone */}
       <PhotoDropzone
         onFilesSelected={handleFilesSelected}
-        disabled={isUploading}
+        disabled={loading}
       />
 
       {/* Photo grid with GPS status */}
@@ -137,7 +122,7 @@ export const PhotoUploadStep: FC = () => {
       )}
 
       {/* GPS Validation Summary - Only show when processing is complete */}
-      {!isProcessingGps && processedCount === totalCount && totalCount > 0 && (
+      {!loading && processedCount === totalCount && totalCount > 0 && (
         <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-800">
@@ -164,7 +149,7 @@ export const PhotoUploadStep: FC = () => {
         onNext={goToNextStep}
         nextDisabled={!canProceed}
         showBack={false}
-        loading={isProcessingGps}
+        loading={loading}
         nextLabel={t('workspace.controls.next', {
           defaultValue: 'Process GPS Data',
         })}
