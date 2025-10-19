@@ -1,6 +1,7 @@
 import type { FC } from 'react'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { generateMockGpsData, generateMockPhotos, isDevelopmentMode } from '@/lib/dev/mockData'
 import { extractGpsFromPhoto } from '@/lib/exif/parser'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { PhotoDropzone } from './PhotoDropzone'
@@ -9,12 +10,14 @@ import { StepNavigation } from './StepNavigation'
 
 export const PhotoUploadStep: FC = () => {
   const { t } = useTranslation()
+  const [loadingMockData, setLoadingMockData] = useState(false)
 
   const {
     photos,
     gpsData,
     loading,
     addPhotos,
+    addUploadedPhotos,
     removePhoto,
     setGpsData,
     setLoading,
@@ -78,6 +81,26 @@ export const PhotoUploadStep: FC = () => {
     [removePhoto],
   )
 
+  // Handle loading mock data (development mode only)
+  const handleLoadMockData = useCallback(async () => {
+    setLoadingMockData(true)
+    try {
+      // Generate mock photos
+      const mockPhotos = await generateMockPhotos()
+      addUploadedPhotos(mockPhotos)
+
+      // Generate and set GPS data immediately
+      const mockGpsData = generateMockGpsData(mockPhotos)
+      setGpsData(mockGpsData)
+    }
+    catch (error) {
+      console.error('Failed to load mock data:', error)
+    }
+    finally {
+      setLoadingMockData(false)
+    }
+  }, [addUploadedPhotos, setGpsData])
+
   // Calculate total and processed counts
   const totalCount = photos.length
 
@@ -110,6 +133,26 @@ export const PhotoUploadStep: FC = () => {
         onFilesSelected={handleFilesSelected}
         disabled={loading}
       />
+
+      {/* Development Mode: Load Mock Data Button */}
+      {isDevelopmentMode() && photos.length === 0 && (
+        <div className="flex items-center justify-center">
+          <button
+            type="button"
+            onClick={handleLoadMockData}
+            disabled={loadingMockData}
+            className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loadingMockData
+              ? t('workspace.upload.loadingMockData', {
+                  defaultValue: 'Loading test data...',
+                })
+              : t('workspace.upload.loadMockData', {
+                  defaultValue: '🧪 Load Test Data (Dev)',
+                })}
+          </button>
+        </div>
+      )}
 
       {/* Photo grid with GPS status */}
       {totalCount > 0 && (

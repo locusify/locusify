@@ -11,36 +11,43 @@ import { Button } from '@/components/ui/button'
 import { env } from '@/lib/env'
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { StepNavigation } from './StepNavigation'
-
-/** Speed options - duration multiplier for moveAlong API */
-const SPEED_OPTIONS = [
-  { labelKey: 'workspace.replay.speed.slow', value: 2.0 },
-  { labelKey: 'workspace.replay.speed.normal', value: 1.0 },
-  { labelKey: 'workspace.replay.speed.fast', value: 0.5 },
-  { labelKey: 'workspace.replay.speed.veryFast', value: 0.25 },
-]
-
+/**
+ * 轨迹回放组件
+ * 在地图上回放用户上传照片的GPS轨迹，支持播放控制
+ */
 export const TrajectoryReplayStep: FC = () => {
   const { t } = useTranslation()
   const { gpsData, goToPreviousStep } = useWorkspaceStore()
 
-  const [speedMultiplier, setSpeedMultiplier] = useState(1.0) // Duration multiplier (1.0 = normal)
+  /** 当前正在显示的照片索引 */
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0)
+
+  /** 动画是否正在播放 */
   const [isPlaying, setIsPlaying] = useState(false)
+
+  /** 地图标记点引用 - 用于控制移动动画 */
   const markerRef = useRef<AMap.Marker | null>(null)
+
+  /** 地图实例引用 */
   const mapRef = useRef<AMap.Map | null>(null)
 
-  // Generate trajectory from GPS data
+  /**
+   * 从GPS数据生成轨迹信息
+   * 过滤出有效的GPS数据，按时间排序，生成轨迹坐标和路径点
+   */
   const trajectoryData = useMemo(() => {
+    /** 过滤并排序有效的GPS数据 */
     const validGpsData = gpsData
       .filter(d => d.hasValidGps && d.gps)
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
+    /** 轨迹坐标数组 [经度, 纬度] */
     const trajectory: [number, number][] = validGpsData.map(d => [
       d.gps!.longitude,
       d.gps!.latitude,
     ])
 
+    /** 路径点数组 - 包含位置、照片、时间戳等信息 */
     const waypoints = validGpsData.map(d => ({
       position: [d.gps!.longitude, d.gps!.latitude] as [number, number],
       photoUrl: d.photo.previewUrl,
@@ -53,23 +60,34 @@ export const TrajectoryReplayStep: FC = () => {
 
   const { trajectory, waypoints, validGpsData } = trajectoryData
 
-  // Calculate map center and zoom
+  /**
+   * 计算地图中心点和缩放级别
+   * 根据轨迹的边界框自动计算合适的地图视图
+   */
   const mapConfig = useMemo(() => {
-    // Calculate zoom level based on bounding box
+    /** 提取所有纬度坐标 */
     const lats = trajectory.map(([_, lat]) => lat)
+    /** 提取所有经度坐标 */
     const lngs = trajectory.map(([lng]) => lng)
 
+    /** 最小纬度 */
     const minLat = Math.min(...lats)
+    /** 最大纬度 */
     const maxLat = Math.max(...lats)
+    /** 最小经度 */
     const minLng = Math.min(...lngs)
+    /** 最大经度 */
     const maxLng = Math.max(...lngs)
 
+    /** 纬度差值 */
     const latDiff = maxLat - minLat
+    /** 经度差值 */
     const lngDiff = maxLng - minLng
+    /** 最大差值 - 用于确定缩放级别 */
     const maxDiff = Math.max(latDiff, lngDiff)
 
-    // More granular zoom levels for better view
-    let zoom = 18 // Default for very close points
+    /** 根据轨迹范围计算缩放级别 */
+    let zoom = 18 // 默认值 - 非常近的点
     if (maxDiff > 0.001)
       zoom = 17
     if (maxDiff > 0.005)
@@ -88,44 +106,52 @@ export const TrajectoryReplayStep: FC = () => {
       zoom = 7
 
     return {
-      center: trajectory[0] as [number, number],
+      center: trajectory[0] as [number, number], // 以第一个点为中心
       zoom,
     }
   }, [trajectory])
 
-  /** Get current photo URL */
+  /**
+   * 获取当前显示的照片URL
+   * 如果当前索引无效，则使用默认logo
+   */
   const currentPhotoUrl = useMemo(() => {
-    return waypoints[currentPhotoIndex]?.photoUrl || logoUrl
+    return waypoints[currentPhotoIndex].photoUrl || logoUrl
   }, [waypoints, currentPhotoIndex])
 
-  /** Start animation using moveAlong API */
+  /**
+   * 开始动画播放
+   * 使用高德地图的 moveAlong API 实现平滑的轨迹动画
+   */
   const startAnimation = useCallback(() => {
     const marker = markerRef.current
     if (!marker)
       return
 
     if (!isPlaying) {
-      // Start from beginning
+      // 从头开始播放
       setCurrentPhotoIndex(0)
       marker.setPosition(trajectory[0])
       setIsPlaying(true)
 
-      // Use moveAlong for smooth animation
-      const durationPerPhoto = 2000 // 2 seconds per photo
-      const totalDuration = trajectory.length * durationPerPhoto * speedMultiplier
+      // 使用 moveAlong 实现平滑动画
+      /** 每个照片点之间的动画时长（毫秒） */
+      const durationPerPhoto = 2000 // 2秒
 
       marker.moveAlong(trajectory, {
-        duration: totalDuration,
-        autoRotation: false,
+        duration: durationPerPhoto,
+        autoRotation: false, // 不自动旋转标记
       })
     }
     else {
-      // Resume from paused position
+      // 从暂停位置继续播放
       marker.resumeMove()
     }
-  }, [isPlaying, trajectory, speedMultiplier])
+  }, [isPlaying, trajectory])
 
-  /** Pause animation */
+  /**
+   * 暂停动画播放
+   */
   const pauseAnimation = useCallback(() => {
     const marker = markerRef.current
     if (!marker)
@@ -135,7 +161,10 @@ export const TrajectoryReplayStep: FC = () => {
     setIsPlaying(false)
   }, [])
 
-  /** Reset animation */
+  /**
+   * 重置动画到初始状态
+   * 停止播放并将标记移回起点
+   */
   const resetAnimation = useCallback(() => {
     const marker = markerRef.current
     if (!marker || trajectory.length === 0)
@@ -147,19 +176,9 @@ export const TrajectoryReplayStep: FC = () => {
     setCurrentPhotoIndex(0)
   }, [trajectory])
 
-  /** Update speed when speedMultiplier changes during playback */
-  useEffect(() => {
-    if (isPlaying) {
-      // Stop current animation and restart with new speed
-      const marker = markerRef.current
-      if (marker) {
-        marker.stopMove()
-        startAnimation()
-      }
-    }
-  }, [isPlaying, speedMultiplier, startAnimation])
-
-  /** Cleanup on unmount */
+  /**
+   * 组件卸载时清理动画
+   */
   useEffect(() => {
     return () => {
       const marker = markerRef.current
@@ -253,7 +272,7 @@ export const TrajectoryReplayStep: FC = () => {
                 position={trajectory[currentPhotoIndex]}
                 anchor="center"
               >
-                <div className="size-24 md:size-32 rounded-2xl bg-white shadow-2xl flex items-center justify-center p-2 border-4 border-primary ring-4 ring-primary/20">
+                <div className="size-24 md:size-32 rounded-2xl shadow-2xl ring-4 ring-black/10">
                   <img
                     src={currentPhotoUrl}
                     className="size-full object-cover rounded-xl"
@@ -285,8 +304,7 @@ export const TrajectoryReplayStep: FC = () => {
             <div
               className="bg-primary h-1.5 md:h-2 rounded-full transition-all duration-300"
               style={{
-                width: `${
-                  (currentPhotoIndex / (trajectory.length - 1)) * 100
+                width: `${(currentPhotoIndex / (trajectory.length - 1)) * 100
                 }%`,
               }}
             />
@@ -320,10 +338,10 @@ export const TrajectoryReplayStep: FC = () => {
             {isPlaying
               ? (
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="icon"
                     onClick={pauseAnimation}
-                    className="size-10"
+                    className="size-10 text-white"
                     title={t('workspace.controls.pause', { defaultValue: 'Pause' })}
                   >
                     <Pause className="size-5" />
@@ -334,7 +352,7 @@ export const TrajectoryReplayStep: FC = () => {
                     variant="default"
                     size="icon"
                     onClick={startAnimation}
-                    className="size-10"
+                    className="size-10 text-white"
                     title={t('workspace.controls.play', { defaultValue: 'Play' })}
                   >
                     <Play className="size-5" />
@@ -350,28 +368,6 @@ export const TrajectoryReplayStep: FC = () => {
             >
               <RotateCcw className="size-5" />
             </Button>
-
-            {/* Speed selector */}
-            <div className="flex items-center gap-2 ml-2">
-              <label
-                htmlFor="speed-select"
-                className="text-sm text-gray-600 whitespace-nowrap"
-              >
-                {t('workspace.controls.speed', { defaultValue: 'Speed' })}
-              </label>
-              <select
-                id="speed-select"
-                value={speedMultiplier}
-                onChange={e => setSpeedMultiplier(Number(e.target.value))}
-                className="h-10 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                {SPEED_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {t(option.labelKey, { defaultValue: option.labelKey })}
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
 

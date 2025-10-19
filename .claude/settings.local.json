@@ -34,7 +34,10 @@
       "Bash(npx tsc:*)",
       "WebFetch(domain:lbs.amap.com)",
       "Bash(pnpm ls:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npx eslint src/pages/workspace/components/TrajectoryReplayStep.tsx)",
+      "Bash(npx eslint src/pages/workspace/components/PhotoCard.tsx src/pages/workspace/components/TrajectoryReplayStep.tsx)",
+      "Bash(npx eslint src/pages/workspace/components/PhotoCard.tsx)"
     ],
     "deny": [],
     "ask": [],

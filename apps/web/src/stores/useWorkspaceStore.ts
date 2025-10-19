@@ -71,6 +71,12 @@ interface WorkspaceStore {
   addPhotos: (files: File[]) => void
 
   /**
+   * 批量添加已经创建好的照片对象(用于测试数据)
+   * @param photos - UploadedPhoto 对象数组
+   */
+  addUploadedPhotos: (photos: UploadedPhoto[]) => void
+
+  /**
    * 从队列中移除照片
    * 自动释放预览 URL 以防止内存泄漏
    * @param photoId - 要移除的照片唯一标识符
@@ -294,6 +300,12 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       set(state => ({
         photos: [...state.photos, ...newPhotos],
+      }))
+    },
+
+    addUploadedPhotos: (photos) => {
+      set(state => ({
+        photos: [...state.photos, ...photos],
       }))
     },
 
