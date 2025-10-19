@@ -24,7 +24,7 @@ export type Env = z.infer<typeof envSchema>
 function validateEnv(): Env {
   try {
     const parsedEnv = envSchema.parse({
-      NODE_ENV: import.meta.env.NODE_ENV,
+      NODE_ENV: import.meta.env.MODE,
       API_URL: import.meta.env.VITE_API_URL,
       GA_TRACKING_ID: import.meta.env.VITE_GA_TRACKING_ID,
       SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
