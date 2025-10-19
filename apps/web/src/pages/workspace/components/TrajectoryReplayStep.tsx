@@ -120,34 +120,52 @@ export const TrajectoryReplayStep: FC = () => {
   }, [waypoints, currentPhotoIndex])
 
   /**
+   * 播放到下一个照片点
+   * 使用串行的方式逐段播放轨迹，确保 currentPhotoIndex 正确更新
+   */
+  const playToNextPoint = useCallback((fromIndex: number) => {
+    const marker = markerRef.current
+    if (!marker || fromIndex >= trajectory.length - 1) {
+      // 到达终点，停止播放
+      setIsPlaying(false)
+      return
+    }
+
+    const nextIndex = fromIndex + 1
+    const segment = [trajectory[fromIndex], trajectory[nextIndex]]
+
+    /** 每段移动的时长（毫秒） */
+    const segmentDuration = 2000 // 2秒
+
+    // 移动到下一个点
+    marker.moveAlong(segment, {
+      duration: segmentDuration,
+      autoRotation: false,
+    })
+
+    // 使用定时器在移动完成后更新索引并继续播放
+    setTimeout(() => {
+      // 更新当前照片索引
+      setCurrentPhotoIndex(nextIndex)
+
+      // 继续播放下一段
+      playToNextPoint(nextIndex)
+    }, segmentDuration)
+  }, [trajectory])
+
+  /**
    * 开始动画播放
-   * 使用高德地图的 moveAlong API 实现平滑的轨迹动画
+   * 支持从头播放和从当前位置继续播放
    */
   const startAnimation = useCallback(() => {
     const marker = markerRef.current
-    if (!marker)
+    if (!marker || isPlaying)
       return
 
-    if (!isPlaying) {
-      // 从头开始播放
-      setCurrentPhotoIndex(0)
-      marker.setPosition(trajectory[0])
-      setIsPlaying(true)
-
-      // 使用 moveAlong 实现平滑动画
-      /** 每个照片点之间的动画时长（毫秒） */
-      const durationPerPhoto = 2000 // 2秒
-
-      marker.moveAlong(trajectory, {
-        duration: durationPerPhoto,
-        autoRotation: false, // 不自动旋转标记
-      })
-    }
-    else {
-      // 从暂停位置继续播放
-      marker.resumeMove()
-    }
-  }, [isPlaying, trajectory])
+    setIsPlaying(true)
+    // 从当前索引开始播放
+    playToNextPoint(currentPhotoIndex)
+  }, [isPlaying, currentPhotoIndex, playToNextPoint])
 
   /**
    * 暂停动画播放
