@@ -1,10 +1,10 @@
 import type { FC } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
 import { GpsExtractionStep } from './components/GpsExtractionStep'
 import { PhotoUploadStep } from './components/PhotoUploadStep'
 import { StepIndicator } from './components/StepIndicator'
 import { TrajectoryReplayStep } from './components/TrajectoryReplayStep'
+import { useWorkspaceStore } from './useWorkspaceStore'
 
 const Workspace: FC = () => {
   const { t } = useTranslation()

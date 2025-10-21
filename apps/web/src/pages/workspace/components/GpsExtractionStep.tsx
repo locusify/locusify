@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { batchExtractGpsData, getExtractionStats } from '@/lib/exif/batch-processor'
 import { categorizeGpsError, generateTrajectoryPath, sortGpsDataByTime } from '@/lib/exif/parser'
-import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
+import { useWorkspaceStore } from '../useWorkspaceStore'
 import { GpsDataTable } from './GpsDataTable'
 import { StepNavigation } from './StepNavigation'
 

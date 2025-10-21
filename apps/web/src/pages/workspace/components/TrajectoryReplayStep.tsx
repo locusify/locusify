@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import logoUrl from '@/assets/locusify.png'
 import { Button } from '@/components/ui/button'
 import { env } from '@/lib/env'
-import { useWorkspaceStore } from '@/stores/useWorkspaceStore'
+import { useWorkspaceStore } from '../useWorkspaceStore'
 import { StepNavigation } from './StepNavigation'
 /**
  * 轨迹回放组件
