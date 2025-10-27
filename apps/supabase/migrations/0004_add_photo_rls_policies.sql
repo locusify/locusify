@@ -2,8 +2,8 @@
 ALTER TABLE photo ENABLE ROW LEVEL SECURITY;
 
 -- photo 表的 RLS 策略
--- 策略1：用户可以查看自己的照片
-CREATE POLICY "Users can view their own photos"
+-- 策略1：用户只能查看自己的照片
+CREATE POLICY "Users can only view their own photos"
   ON photo
   FOR SELECT
   USING (auth.uid() = user_id);
@@ -28,7 +28,7 @@ CREATE POLICY "Users can delete their own photos"
   USING (auth.uid() = user_id);
 
 -- 添加策略注释
-COMMENT ON POLICY "Users can view their own photos" ON photo IS '用户只能查看自己上传的照片';
+COMMENT ON POLICY "Users can only view their own photos" ON photo IS '用户只能查看自己上传的照片（严格隔离，不允许访问其他用户的照片）';
 COMMENT ON POLICY "Users can insert their own photos" ON photo IS '用户只能上传自己的照片';
 COMMENT ON POLICY "Users can update their own photos" ON photo IS '用户只能更新自己的照片';
 COMMENT ON POLICY "Users can delete their own photos" ON photo IS '用户只能删除自己的照片';

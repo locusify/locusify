@@ -25,10 +25,6 @@ CREATE TABLE IF NOT EXISTS photo (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 为 journey 表添加外键约束(cover_photo_id)
-ALTER TABLE journey ADD CONSTRAINT fk_journey_cover_photo
-  FOREIGN KEY (cover_photo_id) REFERENCES photo(id) ON DELETE SET NULL;
-
 -- 创建索引以优化查询性能
 CREATE INDEX idx_photo_journey_id ON photo(journey_id);
 CREATE INDEX idx_photo_user_id ON photo(user_id);

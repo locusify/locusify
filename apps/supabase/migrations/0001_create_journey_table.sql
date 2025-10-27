@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS journey (
   description TEXT, -- 旅程描述（可选）
   start_date TIMESTAMPTZ, -- 旅程开始日期
   end_date TIMESTAMPTZ, -- 旅程结束日期
-  cover_photo_id UUID, -- 封面照片ID，关联 photo 表（可选）
   photo_count INTEGER DEFAULT 0, -- 该旅程包含的照片数量
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'deleted', 'published')), -- 旅程状态：草稿|已删除|已发布
   visibility TEXT NOT NULL DEFAULT 'private' CHECK (visibility IN ('public', 'private')), -- 权限：公开|私密
@@ -44,7 +43,6 @@ COMMENT ON COLUMN journey.name IS '旅程名称';
 COMMENT ON COLUMN journey.description IS '旅程描述';
 COMMENT ON COLUMN journey.start_date IS '旅程开始日期';
 COMMENT ON COLUMN journey.end_date IS '旅程结束日期';
-COMMENT ON COLUMN journey.cover_photo_id IS '封面照片ID';
 COMMENT ON COLUMN journey.photo_count IS '照片数量统计';
 COMMENT ON COLUMN journey.status IS '旅程状态：draft(草稿)|deleted(已删除)|published(已发布)';
 COMMENT ON COLUMN journey.visibility IS '权限：public(公开)|private(私密)';
