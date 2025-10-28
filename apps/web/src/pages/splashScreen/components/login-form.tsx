@@ -1,5 +1,6 @@
 import type { LoginFormValues } from '@/lib/validations/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
@@ -36,16 +37,18 @@ export function LoginForm({
   showTitle = true,
   ...props
 }: LoginFormProps) {
-  /** Loading state */
+  /** 加载状态 */
   const [loading, setLoading] = useState(false)
-  /** Error state */
+  /** 错误状态 */
   const [error, setError] = useState<string | null>(null)
+  /** 密码可见性状态 */
+  const [showPassword, setShowPassword] = useState(false)
 
-  /** OAuth login hook */
+  /** OAuth 登录钩子 */
   const { signInWithProvider, loading: oauthLoading } = useOAuthLogin()
 
   /**
-   * @description The login form
+   * 登录表单
    */
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -56,8 +59,8 @@ export function LoginForm({
   })
 
   /**
-   * @description Handle the login form submission
-   * @param values - The form values
+   * 处理登录表单提交
+   * @param values - 表单值
    */
   const handleLogin = async (values: LoginFormValues) => {
     setLoading(true)
@@ -84,7 +87,7 @@ export function LoginForm({
     }
   }
 
-  /** Whether the form is disabled */
+  /** 表单是否被禁用 */
   const isFormDisabled = loading || oauthLoading
 
   return (
@@ -133,13 +136,34 @@ export function LoginForm({
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    autoComplete="password"
-                    disabled={isFormDisabled}
-                    {...field}
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      autoComplete="password"
+                      disabled={isFormDisabled}
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={isFormDisabled}
+                    >
+                      {showPassword
+                        ? (
+                            <EyeOff className="size-4" />
+                          )
+                        : (
+                            <Eye className="size-4" />
+                          )}
+                      <span className="sr-only">
+                        {showPassword ? 'Hide password' : 'Show password'}
+                      </span>
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

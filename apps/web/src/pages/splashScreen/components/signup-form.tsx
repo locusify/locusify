@@ -1,5 +1,6 @@
 import type { SignupFormValues } from '@/lib/validations/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
@@ -37,18 +38,22 @@ export function SignupForm({
   showTitle = true,
   ...props
 }: SignupFormProps) {
-  /** Loading state */
+  /** 加载状态 */
   const [loading, setLoading] = useState(false)
-  /** Error state */
+  /** 错误状态 */
   const [error, setError] = useState<string | null>(null)
-  /** Success message state */
+  /** 成功消息状态 */
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  /** 密码可见性状态 */
+  const [showPassword, setShowPassword] = useState(false)
+  /** 确认密码可见性状态 */
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  /** OAuth login hook */
+  /** OAuth 登录钩子 */
   const { signInWithProvider, loading: oauthLoading } = useOAuthLogin()
 
   /**
-   * @description The signup form
+   * 注册表单
    */
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -60,8 +65,8 @@ export function SignupForm({
   })
 
   /**
-   * @description Register user
-   * @param values - The form values
+   * 用户注册函数
+   * @param values - 表单值
    */
   const registerUser = async (values: SignupFormValues) => {
     setLoading(true)
@@ -69,7 +74,7 @@ export function SignupForm({
     setSuccessMessage(null)
 
     try {
-      // Sign up with email and password
+      /** 使用邮箱和密码注册 */
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
@@ -78,14 +83,14 @@ export function SignupForm({
       if (signUpError)
         throw signUpError
 
-      // Email confirmation is always required for signup
+      /** 注册总是需要邮箱验证 */
       if (data.user) {
-        // Check if identities exist (email is verified)
+        /** 检查身份是否存在（邮箱已验证） */
         const hasIdentities = data.user.identities && data.user.identities.length > 0
 
         if (!hasIdentities) {
           console.log('User exists but email not verified. Resending verification email...')
-          // User exists but email not verified, resend verification email
+          /** 用户存在但邮箱未验证，重新发送验证邮件 */
           const { error: resendError } = await supabase.auth.resend({
             type: 'signup',
             email: values.email,
@@ -97,7 +102,7 @@ export function SignupForm({
           }
         }
 
-        // Show email verification message
+        /** 显示邮箱验证消息 */
         const message = `Verification email sent to ${values.email}. Please check your inbox and verify your email to continue.`
         console.log('Email verification required:', message)
         setSuccessMessage(message)
@@ -171,13 +176,34 @@ export function SignupForm({
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    autoComplete="password"
-                    disabled={isFormDisabled}
-                    {...field}
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      autoComplete="password"
+                      disabled={isFormDisabled}
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={isFormDisabled}
+                    >
+                      {showPassword
+                        ? (
+                            <EyeOff className="size-4" />
+                          )
+                        : (
+                            <Eye className="size-4" />
+                          )}
+                      <span className="sr-only">
+                        {showPassword ? 'Hide password' : 'Show password'}
+                      </span>
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormDescription>
                   At least 8 characters with uppercase, lowercase, and numbers
@@ -194,13 +220,34 @@ export function SignupForm({
               <FormItem>
                 <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    autoComplete="confirm-password"
-                    disabled={isFormDisabled}
-                    {...field}
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      autoComplete="confirm-password"
+                      disabled={isFormDisabled}
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      disabled={isFormDisabled}
+                    >
+                      {showConfirmPassword
+                        ? (
+                            <EyeOff className="h-4 w-4" />
+                          )
+                        : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                      <span className="sr-only">
+                        {showConfirmPassword ? 'Hide password' : 'Show password'}
+                      </span>
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
