@@ -1,3 +1,4 @@
+import type { Database } from './database.types'
 import { createClient } from '@supabase/supabase-js'
 import { env } from '@/lib/env'
 
@@ -10,7 +11,7 @@ const supabaseKey = env.SUPABASE_ANON_KEY
  * - Automatically refreshes tokens
  * - Handles auth state changes
  */
-const supabase = createClient(supabaseUrl, supabaseKey, {
+const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
