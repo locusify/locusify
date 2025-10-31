@@ -4,6 +4,7 @@ import Layout from '@/layout'
 import NotFound from '@/pages/error/404'
 import { ErrorElement } from '@/pages/error/ErrorElement'
 import Explore from '@/pages/explore'
+import { Map } from '@/pages/map'
 import SplashScreen from '@/pages/splashScreen/page'
 import Workspace from '@/pages/workspace'
 
@@ -25,6 +26,10 @@ export const routes: RouteObject[] = [
       {
         path: '/workspace',
         element: <Workspace />,
+      },
+      {
+        path: '/map',
+        element: <Map />,
       },
       {
         path: '/profile',
