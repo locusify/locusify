@@ -196,7 +196,7 @@ function MapSectionContent() {
           }
           selectedMarkerId={photoId}
           onMarkerClick={handleMarkerClick}
-          className="h-full w-full"
+          className="size-full"
         />
       </m.div>
     </div>

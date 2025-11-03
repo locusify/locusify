@@ -99,6 +99,8 @@
   "workspace.status.completed": "Replay completed! Click Play to restart.",
 
   "explory.found.locations": "Found {{count}} shooting locations",
+  "explory.parsing.location": "Parsing location...",
+  "explory.loading.map": "Loading map...",
 
   "navbar.home": "Home",
   "navbar.profile": "My"

@@ -65,7 +65,7 @@ export function PhotoMarkerPin({
                 src={marker.photo.thumbnailUrl || marker.photo.originalUrl}
                 alt={marker.photo.title || marker.photo.id}
                 thumbHash={marker.photo.thumbHash}
-                className="h-full w-full object-cover opacity-40"
+                className="size-full object-cover opacity-40"
                 rootMargin="100px"
                 threshold={0.1}
               />
@@ -121,7 +121,7 @@ export function PhotoMarkerPin({
                 src={marker.photo.thumbnailUrl || marker.photo.originalUrl}
                 alt={marker.photo.title || marker.photo.id}
                 thumbHash={marker.photo.thumbHash}
-                className="h-full w-full object-cover"
+                className="size-full object-cover"
                 rootMargin="200px"
                 threshold={0.1}
               />

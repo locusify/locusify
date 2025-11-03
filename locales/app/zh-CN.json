@@ -99,6 +99,8 @@
   "workspace.status.completed": "回放完成！点击播放重新开始。",
 
   "explory.found.locations": "找到 {{count}} 个拍摄地点",
+  "explory.parsing.location": "解析地点...",
+  "explory.loading.map": "加载地图...",
 
   "navbar.home": "首页",
   "navbar.profile": "我的"
