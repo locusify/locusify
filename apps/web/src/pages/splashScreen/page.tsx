@@ -48,7 +48,7 @@ const SplashScreen: FC = () => {
   // Navigate when ready and has session
   useEffect(() => {
     if (isReady && resourcesLoaded && hasSession) {
-      navigate('/explore', { replace: true })
+      navigate('/map', { replace: true })
     }
   }, [isReady, resourcesLoaded, hasSession, navigate])
 

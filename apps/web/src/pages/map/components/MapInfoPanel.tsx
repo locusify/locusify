@@ -49,7 +49,9 @@ export const MapInfoPanel: FC<MapInfoPanelProps> = ({ markersCount, bounds }) =>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
                 <h1 className="text-text text-lg leading-tight font-semibold tracking-tight">
-                  {t('explory.explore.map')}
+                  {t('explory.explore.map', {
+                    defaultValue: 'Explore Map',
+                  })}
                 </h1>
                 {/* Collapse/Expand Button */}
                 <button

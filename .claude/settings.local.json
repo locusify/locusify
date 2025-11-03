@@ -42,7 +42,8 @@
       "Bash(del 20250122000001_create_journey_and_photo_tables.sql 20250122000002_add_journey_and_photo_rls_policies.sql)",
       "WebFetch(domain:evanw.github.io)",
       "WebFetch(domain:bootstrapped.app)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "WebFetch(domain:motion.dev)"
     ],
     "deny": [],
     "ask": [],

@@ -8,6 +8,7 @@ import { GenericMap } from './components/GenericMap'
 import { MapBackButton } from './components/MapBackButton'
 import { MapInfoPanel } from './components/MapInfoPanel'
 import { MapLoadingState } from './components/MapLoadingState'
+import { MapMenuButton } from './components/MapMenuButton'
 import { MapProvider } from './MapProvider'
 import {
   calculateMapBounds,
@@ -176,6 +177,9 @@ function MapSectionContent() {
 
       {/* Map info panel */}
       <MapInfoPanel markersCount={markers.length} bounds={bounds} />
+
+      {/* Map menu button */}
+      <MapMenuButton />
 
       {/* Generic Map component */}
       <m.div

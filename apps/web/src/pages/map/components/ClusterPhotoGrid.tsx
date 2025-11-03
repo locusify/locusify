@@ -40,8 +40,8 @@ export function ClusterPhotoGrid({
             animate={{ opacity: 1, scale: 1 }}
             transition={{
               type: 'spring',
-              stiffness: 300,
-              damping: 25,
+              duration: 0.4,
+              bounce: 0,
               delay: index * 0.05,
             }}
             className="group relative aspect-square overflow-hidden rounded-lg"
@@ -99,8 +99,8 @@ export function ClusterPhotoGrid({
             animate={{ opacity: 1, scale: 1 }}
             transition={{
               type: 'spring',
-              stiffness: 300,
-              damping: 25,
+              duration: 0.4,
+              bounce: 0,
               delay: displayPhotos.length * 0.05,
             }}
             className="bg-fill-secondary flex aspect-square items-center justify-center rounded-lg"
