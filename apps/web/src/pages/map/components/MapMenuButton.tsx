@@ -10,11 +10,15 @@ interface MenuItemProps {
   onClick?: () => void
 }
 
+interface MapMenuButtonProps {
+  onUploadClick?: () => void
+}
+
 /**
  * MapMenuButton component
  * @description A collapsible menu button in the bottom-right corner that expands upward
  */
-export const MapMenuButton: FC = () => {
+export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick }) => {
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -47,6 +51,7 @@ export const MapMenuButton: FC = () => {
       <div className="bg-material-thick border-fill-tertiary overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-[120px]">
         <button
           type="button"
+          onClick={onUploadClick}
           className="group hover:bg-red/10 active:bg-red/20 relative flex size-12 items-center justify-center transition-colors"
           title={t('menu.upload', { defaultValue: 'Upload Photos' })}
         >

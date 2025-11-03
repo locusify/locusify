@@ -9,7 +9,7 @@ const NotFound: FC = () => {
   return (
     <div className="min-h-dvh flex items-center justify-center bg-gray-50 px-4">
       <div className="text-center max-w-md mx-auto">
-        <h1 className="text-6xl sm:text-8xl lg:text-9xl font-bold text-gray-300">
+        <h1 className="text-6xl font-bold text-gray-300">
           {t('error.404.title')}
         </h1>
         <p className="text-sm sm:text-base text-gray-500 mt-2 px-4">

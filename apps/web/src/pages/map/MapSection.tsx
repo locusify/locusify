@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useSearchParams } from 'react-router'
+import { UploadDrawer } from '@/components/upload'
 import { GenericMap } from './components/GenericMap'
 import { MapBackButton } from './components/MapBackButton'
 import { MapInfoPanel } from './components/MapInfoPanel'
@@ -28,6 +29,9 @@ function MapSectionContent() {
 
   // Track if this is the initial load to control auto fit bounds
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+
+  // Upload drawer state
+  const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
 
   // Handle marker click - update URL parameters
   const handleMarkerClick = useCallback(
@@ -179,7 +183,18 @@ function MapSectionContent() {
       <MapInfoPanel markersCount={markers.length} bounds={bounds} />
 
       {/* Map menu button */}
-      <MapMenuButton />
+      <MapMenuButton onUploadClick={() => setUploadDrawerOpen(true)} />
+
+      {/* Upload drawer */}
+      <UploadDrawer
+        open={uploadDrawerOpen}
+        onOpenChange={setUploadDrawerOpen}
+        onUploadComplete={() => {
+          // Reload markers after upload
+          // In production, you would fetch from API
+          console.log('Upload completed, reloading markers...')
+        }}
+      />
 
       {/* Generic Map component */}
       <m.div

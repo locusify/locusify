@@ -43,7 +43,9 @@
       "WebFetch(domain:evanw.github.io)",
       "WebFetch(domain:bootstrapped.app)",
       "Bash(git mv:*)",
-      "WebFetch(domain:motion.dev)"
+      "WebFetch(domain:motion.dev)",
+      "Bash(xcopy:*)",
+      "Bash(del \"D:\\self-code\\locusify\\apps\\web\\src\\lib\\exif.browser.ts\")"
     ],
     "deny": [],
     "ask": [],

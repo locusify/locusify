@@ -6,7 +6,6 @@ import { ErrorElement } from '@/pages/error/ErrorElement'
 import Explore from '@/pages/explore'
 import { Map } from '@/pages/map'
 import SplashScreen from '@/pages/splashScreen/page'
-import Workspace from '@/pages/workspace'
 
 /** Routes */
 export const routes: RouteObject[] = [
@@ -22,10 +21,6 @@ export const routes: RouteObject[] = [
       {
         path: '/explore',
         element: <Explore />,
-      },
-      {
-        path: '/workspace',
-        element: <Workspace />,
       },
       {
         path: '/map',

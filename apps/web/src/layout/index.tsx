@@ -7,7 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 const Layout: FC = () => {
   return (
     <ProtectedRoute>
-      <div className="h-dvh flex flex-col overflow-hidden">
+      <div className="h-dvh flex flex-col">
         <Suspense fallback={<Spinner />}>
           <Outlet />
         </Suspense>

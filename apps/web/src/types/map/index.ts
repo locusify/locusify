@@ -147,17 +147,15 @@ export interface PickedExif {
   Flash?: string
 
   // 焦距相关
-  FocalLength?: string
-  FocalLengthIn35mmFormat?: string
+  FocalLength?: string | number
+  FocalLengthIn35mmFormat?: string | number
 
   // 镜头相关
-
   LensMake?: string
   LensModel?: string
 
   // 颜色和拍摄模式
   ColorSpace?: string
-
   ExposureMode?: string
   SceneCaptureType?: string
 
@@ -167,30 +165,37 @@ export interface PickedExif {
   ShutterSpeed?: string | number
   LightValue?: number
 
-  // 日期时间（处理后的 ISO 格式）
-  DateTimeOriginal?: string
-  DateTimeDigitized?: string
+  // 日期时间（处理后的 ISO 格式或 Date 对象）
+  DateTimeOriginal?: string | Date
+  DateTimeDigitized?: string | Date
+  CreateDate?: string | Date
 
   // 图像尺寸
   ImageWidth?: number
   ImageHeight?: number
 
-  MeteringMode: Tags['MeteringMode']
-  WhiteBalance: Tags['WhiteBalance']
-  WBShiftAB: Tags['WBShiftAB']
-  WBShiftGM: Tags['WBShiftGM']
-  WhiteBalanceBias: Tags['WhiteBalanceBias']
+  // GPS coordinates (exifr processed fields - decimal degrees)
+  latitude?: number
+  longitude?: number
+  altitude?: number
 
-  FlashMeteringMode: Tags['FlashMeteringMode']
-  SensingMethod: Tags['SensingMethod']
-  FocalPlaneXResolution: Tags['FocalPlaneXResolution']
-  FocalPlaneYResolution: Tags['FocalPlaneYResolution']
-  GPSAltitude: Tags['GPSAltitude']
-  GPSLatitude: Tags['GPSLatitude']
-  GPSLongitude: Tags['GPSLongitude']
-  GPSAltitudeRef: Tags['GPSAltitudeRef']
-  GPSLatitudeRef: Tags['GPSLatitudeRef']
-  GPSLongitudeRef: Tags['GPSLongitudeRef']
+  // GPS 原始字段 (支持 exiftool-vendored Tags 类型)
+  MeteringMode?: Tags['MeteringMode']
+  WhiteBalance?: Tags['WhiteBalance']
+  WBShiftAB?: Tags['WBShiftAB']
+  WBShiftGM?: Tags['WBShiftGM']
+  WhiteBalanceBias?: Tags['WhiteBalanceBias']
+
+  FlashMeteringMode?: Tags['FlashMeteringMode']
+  SensingMethod?: Tags['SensingMethod']
+  FocalPlaneXResolution?: Tags['FocalPlaneXResolution']
+  FocalPlaneYResolution?: Tags['FocalPlaneYResolution']
+  GPSAltitude?: Tags['GPSAltitude']
+  GPSLatitude?: Tags['GPSLatitude']
+  GPSLongitude?: Tags['GPSLongitude']
+  GPSAltitudeRef?: Tags['GPSAltitudeRef']
+  GPSLatitudeRef?: Tags['GPSLatitudeRef']
+  GPSLongitudeRef?: Tags['GPSLongitudeRef']
 
   // 富士胶片配方
   FujiRecipe?: FujiRecipe
