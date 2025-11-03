@@ -1,19 +1,18 @@
 import type { FC } from 'react'
-import { APILoader } from '@uiw/react-amap-api-loader'
-import { Map } from '@uiw/react-amap-map'
-import { Marker } from '@uiw/react-amap-marker'
-import { Polyline } from '@uiw/react-amap-polyline'
+import type { MapRef } from 'react-map-gl/maplibre'
 import { AlertCircle, Pause, Play, RotateCcw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import Map, { Layer, Marker, Source } from 'react-map-gl/maplibre'
 import logoUrl from '@/assets/locusify.png'
 import { Button } from '@/components/ui/button'
-import { env } from '@/lib/env'
 import { useWorkspaceStore } from '../useWorkspaceStore'
 import { StepNavigation } from './StepNavigation'
+
 /**
  * 轨迹回放组件
  * 在地图上回放用户上传照片的GPS轨迹，支持播放控制
+ * 使用 MapLibre GL
  */
 export const TrajectoryReplayStep: FC = () => {
   const { t } = useTranslation()
@@ -25,11 +24,11 @@ export const TrajectoryReplayStep: FC = () => {
   /** 动画是否正在播放 */
   const [isPlaying, setIsPlaying] = useState(false)
 
-  /** 地图标记点引用 - 用于控制移动动画 */
-  const markerRef = useRef<AMap.Marker | null>(null)
-
   /** 地图实例引用 */
-  const mapRef = useRef<AMap.Map | null>(null)
+  const mapRef = useRef<MapRef>(null)
+
+  /** 动画定时器引用 */
+  const animationTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   /**
    * 从GPS数据生成轨迹信息
@@ -41,7 +40,7 @@ export const TrajectoryReplayStep: FC = () => {
       .filter(d => d.hasValidGps && d.gps)
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
 
-    /** 轨迹坐标数组 [经度, 纬度] */
+    /** 轨迹坐标数组 [经度, 纬度] - GeoJSON格式 */
     const trajectory: [number, number][] = validGpsData.map(d => [
       d.gps!.longitude,
       d.gps!.latitude,
@@ -65,6 +64,13 @@ export const TrajectoryReplayStep: FC = () => {
    * 根据轨迹的边界框自动计算合适的地图视图
    */
   const mapConfig = useMemo(() => {
+    if (trajectory.length === 0) {
+      return {
+        center: [0, 0] as [number, number],
+        zoom: 2,
+      }
+    }
+
     /** 提取所有纬度坐标 */
     const lats = trajectory.map(([_, lat]) => lat)
     /** 提取所有经度坐标 */
@@ -116,95 +122,106 @@ export const TrajectoryReplayStep: FC = () => {
    * 如果当前索引无效，则使用默认logo
    */
   const currentPhotoUrl = useMemo(() => {
-    return waypoints[currentPhotoIndex].photoUrl || logoUrl
+    return waypoints[currentPhotoIndex]?.photoUrl || logoUrl
   }, [waypoints, currentPhotoIndex])
 
   /**
-   * 播放到下一个照片点
-   * 使用串行的方式逐段播放轨迹，确保 currentPhotoIndex 正确更新
+   * 当前标记位置
    */
-  const playToNextPoint = useCallback((fromIndex: number) => {
-    const marker = markerRef.current
-    if (!marker || fromIndex >= trajectory.length - 1) {
+  const currentPosition = useMemo(() => {
+    return trajectory[currentPhotoIndex]
+  }, [trajectory, currentPhotoIndex])
+
+  /**
+   * GeoJSON格式的轨迹线数据
+   */
+  const trajectoryGeoJSON = useMemo(() => {
+    return {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'LineString' as const,
+        coordinates: trajectory,
+      },
+    }
+  }, [trajectory])
+
+  /**
+   * 清理动画定时器
+   */
+  const clearAnimationTimer = useCallback(() => {
+    if (animationTimerRef.current) {
+      clearTimeout(animationTimerRef.current)
+      animationTimerRef.current = null
+    }
+  }, [])
+
+  /**
+   * 播放到下一个照片点
+   */
+  const playToNextPoint = useCallback(() => {
+    if (currentPhotoIndex >= trajectory.length - 1) {
       // 到达终点，停止播放
       setIsPlaying(false)
+      clearAnimationTimer()
       return
     }
-
-    const nextIndex = fromIndex + 1
-    const segment = [trajectory[fromIndex], trajectory[nextIndex]]
 
     /** 每段移动的时长（毫秒） */
     const segmentDuration = 2000 // 2秒
 
-    // 移动到下一个点
-    marker.moveAlong(segment, {
-      duration: segmentDuration,
-      autoRotation: false,
-    })
-
-    // 使用定时器在移动完成后更新索引并继续播放
-    setTimeout(() => {
-      // 更新当前照片索引
-      setCurrentPhotoIndex(nextIndex)
-
-      // 继续播放下一段
-      playToNextPoint(nextIndex)
+    // 设置定时器移动到下一个点
+    animationTimerRef.current = setTimeout(() => {
+      setCurrentPhotoIndex(prev => prev + 1)
     }, segmentDuration)
-  }, [trajectory])
+  }, [currentPhotoIndex, trajectory.length, clearAnimationTimer])
+
+  /**
+   * 监听播放状态和索引变化
+   */
+  useEffect(() => {
+    if (isPlaying) {
+      playToNextPoint()
+    }
+    return () => {
+      clearAnimationTimer()
+    }
+  }, [isPlaying, currentPhotoIndex, playToNextPoint, clearAnimationTimer])
 
   /**
    * 开始动画播放
-   * 支持从头播放和从当前位置继续播放
    */
   const startAnimation = useCallback(() => {
-    const marker = markerRef.current
-    if (!marker || isPlaying)
+    if (isPlaying)
       return
-
     setIsPlaying(true)
-    // 从当前索引开始播放
-    playToNextPoint(currentPhotoIndex)
-  }, [isPlaying, currentPhotoIndex, playToNextPoint])
+  }, [isPlaying])
 
   /**
    * 暂停动画播放
    */
   const pauseAnimation = useCallback(() => {
-    const marker = markerRef.current
-    if (!marker)
-      return
-
-    marker.pauseMove()
     setIsPlaying(false)
-  }, [])
+    clearAnimationTimer()
+  }, [clearAnimationTimer])
 
   /**
    * 重置动画到初始状态
-   * 停止播放并将标记移回起点
    */
   const resetAnimation = useCallback(() => {
-    const marker = markerRef.current
-    if (!marker || trajectory.length === 0)
-      return
-
-    marker.stopMove()
     setIsPlaying(false)
-    marker.setPosition(trajectory[0])
+    clearAnimationTimer()
     setCurrentPhotoIndex(0)
-  }, [trajectory])
+  }, [clearAnimationTimer])
 
   /**
    * 组件卸载时清理动画
    */
   useEffect(() => {
     return () => {
-      const marker = markerRef.current
-      if (marker) {
-        marker.stopMove()
-      }
+      clearAnimationTimer()
     }
-  }, [])
+  }, [clearAnimationTimer])
 
   // No GPS data case
   if (trajectory.length < 2) {
@@ -216,16 +233,16 @@ export const TrajectoryReplayStep: FC = () => {
               defaultValue: 'Trajectory Replay',
             })}
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="mt-1 text-sm text-gray-600">
             {t('workspace.replay.description', {
               defaultValue: 'View and replay your journey on the map.',
             })}
           </p>
         </div>
 
-        <div className="p-8 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-          <AlertCircle className="size-12 text-yellow-600 mx-auto mb-3" />
-          <p className="text-sm font-medium text-yellow-900 mb-1">
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-8 text-center">
+          <AlertCircle className="mx-auto mb-3 size-12 text-yellow-600" />
+          <p className="mb-1 text-sm font-medium text-yellow-900">
             {t('workspace.replay.noData', {
               defaultValue: 'No trajectory data available',
             })}
@@ -244,91 +261,85 @@ export const TrajectoryReplayStep: FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {/* Map Container */}
       <div
-        className="flex-1 relative rounded-lg overflow-hidden border border-gray-200 shadow-sm"
+        className="relative flex-1 overflow-hidden rounded-lg border border-gray-200 shadow-sm"
         style={{ minHeight: '400px' }}
       >
-        <APILoader
-          akey={env.AMAP_KEY}
-          version="2.0"
-          plugins={['AMap.MoveAnimation']}
+        <Map
+          ref={mapRef}
+          initialViewState={{
+            longitude: mapConfig.center[0],
+            latitude: mapConfig.center[1],
+            zoom: mapConfig.zoom,
+          }}
+          style={{ width: '100%', height: '100%' }}
+          mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         >
-          <Map
-            ref={(instance) => {
-              // 从 react-amap 包装的实例中获取原生 AMap.Map
-              if (instance?.map) {
-                mapRef.current = instance.map
-              }
-            }}
-            center={mapConfig.center}
-            zoom={mapConfig.zoom}
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            {/* Polyline showing the full trajectory */}
-            <Polyline
-              path={trajectory}
-              strokeColor="#1677ff"
-              strokeWeight={4}
-              strokeOpacity={0.6}
+          {/* Trajectory Line */}
+          <Source id="trajectory" type="geojson" data={trajectoryGeoJSON}>
+            <Layer
+              id="trajectory-line"
+              type="line"
+              paint={{
+                'line-color': '#1677ff',
+                'line-width': 4,
+                'line-opacity': 0.6,
+              }}
             />
+          </Source>
 
-            {/* Moving marker with photo - position is managed by moveAlong API */}
-            {currentPhotoUrl && (
-              <Marker
-                key="current-position-marker"
-                ref={(instance) => {
-                  // 从 react-amap 包装的实例中获取原生 AMap.Marker
-                  if (instance?.marker) {
-                    markerRef.current = instance.marker
-                  }
-                }}
-                position={trajectory[currentPhotoIndex]}
-                anchor="center"
-              >
-                <div className="size-24 md:size-32 rounded-2xl shadow-2xl ring-4 ring-black/10">
-                  <img
-                    src={currentPhotoUrl}
-                    className="size-full object-cover rounded-xl"
-                    alt="Current position"
-                  />
-                </div>
-              </Marker>
-            )}
-
-            {/* End marker */}
+          {/* Current Position Marker with Photo */}
+          {currentPosition && currentPhotoUrl && (
             <Marker
-              position={trajectory.at(-1)}
+              longitude={currentPosition[0]}
+              latitude={currentPosition[1]}
               anchor="center"
-              icon="https://webapi.amap.com/theme/v1.3/markers/n/end.png"
-            />
-          </Map>
-        </APILoader>
+            >
+              <div className="size-24 rounded-2xl shadow-2xl ring-4 ring-black/10 md:size-32">
+                <img
+                  src={currentPhotoUrl}
+                  className="size-full rounded-xl object-cover"
+                  alt="Current position"
+                />
+              </div>
+            </Marker>
+          )}
+
+          {/* End Point Marker */}
+          {trajectory.length > 0 && (
+            <Marker
+              longitude={trajectory[trajectory.length - 1][0]}
+              latitude={trajectory[trajectory.length - 1][1]}
+              anchor="center"
+            >
+              <div className="flex size-8 items-center justify-center rounded-full bg-red-500 text-white shadow-lg">
+                <span className="text-sm font-bold">🏁</span>
+              </div>
+            </Marker>
+          )}
+        </Map>
 
         {/* Progress indicator */}
-        <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-2 py-2 md:px-4 md:py-3 text-sm max-w-[160px] md:max-w-xs">
-          <div className="font-semibold text-gray-900 text-xs md:text-base">
+        <div className="absolute left-2 top-2 max-w-[160px] rounded-lg bg-white/95 px-2 py-2 shadow-lg backdrop-blur-sm md:left-4 md:top-4 md:max-w-xs md:px-4 md:py-3">
+          <div className="text-xs font-semibold text-gray-900 md:text-base">
             {t('workspace.replay.progress', {
               defaultValue: 'Progress: {{current}} / {{total}}',
               current: currentPhotoIndex + 1,
               total: trajectory.length,
             })}
           </div>
-          <div className="mt-1.5 md:mt-2 bg-gray-200 rounded-full h-1.5 md:h-2 w-28 md:w-40">
+          <div className="mt-1.5 h-1.5 w-28 rounded-full bg-gray-200 md:mt-2 md:h-2 md:w-40">
             <div
-              className="bg-primary h-1.5 md:h-2 rounded-full transition-all duration-300"
+              className="h-1.5 rounded-full bg-primary transition-all duration-300 md:h-2"
               style={{
-                width: `${(currentPhotoIndex / (trajectory.length - 1)) * 100
-                }%`,
+                width: `${(currentPhotoIndex / (trajectory.length - 1)) * 100}%`,
               }}
             />
           </div>
           {validGpsData[currentPhotoIndex]?.locationName && (
-            <p className="text-[10px] md:text-xs text-gray-600 mt-1 md:mt-2 truncate">
+            <p className="mt-1 truncate text-[10px] text-gray-600 md:mt-2 md:text-xs">
               📍
               {validGpsData[currentPhotoIndex].locationName}
             </p>
@@ -336,8 +347,8 @@ export const TrajectoryReplayStep: FC = () => {
         </div>
 
         {/* Photo count indicator */}
-        <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg px-2 py-2 md:px-4 md:py-3">
-          <div className="text-gray-700 font-medium text-xs md:text-sm">
+        <div className="absolute right-2 top-2 rounded-lg bg-white/95 px-2 py-2 shadow-lg backdrop-blur-sm md:right-4 md:top-4 md:px-4 md:py-3">
+          <div className="text-xs font-medium text-gray-700 md:text-sm">
             📸
             {t('workspace.replay.photoCount', {
               defaultValue: '{{count}} Photos',
@@ -350,7 +361,7 @@ export const TrajectoryReplayStep: FC = () => {
       {/* Control Panel and Navigation - Fixed at bottom */}
       <div className="mt-3 space-y-3">
         {/* Control Panel */}
-        <div className="bg-white border border-gray-200 rounded-lg px-4 py-3">
+        <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
           <div className="flex items-center justify-center gap-3">
             {/* Playback controls */}
             {isPlaying

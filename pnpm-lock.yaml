@@ -68,18 +68,6 @@ importers:
       '@types/node':
         specifier: ^24.5.1
         version: 24.5.1
-      '@uiw/react-amap-api-loader':
-        specifier: ^7.1.13
-        version: 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@uiw/react-amap-map':
-        specifier: ^7.1.13
-        version: 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@uiw/react-amap-marker':
-        specifier: ^7.1.13
-        version: 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@uiw/react-amap-polyline':
-        specifier: ^7.1.13
-        version: 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -144,9 +132,6 @@ importers:
         specifier: ^5.0.8
         version: 5.0.8(@types/react@19.2.2)(react@19.2.0)
     devDependencies:
-      '@amap/amap-jsapi-types':
-        specifier: ^0.0.15
-        version: 0.0.15
       '@egoist/tailwindcss-icons':
         specifier: ^1.9.0
         version: 1.9.0(tailwindcss@4.1.13)
@@ -200,12 +185,6 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.5.1)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)(yaml@2.8.1)
 
 packages:
-
-  '@amap/amap-jsapi-loader@1.0.1':
-    resolution: {integrity: sha512-nPyLKt7Ow/ThHLkSvn2etQlUzqxmTVgK7bIgwdBRTg2HK5668oN7xVxkaiRe3YZEzGzfV2XgH5Jmu2T73ljejw==}
-
-  '@amap/amap-jsapi-types@0.0.15':
-    resolution: {integrity: sha512-oqyRqHpVDZh5bUe2mAJh41ZsziSj0eUzwcfIbiaBNB0eiTJnZNhKsTdk77VOklOjwuwNfsblpKW9LjmWNpeQ7A==}
 
   '@antfu/eslint-config@5.3.0':
     resolution: {integrity: sha512-VzBemSi453rd06lF6gG6VkpP3HH7XKTf+sK6frSrGm7uMFkN57jry1XB074tQRKB3qOjhpsx3kKpWtOv9e5FnQ==}
@@ -1621,48 +1600,6 @@ packages:
   '@typescript-eslint/visitor-keys@8.43.0':
     resolution: {integrity: sha512-T+S1KqRD4sg/bHfLwrpF/K3gQLBM1n7Rp7OjjikjTEssI2YJzQpi5WXoynOaQ93ERIuq3O8RBTOUYDKszUCEHw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@uiw/react-amap-api-loader@7.1.13':
-    resolution: {integrity: sha512-cniEV6MgjRcwQePmoXuquf/T6slY0KJmcMzZHnJjEof7J7PbeKpDmdAOUZqzfhe944cRL6F7TJQs8KuXedA9AA==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-
-  '@uiw/react-amap-map@7.1.13':
-    resolution: {integrity: sha512-7Nv81xBk0ROAf96fzDCwFr8Jeiv7dmzy4POX+gxX0zULUTo0bspexdqo4CZFFTTZVivgPSF5/KqSjEhpXfIB1Q==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-
-  '@uiw/react-amap-marker@7.1.13':
-    resolution: {integrity: sha512-6HYUH+shBjQTEYCcOnhIXkJznBXskkKaiymBHkIZx8G9PuJZn8svmhs0EWk4/Ls/GeeC8dJDWqjjv/RoYT8QsA==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-
-  '@uiw/react-amap-polyline@7.1.13':
-    resolution: {integrity: sha512-fCVWvSD7gJX0v7vCuL4T/bVkwc57vvMqzh5q7GV6Qg4NH+FfXB6CmGN75y3WvG9JQG0QghZzgVLerMKN6mUh/w==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-
-  '@uiw/react-amap-require-script@7.1.13':
-    resolution: {integrity: sha512-k472etDGCXIejJf4mOuo6Yj72Oep5Pmkk51RlI8NJeBBLGCD83QBWFm3xPnGLZcdgdxtsVjfHqro3fI6HPmlOw==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-
-  '@uiw/react-amap-types@7.1.13':
-    resolution: {integrity: sha512-sIvxzLsIjPalELTPuW28HseaCsY9n63+4o9CC9twoNFIdA7eyVn5c9Iv6dDGKhZDaG7kIeRqrZrOWfEycsJ7xw==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
-
-  '@uiw/react-amap-utils@7.1.13':
-    resolution: {integrity: sha512-7sgw93XGNjuT9Rm9L/SBBWqdoL2MqxYg/5yEjENYEw5sy+GHFP2wu+DLyt1zVmKSpaZeEu4A0ufqgV21FHirzA==}
-    peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
 
   '@vis.gl/react-mapbox@8.1.0':
     resolution: {integrity: sha512-FwvH822oxEjWYOr+pP2L8hpv+7cZB2UsQbHHHT0ryrkvvqzmTgt7qHDhamv0EobKw86e1I+B4ojENdJ5G5BkyQ==}
@@ -4461,10 +4398,6 @@ packages:
 
 snapshots:
 
-  '@amap/amap-jsapi-loader@1.0.1': {}
-
-  '@amap/amap-jsapi-types@0.0.15': {}
-
   '@antfu/eslint-config@5.3.0(@next/eslint-plugin-next@15.5.4)(@vue/compiler-sfc@3.5.21)(eslint-plugin-jsx-a11y@6.10.2(eslint@9.35.0(jiti@2.6.1)))(eslint-plugin-react-hooks@5.2.0(eslint@9.35.0(jiti@2.6.1)))(eslint@9.35.0(jiti@2.6.1))(typescript@5.9.2)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.5.1)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@antfu/install-pkg': 1.1.0
@@ -5826,52 +5759,6 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.43.0
       eslint-visitor-keys: 4.2.1
-
-  '@uiw/react-amap-api-loader@7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@amap/amap-jsapi-loader': 1.0.1
-      '@uiw/react-amap-require-script': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@uiw/react-amap-types': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
-  '@uiw/react-amap-map@7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@uiw/react-amap-types': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@uiw/react-amap-utils': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
-  '@uiw/react-amap-marker@7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@uiw/react-amap-map': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@uiw/react-amap-utils': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
-  '@uiw/react-amap-polyline@7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@uiw/react-amap-map': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@uiw/react-amap-utils': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
-  '@uiw/react-amap-require-script@7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@uiw/react-amap-types': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
-  '@uiw/react-amap-types@7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-
-  '@uiw/react-amap-utils@7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
-    dependencies:
-      '@uiw/react-amap-types': 7.1.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
 
   '@vis.gl/react-mapbox@8.1.0(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
