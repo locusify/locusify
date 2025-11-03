@@ -87,7 +87,7 @@ export function ClusterMarker({
                           }
                           alt={photoMarker.photo.title || photoMarker.photo.id}
                           thumbHash={photoMarker.photo.thumbHash}
-                          className="h-full w-full object-cover"
+                          className="size-full object-cover"
                           rootMargin="100px"
                           threshold={0.1}
                         />

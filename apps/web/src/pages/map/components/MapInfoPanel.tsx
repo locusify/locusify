@@ -42,7 +42,7 @@ export const MapInfoPanel: FC<MapInfoPanelProps> = ({ markersCount, bounds }) =>
             transition={{ duration: 0.3, delay: 0.3 }}
           >
             {/* Icon container with enhanced styling */}
-            <div className="bg-blue/10 ring-blue/20 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ring-1 ring-inset">
+            <div className="bg-blue/10 ring-blue/20 flex size-11 flex-shrink-0 items-center justify-center rounded-xl ring-1 ring-inset">
               <i className="i-mingcute-map-line text-blue text-lg" />
             </div>
 
@@ -67,7 +67,7 @@ export const MapInfoPanel: FC<MapInfoPanelProps> = ({ markersCount, bounds }) =>
               </div>
               <div className="mt-1.5 flex items-center gap-2">
                 <div className="bg-green/10 ring-green/20 flex items-center gap-1.5 rounded-full px-2.5 py-1 ring-1 ring-inset">
-                  <div className="bg-green h-1.5 w-1.5 rounded-full" />
+                  <div className="bg-green size-1.5 rounded-full" />
                   <span className="text-text-secondary text-xs font-medium">
                     {t('explory.found.locations', { count: markersCount })}
                   </span>

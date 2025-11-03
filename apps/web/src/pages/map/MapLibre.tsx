@@ -1,6 +1,7 @@
-import type { StyleSpecification } from 'react-map-gl/maplibre'
-import type { PhotoMarker } from '@/types/map'
+import type { CSSProperties, RefObject } from 'react'
+import type { MapLayerMouseEvent, StyleSpecification } from 'react-map-gl/maplibre'
 
+import type { PhotoMarker } from '@/types/map'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
 
@@ -40,12 +41,12 @@ export interface PureMaplibreProps {
   selectedMarkerId?: string | null
   geoJsonData?: GeoJSON.FeatureCollection
   onMarkerClick?: (marker: PhotoMarker) => void
-  onGeoJsonClick?: (event: any) => void
+  onGeoJsonClick?: (event: MapLayerMouseEvent) => void
   onGeolocate?: (longitude: number, latitude: number) => void
   onClusterClick?: (longitude: number, latitude: number) => void
   className?: string
-  style?: React.CSSProperties
-  mapRef?: React.RefObject<any>
+  style?: CSSProperties
+  mapRef?: RefObject<any>
   autoFitBounds?: boolean
 }
 

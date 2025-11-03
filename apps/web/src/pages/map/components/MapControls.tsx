@@ -70,7 +70,7 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
         <button
           type="button"
           onClick={handleZoomIn}
-          className="group hover:bg-fill-secondary active:bg-fill-tertiary flex h-12 w-12 items-center justify-center transition-colors"
+          className="group hover:bg-fill-secondary active:bg-fill-tertiary flex size-12 items-center justify-center transition-colors"
           title={t('explory.controls.zoom.in')}
         >
           <i className="i-mingcute-add-line text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
@@ -83,7 +83,7 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
         <button
           type="button"
           onClick={handleZoomOut}
-          className="group hover:bg-fill-secondary active:bg-fill-tertiary flex h-12 w-12 items-center justify-center transition-colors"
+          className="group hover:bg-fill-secondary active:bg-fill-tertiary flex size-12 items-center justify-center transition-colors"
           title={t('explory.controls.zoom.out')}
         >
           <i className="i-mingcute-minimize-line text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
@@ -95,7 +95,7 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
         <button
           type="button"
           onClick={handleCompass}
-          className="group hover:bg-fill-secondary active:bg-fill-tertiary flex h-12 w-12 items-center justify-center transition-colors"
+          className="group hover:bg-fill-secondary active:bg-fill-tertiary flex size-12 items-center justify-center transition-colors"
           title={t('explory.controls.compass')}
         >
           <i className="i-mingcute-navigation-line text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
@@ -107,7 +107,7 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
         <button
           type="button"
           onClick={handleGeolocate}
-          className="group hover:bg-fill-secondary active:bg-fill-tertiary flex h-12 w-12 items-center justify-center transition-colors"
+          className="group hover:bg-fill-secondary active:bg-fill-tertiary flex size-12 items-center justify-center transition-colors"
           title={t('explory.controls.locate')}
         >
           <i className="i-mingcute-location-fill text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />

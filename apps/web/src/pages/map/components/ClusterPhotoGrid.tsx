@@ -53,7 +53,7 @@ export function ClusterPhotoGrid({
                 e.stopPropagation()
                 onPhotoClick?.(photoMarker)
               }}
-              className="block h-full w-full"
+              className="block size-full"
             >
               <LazyImage
                 src={
@@ -62,7 +62,7 @@ export function ClusterPhotoGrid({
                 }
                 alt={photoMarker.photo.title || photoMarker.photo.id}
                 thumbHash={photoMarker.photo.thumbHash}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                className="size-full object-cover transition-transform duration-300 group-hover:scale-110"
                 rootMargin="200px"
                 threshold={0.1}
               />
@@ -74,7 +74,7 @@ export function ClusterPhotoGrid({
               <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                 <div className="rounded-full bg-black/50 p-2 backdrop-blur-sm">
                   <svg
-                    className="h-4 w-4 text-white"
+                    className="size-4 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

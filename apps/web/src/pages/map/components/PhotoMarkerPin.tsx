@@ -5,6 +5,7 @@ import { Marker } from 'react-map-gl/maplibre'
 import { Link } from 'react-router'
 import { GlassButton } from '@/components/ui/glass-button'
 import { LazyImage } from '@/components/ui/lazy-image'
+import { cn } from '@/lib/utils'
 
 interface PhotoMarkerPinProps {
   marker: PhotoMarker
@@ -74,20 +75,16 @@ export function PhotoMarkerPin({
 
             {/* Main marker container */}
             <div
-              className={`relative flex h-10 w-10 items-center justify-center rounded-full border shadow-lg backdrop-blur-md transition-all duration-300 hover:shadow-xl ${
-                isSelected
-                  ? 'border-blue/40 bg-blue/90 shadow-blue/50 dark:border-blue/30 dark:bg-blue/80'
-                  : 'border-white/40 bg-white/95 hover:bg-white dark:border-white/20 dark:bg-black/80 dark:hover:bg-black/90'
-              }`}
+              className={cn('relative flex size-10 items-center justify-center rounded-full border shadow-lg backdrop-blur-md transition-all duration-300 hover:shadow-xl', isSelected
+                ? 'border-blue/40 bg-blue/90 shadow-blue/50 dark:border-blue/30 dark:bg-blue/80'
+                : 'border-white/40 bg-white/95 hover:bg-white dark:border-white/20 dark:bg-black/80 dark:hover:bg-black/90')}
             >
               {/* Glass morphism overlay */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 to-white/10 dark:from-white/20 dark:to-white/5" />
 
               {/* Camera icon */}
               <i
-                className={`i-mingcute-camera-line relative z-10 text-lg drop-shadow-sm ${
-                  isSelected ? 'text-white' : 'text-gray-700 dark:text-white'
-                }`}
+                className={cn('i-mingcute-camera-line relative z-10 text-lg drop-shadow-sm', isSelected ? 'text-white' : 'text-gray-700 dark:text-white')}
               />
 
               {/* Subtle inner shadow for depth */}
@@ -97,9 +94,7 @@ export function PhotoMarkerPin({
         </HoverCardTrigger>
 
         <HoverCardContent
-          className={`w-80 overflow-hidden border-white/20 bg-white/95 p-0 backdrop-blur-[120px] dark:bg-black/95 ${
-            isSelected ? 'shadow-2xl' : ''
-          }`}
+          className={cn('w-80 overflow-hidden border-white/20 bg-white/95 p-0 backdrop-blur-[120px] dark:bg-black/95', isSelected ? 'shadow-2xl' : '')}
           side="top"
           align="center"
           sideOffset={8}
