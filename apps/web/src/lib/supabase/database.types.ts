@@ -61,53 +61,39 @@ export interface Database {
           created_at: string
           file_name: string
           id: string
-          journey_id: string
           latitude: number | null
           longitude: number | null
           metadata: Json | null
           storage_bucket: string
           storage_path: string
           taken_at: string | null
-          updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           file_name: string
           id?: string
-          journey_id: string
           latitude?: number | null
           longitude?: number | null
           metadata?: Json | null
           storage_bucket?: string
           storage_path: string
           taken_at?: string | null
-          updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           file_name?: string
           id?: string
-          journey_id?: string
           latitude?: number | null
           longitude?: number | null
           metadata?: Json | null
           storage_bucket?: string
           storage_path?: string
           taken_at?: string | null
-          updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: 'photo_journey_id_fkey'
-            columns: ['journey_id']
-            isOneToOne: false
-            referencedRelation: 'journey'
-            referencedColumns: ['id']
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {

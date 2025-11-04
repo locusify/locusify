@@ -34,50 +34,49 @@ export const MapInfoPanel: FC<MapInfoPanelProps> = ({ markersCount, bounds }) =>
     >
       <div className="bg-material-thick border-fill-tertiary rounded-2xl border shadow-2xl backdrop-blur-[120px]">
         {/* Header Section */}
-        <div className="p-5">
-          <m.div
-            className="flex items-center gap-4"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
-          >
-            {/* Icon container with enhanced styling */}
-            <div className="bg-blue/10 ring-blue/20 flex size-11 flex-shrink-0 items-center justify-center rounded-xl ring-1 ring-inset">
-              <i className="i-mingcute-map-line text-blue text-lg" />
-            </div>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between">
-                <h1 className="text-text text-lg leading-tight font-semibold tracking-tight">
-                  {t('explory.explore.map', {
-                    defaultValue: 'Explore Map',
-                  })}
-                </h1>
-                {/* Collapse/Expand Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="bg-fill-secondary/50 ring-fill-tertiary/20 hover:bg-fill-tertiary relative -top-2 -mb-2 flex size-8 flex-shrink-0 items-center justify-center rounded-xl ring-1 transition-all duration-200 ring-inset"
-                  aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                >
-                  <m.i
-                    className="i-mingcute-down-line text-text-secondary text-base"
-                    animate={{ rotate: isExpanded ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  />
-                </button>
-              </div>
-              <div className="mt-1.5 flex items-center gap-2">
-                <div className="bg-green/10 ring-green/20 flex items-center gap-1.5 rounded-full px-2.5 py-1 ring-1 ring-inset">
-                  <div className="bg-green size-1.5 rounded-full" />
-                  <span className="text-text-secondary text-xs font-medium">
-                    {t('explory.found.locations', { count: markersCount })}
-                  </span>
-                </div>
+        <m.div
+          className="flex items-center gap-4 p-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+        >
+          {/* Icon container with enhanced styling */}
+          <div className="bg-blue/10 ring-blue/20 flex size-11 flex-shrink-0 items-center justify-center rounded-xl ring-1 ring-inset">
+            <i className="i-mingcute-map-line text-blue text-lg" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between">
+              <h1 className="text-text text-lg leading-tight font-semibold tracking-tight">
+                {t('explory.explore.map', {
+                  defaultValue: 'Explore Map',
+                })}
+              </h1>
+              {/* Collapse/Expand Button */}
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="bg-fill-secondary/50 ring-fill-tertiary/20 hover:bg-fill-tertiary relative -top-2 -mb-2 flex size-8 flex-shrink-0 items-center justify-center rounded-xl ring-1 transition-all duration-200 ring-inset"
+                aria-label={isExpanded ? 'Collapse' : 'Expand'}
+              >
+                <m.i
+                  className="i-mingcute-down-line text-text-secondary text-base"
+                  animate={{ rotate: isExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </button>
+            </div>
+            <div className="mt-1.5 flex items-center gap-2">
+              <div className="bg-green/10 ring-green/20 flex items-center gap-1.5 rounded-full px-2.5 py-1 ring-1 ring-inset">
+                <div className="bg-green size-1.5 rounded-full" />
+                <span className="text-text-secondary text-xs font-medium">
+                  {t('explory.found.locations', { count: markersCount })}
+                </span>
               </div>
             </div>
-          </m.div>
-        </div>
+          </div>
+        </m.div>
 
         {/* Coordinates Section - Collapsible */}
         <m.div
