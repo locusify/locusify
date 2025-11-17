@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   FieldDescription,
@@ -38,6 +39,8 @@ export function SignupForm({
   showTitle = true,
   ...props
 }: SignupFormProps) {
+  const { t } = useTranslation()
+
   /** 加载状态 */
   const [loading, setLoading] = useState(false)
   /** 错误状态 */
@@ -103,7 +106,7 @@ export function SignupForm({
         }
 
         /** 显示邮箱验证消息 */
-        const message = `Verification email sent to ${values.email}. Please check your inbox and verify your email to continue.`
+        const message = t('auth.signup.success.message', { email: values.email })
         console.log('Email verification required:', message)
         setSuccessMessage(message)
 
@@ -130,9 +133,9 @@ export function SignupForm({
         <FieldGroup>
           {showTitle && (
             <div className="flex flex-col items-center gap-1 text-center">
-              <h1 className="text-2xl font-bold">Create an account</h1>
+              <h1 className="text-2xl font-bold">{t('auth.signup.title')}</h1>
               <p className="text-muted-foreground text-sm text-balance">
-                Enter your information to get started
+                {t('auth.signup.description')}
               </p>
             </div>
           )}
@@ -154,12 +157,12 @@ export function SignupForm({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t('auth.signup.email.label')}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     autoComplete="email"
-                    placeholder="example@example.com"
+                    placeholder={t('auth.signup.email.placeholder')}
                     disabled={isFormDisabled}
                     {...field}
                   />
@@ -174,12 +177,12 @@ export function SignupForm({
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{t('auth.signup.password.label')}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
+                      placeholder={t('auth.signup.password.placeholder')}
                       autoComplete="password"
                       disabled={isFormDisabled}
                       {...field}
@@ -200,13 +203,13 @@ export function SignupForm({
                             <Eye className="size-4" />
                           )}
                       <span className="sr-only">
-                        {showPassword ? 'Hide password' : 'Show password'}
+                        {showPassword ? t('auth.signup.password.hide') : t('auth.signup.password.show')}
                       </span>
                     </Button>
                   </div>
                 </FormControl>
                 <FormDescription>
-                  At least 8 characters with uppercase, lowercase, and numbers
+                  {t('auth.signup.password.hint')}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -218,12 +221,12 @@ export function SignupForm({
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
+                <FormLabel>{t('auth.signup.confirmPassword.label')}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
+                      placeholder={t('auth.signup.confirmPassword.placeholder')}
                       autoComplete="confirm-password"
                       disabled={isFormDisabled}
                       {...field}
@@ -244,7 +247,7 @@ export function SignupForm({
                             <Eye className="h-4 w-4" />
                           )}
                       <span className="sr-only">
-                        {showConfirmPassword ? 'Hide password' : 'Show password'}
+                        {showConfirmPassword ? t('auth.signup.password.hide') : t('auth.signup.password.show')}
                       </span>
                     </Button>
                   </div>
@@ -254,28 +257,32 @@ export function SignupForm({
             )}
           />
 
-          <Button type="submit" disabled={isFormDisabled} className="text-white">
-            {loading ? 'Creating account...' : 'Sign up'}
+          <Button
+            type="submit"
+            disabled={isFormDisabled}
+            className="text-white h-11 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+          >
+            {loading ? t('auth.signup.button.submitting') : t('auth.signup.button.submit')}
           </Button>
 
-          <FieldSeparator>Or continue with</FieldSeparator>
+          <FieldSeparator>{t('auth.signup.separator')}</FieldSeparator>
 
           <GoogleButton
             onClick={() => signInWithProvider('google')}
             disabled={isFormDisabled}
           >
-            Sign up with Google
+            {t('auth.signup.oauth.google')}
           </GoogleButton>
 
           <GitHubButton
             onClick={() => signInWithProvider('github')}
             disabled={isFormDisabled}
           >
-            Sign up with GitHub
+            {t('auth.signup.oauth.github')}
           </GitHubButton>
 
           <FieldDescription className="text-center">
-            Already have an account?
+            {t('auth.signup.switch.text')}
             {' '}
             <Button
               type="button"
@@ -286,7 +293,7 @@ export function SignupForm({
                 onSwitchToLogin?.()
               }}
             >
-              Sign in
+              {t('auth.signup.switch.link')}
             </Button>
           </FieldDescription>
         </FieldGroup>

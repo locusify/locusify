@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   FieldDescription,
@@ -37,6 +38,8 @@ export function LoginForm({
   showTitle = true,
   ...props
 }: LoginFormProps) {
+  const { t } = useTranslation()
+
   /** 加载状态 */
   const [loading, setLoading] = useState(false)
   /** 错误状态 */
@@ -96,9 +99,9 @@ export function LoginForm({
         <FieldGroup>
           {showTitle && (
             <div className="flex flex-col items-center gap-1 text-center">
-              <h1 className="text-2xl font-bold">Login to your account</h1>
+              <h1 className="text-2xl font-bold">{t('auth.login.title')}</h1>
               <p className="text-muted-foreground text-sm text-balance">
-                Enter your email below to login to your account
+                {t('auth.login.description')}
               </p>
             </div>
           )}
@@ -114,11 +117,11 @@ export function LoginForm({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t('auth.login.email.label')}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="example@example.com"
+                    placeholder={t('auth.login.email.placeholder')}
                     autoComplete="email"
                     disabled={isFormDisabled}
                     {...field}
@@ -134,12 +137,12 @@ export function LoginForm({
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{t('auth.login.password.label')}</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
+                      placeholder={t('auth.login.password.placeholder')}
                       autoComplete="password"
                       disabled={isFormDisabled}
                       {...field}
@@ -160,7 +163,7 @@ export function LoginForm({
                             <Eye className="size-4" />
                           )}
                       <span className="sr-only">
-                        {showPassword ? 'Hide password' : 'Show password'}
+                        {showPassword ? t('auth.login.password.hide') : t('auth.login.password.show')}
                       </span>
                     </Button>
                   </div>
@@ -170,28 +173,32 @@ export function LoginForm({
             )}
           />
 
-          <Button type="submit" disabled={isFormDisabled} className="text-white">
-            {loading ? 'Logging in...' : 'Login'}
+          <Button
+            type="submit"
+            disabled={isFormDisabled}
+            className="text-white h-11 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+          >
+            {loading ? t('auth.login.button.submitting') : t('auth.login.button.submit')}
           </Button>
 
-          <FieldSeparator>Or continue with</FieldSeparator>
+          <FieldSeparator>{t('auth.login.separator')}</FieldSeparator>
 
           <GoogleButton
             onClick={() => signInWithProvider('google')}
             disabled={isFormDisabled}
           >
-            Login with Google
+            {t('auth.login.oauth.google')}
           </GoogleButton>
 
           <GitHubButton
             onClick={() => signInWithProvider('github')}
             disabled={isFormDisabled}
           >
-            Login with GitHub
+            {t('auth.login.oauth.github')}
           </GitHubButton>
 
           <FieldDescription className="text-center">
-            Don&apos;t have an account?
+            {t('auth.login.switch.text')}
             {' '}
             <Button
               type="button"
@@ -202,7 +209,7 @@ export function LoginForm({
                 onSwitchToSignup?.()
               }}
             >
-              Sign up
+              {t('auth.login.switch.link')}
             </Button>
           </FieldDescription>
         </FieldGroup>

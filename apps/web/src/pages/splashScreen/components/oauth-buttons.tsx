@@ -12,7 +12,7 @@ export function GoogleButton({ children, onClick, disabled, ...props }: OAuthBut
     <Button
       variant="outline"
       type="button"
-      className="hover:bg-transparent"
+      className="h-11 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-gray-300 dark:border-gray-700"
       onClick={onClick}
       disabled={disabled}
       {...props}
@@ -28,7 +28,7 @@ export function GitHubButton({ children, onClick, disabled, ...props }: OAuthBut
     <Button
       variant="outline"
       type="button"
-      className="hover:bg-transparent"
+      className="h-11 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors border-gray-300 dark:border-gray-700"
       onClick={onClick}
       disabled={disabled}
       {...props}

@@ -1,5 +1,7 @@
 import type { FC } from 'react'
+import { Camera, Map as MapIcon, Video } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import logoUrl from '@/assets/locusify.png'
 import { Button } from '@/components/ui/button'
@@ -23,6 +25,7 @@ async function loadSplashResources() {
 }
 
 const SplashScreen: FC = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { hasSession, isReady } = useAuthState()
   const [authMode, setAuthMode] = useState<AuthMode>(null)
@@ -67,49 +70,84 @@ const SplashScreen: FC = () => {
   const showContent = isReady && resourcesLoaded
 
   return (
-    <div className="relative flex justify-between flex-col items-center h-dvh bg-white text-primary/80 px-6 py-30">
-      {/* Logo and Loading Section - Top positioned */}
-      <div className="flex flex-col items-center w-full">
-        <div className="flex size-40 items-center justify-center mb-8">
-          <img src={logoUrl} alt="Locusify Logo" className="size-full" />
-        </div>
+    <div className="relative flex flex-col items-center min-h-dvh bg-white dark:bg-gray-950">
+      {/* Main Content Container */}
+      <div className="flex flex-col items-center justify-between w-full h-dvh px-6 py-12 md:py-20">
+        {!showContent
+          ? (
+            /* Loading State */
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="flex size-32 md:size-40 items-center justify-center mb-8 animate-in fade-in duration-500">
+                  <img src={logoUrl} alt="Locusify Logo" className="size-full" />
+                </div>
+                <div className="flex space-x-1.5">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="size-2 animate-bounce rounded-full bg-gray-400 dark:bg-gray-600"
+                      style={{ animationDelay: `${index * 0.15}s` }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          : (
+              <>
+                {/* Hero Section */}
+                <div className="flex flex-col items-center text-center flex-1 justify-center max-w-2xl animate-in fade-in duration-500">
+                  {/* Logo */}
+                  <div className="flex size-28 md:size-36 items-center justify-center mb-8 md:mb-12">
+                    <img src={logoUrl} alt="Locusify Logo" className="size-full" />
+                  </div>
 
-        {/* Loading Animation - Always show while not ready */}
-        {!showContent && (
-          <div className="transition-all duration-1000">
-            <div className="flex space-x-1">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="size-2 animate-bounce rounded-full bg-primary/60"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+                  {/* Heading */}
+                  <h1 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
+                    {t('splash.brand.name')}
+                  </h1>
+
+                  {/* Subtitle */}
+                  <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 mb-12 md:mb-16 max-w-md">
+                    {t('splash.hero.subtitle')}
+                  </p>
+
+                  {/* Simple Feature List */}
+                  <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-16 text-sm text-gray-500 dark:text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <Camera className="size-4" />
+                      <span>{t('splash.features.photoUpload')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapIcon className="size-4" />
+                      <span>{t('splash.features.routeMaps')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Video className="size-4" />
+                      <span>{t('splash.features.autoVlogs')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Auth Buttons - Bottom */}
+                {!hasSession && (
+                  <div className="w-full max-w-sm space-y-3 animate-in fade-in duration-500 delay-150">
+                    <Button
+                      className="text-white w-full h-11 font-medium bg-gray-900 hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+                      onClick={() => setAuthMode('login')}
+                    >
+                      {t('splash.cta.getStarted')}
+                    </Button>
+                    <Button
+                      className="w-full h-11 font-medium"
+                      variant="outline"
+                      onClick={() => setAuthMode('signup')}
+                    >
+                      {t('splash.cta.createAccount')}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
       </div>
-
-      {/* Auth Buttons - Fixed at bottom with fade-in animation */}
-      {showContent && !hasSession && (
-        <div className="w-full max-w-md pb-safe mb-8 space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <Button
-            className="text-white w-full"
-            size="sm"
-            onClick={() => setAuthMode('login')}
-          >
-            Login
-          </Button>
-          <Button
-            className="w-full hover:bg-transparent"
-            variant="outline"
-            size="sm"
-            onClick={() => setAuthMode('signup')}
-          >
-            Sign up
-          </Button>
-        </div>
-      )}
 
       {/* Login/Signup Drawer */}
       <AuthDrawer

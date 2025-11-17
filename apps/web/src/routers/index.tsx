@@ -26,10 +26,6 @@ export const routes: RouteObject[] = [
         path: '/map',
         element: <Map />,
       },
-      {
-        path: '/profile',
-        element: <div>Profile Page</div>,
-      },
     ],
   },
   {

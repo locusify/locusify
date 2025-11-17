@@ -48,7 +48,8 @@
       "Bash(del \"D:\\self-code\\locusify\\apps\\web\\src\\lib\\exif.browser.ts\")",
       "Bash(del \"D:\\self-code\\locusify\\apps\\web\\src\\lib\\supabase\\upload.ts\")",
       "Bash(rm:*)",
-      "Bash(pnpm supabase db reset:*)"
+      "Bash(pnpm supabase db reset:*)",
+      "WebFetch(domain:afilmory.innei.in)"
     ],
     "deny": [],
     "ask": [],
