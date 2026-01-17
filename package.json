@@ -1,7 +1,14 @@
 {
   "name": "locusify",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.15.0",
+  "author": "caterpi11ar",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CaterpillarSoft/locusify"
+  },
   "scripts": {
     "prepare": "husky install",
     "preinstall": "npx only-allow pnpm",
@@ -44,6 +51,8 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.3.1",
+    "@commitlint/config-conventional": "^20.3.1",
     "@egoist/tailwindcss-icons": "^1.9.0",
     "@fontsource-variable/inconsolata": "^5.2.8",
     "@iconify-json/mingcute": "^1.2.5",
@@ -51,8 +60,10 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^5.0.0",
+    "husky": "^9.1.7",
     "i18next": "^25.5.2",
     "i18next-browser-languagedetector": "^8.2.0",
+    "lint-staged": "^16.2.7",
     "react-scan": "^0.4.3",
     "tailwindcss": "^4.1.13",
     "tailwindcss-uikit-colors": "^1.0.0",
