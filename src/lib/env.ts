@@ -4,14 +4,6 @@ import { z } from 'zod'
 const envSchema = z.object({
   /** Node.js environment mode */
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  /** API base URL for backend services */
-  API_URL: z.url().optional(),
-  /** Google Analytics tracking ID */
-  GA_TRACKING_ID: z.string().optional(),
-  /** Supabase URL */
-  SUPABASE_URL: z.url(),
-  /** Supabase anon key */
-  SUPABASE_ANON_KEY: z.string(),
 })
 
 export type Env = z.infer<typeof envSchema>
@@ -21,10 +13,6 @@ function validateEnv(): Env {
   try {
     const parsedEnv = envSchema.parse({
       NODE_ENV: import.meta.env.MODE,
-      API_URL: import.meta.env.VITE_API_URL,
-      GA_TRACKING_ID: import.meta.env.VITE_GA_TRACKING_ID,
-      SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
-      SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
     })
 
     console.log('loaded env successfully')
