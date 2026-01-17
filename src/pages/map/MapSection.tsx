@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useSearchParams } from 'react-router'
-import { UploadDrawer } from '@/components/upload'
+import { SelectPhotosDrawer } from '@/components/upload'
 import { GenericMap } from './components/GenericMap'
 import { MapBackButton } from './components/MapBackButton'
 import { MapInfoPanel } from './components/MapInfoPanel'
@@ -186,7 +186,7 @@ function MapSectionContent() {
       <MapMenuButton onUploadClick={() => setUploadDrawerOpen(true)} />
 
       {/* Upload drawer */}
-      <UploadDrawer
+      <SelectPhotosDrawer
         open={uploadDrawerOpen}
         onOpenChange={setUploadDrawerOpen}
         onUploadComplete={() => {

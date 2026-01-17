@@ -1,15 +1,16 @@
-import { useEffect, useState, type FC } from 'react'
-import { Camera, Map, Video } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import logoUrl from '@/assets/locusify.png'
-import { useNavigate } from 'react-router'
+import type { FC } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { Camera, Map, Video } from 'lucide-react'
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
+import logoUrl from '@/assets/locusify.png'
 
 /**
-* Load splash screen resources (ads, config, etc.)
-* You can add your advertisement loading logic here
-*/
-const loadSplashResources = async () => {
+ * Load splash screen resources (ads, config, etc.)
+ * You can add your advertisement loading logic here
+ */
+async function loadSplashResources() {
   // TODO: Implement advertisement loading
   // Example:
   // const ads = await fetchSplashAd()

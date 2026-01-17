@@ -3,18 +3,19 @@ import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { LazyImage } from '@/components/ui/lazy-image'
 import { cn } from '@/lib/utils'
+import type { FC } from 'react'
 
-interface UploadProgressProps {
+interface ProgressProps {
   files: UploadFile[]
   progress: Record<string, number>
   isComplete: boolean
 }
 
-export function UploadProgress({
+export const Progress: FC<ProgressProps> = ({
   files,
   progress,
   isComplete,
-}: UploadProgressProps) {
+}) => {
   const { t } = useTranslation()
 
   const overallProgress = files.length > 0

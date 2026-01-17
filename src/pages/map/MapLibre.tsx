@@ -2,7 +2,7 @@ import type { CSSProperties, RefObject } from 'react'
 import type { MapLayerMouseEvent, StyleSpecification } from 'react-map-gl/maplibre'
 
 import type { PhotoMarker } from '@/types/map'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
 
 import { ClusterMarker } from './components/ClusterMarker'
@@ -73,6 +73,33 @@ export function Maplibre({
   const [viewState, setViewState] = useState(initialViewState)
   const [isMapLoaded, setIsMapLoaded] = useState(false)
   const [hasInitialFitCompleted, setHasInitialFitCompleted] = useState(false)
+
+  // Get user's geolocation on mount to set initial view
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { longitude, latitude } = position.coords
+        setViewState({
+          longitude,
+          latitude,
+          zoom: 14,
+        })
+        setCurrentZoom(14)
+      },
+      (error) => {
+        console.warn('Geolocation error:', error)
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      },
+    )
+  }, [])
 
   // Handle marker click - only call the external callback
   const handleMarkerClick = useCallback(

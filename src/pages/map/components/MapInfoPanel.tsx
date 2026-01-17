@@ -25,6 +25,11 @@ export const MapInfoPanel: FC<MapInfoPanelProps> = ({ markersCount, bounds }) =>
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
 
+  /** If there are no markers, don't show the info panel */
+  if (markersCount === 0) {
+    return null
+  }
+  
   return (
     <m.div
       className="absolute top-4 right-4 z-40 max-w-xs"

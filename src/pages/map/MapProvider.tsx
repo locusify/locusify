@@ -44,16 +44,16 @@ interface SiteConfig {
 }
 
 const defaultConfig: SiteConfig = {
-  name: 'Afilmory',
-  title: 'Afilmory',
+  name: 'Locusify',
+  title: 'Locusify',
   description:
-    'Capturing beautiful moments in life, documenting daily warmth and emotions through my lens.',
-  url: 'https://afilmory.innei.in',
+    'Locusify is a map application that allows you to view your photos on a map.',
+  url: 'https://locusify.caterpillar-soft.com',
   accentColor: '#007bff',
   author: {
-    name: 'Innei',
-    url: 'https://innei.in/',
-    avatar: 'https://cdn.jsdelivr.net/gh/Innei/static@master/avatar.png',
+    name: 'Caterpi11ar',
+    url: 'https://github.com/caterpi11ar',
+    avatar: 'https://github.com/Caterpi11a.png',
   },
 }
 

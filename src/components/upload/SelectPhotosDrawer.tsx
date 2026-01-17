@@ -1,5 +1,5 @@
 import type { UploadFile } from '@/types/upload'
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type FC } from 'react'
 import {
   Drawer,
   DrawerContent,
@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/drawer'
 import { GPSInfoPanel } from './GPSInfoPanel'
 import { PhotoSelector } from './PhotoSelector'
-import { UploadProgress } from './UploadProgress'
+import { Progress } from './Progress'
 
 enum UploadStep {
   SELECT = 'select',
@@ -18,17 +18,17 @@ enum UploadStep {
   COMPLETE = 'complete',
 }
 
-interface UploadDrawerProps {
+interface SelectPhotosDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onUploadComplete?: () => void
 }
 
-export function UploadDrawer({
+export const SelectPhotosDrawer: FC<SelectPhotosDrawerProps> = ({
   open,
   onOpenChange,
   onUploadComplete,
-}: UploadDrawerProps) {
+}) => {
   const [currentStep, setCurrentStep] = useState<UploadStep>(UploadStep.SELECT)
   const [selectedFiles, setSelectedFiles] = useState<UploadFile[]>([])
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
@@ -122,22 +122,9 @@ export function UploadDrawer({
         )}
 
         {/* Content with glass background */}
-        <div className="flex flex-col overflow-hidden rounded-t-3xl bg-gray-50/95 backdrop-blur-xl dark:bg-gray-900/95">
-          {/* Header with close button */}
-          <div className="flex shrink-0 items-center justify-between p-4">
-            <button
-              type="button"
-              onClick={handleClose}
-              disabled={currentStep === UploadStep.UPLOADING}
-              className="flex size-10 items-center justify-center rounded-full border border-gray-200/50 bg-white/50 text-gray-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white/70 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700/50 dark:bg-black/30 dark:text-gray-300 dark:hover:bg-black/40"
-              title={currentStep === UploadStep.UPLOADING ? 'Upload in progress...' : 'Close'}
-            >
-              <i className="i-mingcute-close-line text-lg" />
-            </button>
-          </div>
-
+        <div className="flex flex-col overflow-hidden bg-material-thick border-fill-tertiary rounded-t-2xl border shadow-2xl backdrop-blur-[120px]">
           {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto p-4 pt-0">
+          <div className="flex-1 overflow-y-auto p-4">
             {/* Step 1: File Selection */}
             {currentStep === UploadStep.SELECT && (
               <PhotoSelector onFilesSelected={handleFilesSelected} />
@@ -156,7 +143,7 @@ export function UploadDrawer({
             {/* Step 3 & 4: Upload Progress & Complete */}
             {(currentStep === UploadStep.UPLOADING
               || currentStep === UploadStep.COMPLETE) && (
-              <UploadProgress
+              <Progress
                 files={selectedFiles}
                 progress={uploadProgress}
                 isComplete={currentStep === UploadStep.COMPLETE}

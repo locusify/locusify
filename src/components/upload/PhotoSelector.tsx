@@ -1,7 +1,7 @@
 import type { GPSCoordinates } from '@/types/map'
 import type { UploadFile } from '@/types/upload'
 import { m } from 'motion/react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { extractExifData } from '@/lib/exif'
 import { cn } from '@/lib/utils'
@@ -13,9 +13,7 @@ interface PhotoSelectorProps {
 
 export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
   const { t } = useTranslation()
-  const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const dragCounterRef = useRef(0)
 
   // Extract GPS coordinates from EXIF data
   const extractGPSCoordinates = useCallback((exif: NonNullable<Awaited<ReturnType<typeof extractExifData>>>): GPSCoordinates | undefined => {
@@ -172,45 +170,6 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
     [processFiles],
   )
 
-  // Handle drag events
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current++
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setIsDragging(true)
-    }
-  }, [])
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current--
-    if (dragCounterRef.current === 0) {
-      setIsDragging(false)
-    }
-  }, [])
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setIsDragging(false)
-      dragCounterRef.current = 0
-
-      const files = e.dataTransfer.files
-      if (files && files.length > 0) {
-        processFiles(files)
-      }
-    },
-    [processFiles],
-  )
-
   // Handle click to open file picker
   const handleClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -233,35 +192,33 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
         className="hidden"
       />
 
-      {/* Drag & drop area */}
+      {/* Click to select area */}
       <m.div
         className={cn(
           'relative flex w-full cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed p-12 transition-all duration-300 backdrop-blur-sm',
-          isDragging
-            ? 'border-blue-500 bg-blue-500/10 dark:border-blue-400 dark:bg-blue-400/10'
-            : 'border-gray-300/50 bg-white/30 hover:border-gray-400/50 hover:bg-white/40 dark:border-gray-600/50 dark:bg-black/20 dark:hover:border-gray-500/50 dark:hover:bg-black/30',
+          'border-gray-300/50 bg-white/30 hover:border-gray-400/50 hover:bg-white/40 dark:border-gray-600/50 dark:bg-black/20 dark:hover:border-gray-500/50 dark:hover:bg-black/30',
         )}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
         onClick={handleClick}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
       >
         {/* Icon */}
-        <m.div
-          className={cn(
-            'mb-6 text-6xl transition-all duration-300',
-            isDragging ? 'scale-110' : 'scale-100',
-          )}
-          animate={
-            isDragging
-              ? { y: [0, -10, 0], transition: { repeat: Number.POSITIVE_INFINITY, duration: 1 } }
-              : { y: 0 }
-          }
-        >
-          {isDragging ? '📥' : '📸'}
+        <m.div className="mb-6 text-6xl bg-white size-14 border-fill-tertiary rounded-2xl flex items-center justify-center">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#0a0a0a"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M3 9a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 10.07 4h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 18.07 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"
+            />
+            <circle cx="12" cy="13" r="3" />
+          </svg>
         </m.div>
 
         {/* Title */}
@@ -271,9 +228,7 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          {isDragging
-            ? t('upload.drop.here')
-            : t('upload.select.photos')}
+          {t('upload.select.photos')}
         </m.h2>
 
         {/* Description */}
@@ -283,25 +238,21 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          {isDragging
-            ? t('upload.release.to.upload')
-            : t('upload.drag.or.click')}
+          {t('upload.select.description')}
         </m.p>
 
         {/* Upload button */}
-        {!isDragging && (
-          <m.button
-            type="button"
-            className="rounded-full bg-blue-600 px-8 py-3 font-medium text-white shadow-lg transition-all hover:bg-blue-700 hover:shadow-xl dark:bg-blue-500 dark:hover:bg-blue-600"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {t('upload.choose.files')}
-          </m.button>
-        )}
+        <m.button
+          type="button"
+          className="cursor-pointer rounded-full bg-blue-600 px-8 py-3 font-medium text-white shadow-lg transition-all hover:bg-blue-700 hover:shadow-xl dark:bg-blue-500 dark:hover:bg-blue-600"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {t('upload.choose.files')}
+        </m.button>
 
         {/* Supported formats */}
         <m.p
