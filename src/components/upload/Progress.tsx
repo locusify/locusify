@@ -1,9 +1,9 @@
+import type { FC } from 'react'
 import type { UploadFile } from '@/types/upload'
 import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { LazyImage } from '@/components/ui/lazy-image'
 import { cn } from '@/lib/utils'
-import type { FC } from 'react'
 
 interface ProgressProps {
   files: UploadFile[]

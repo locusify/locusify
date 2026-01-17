@@ -29,7 +29,7 @@ export const MapInfoPanel: FC<MapInfoPanelProps> = ({ markersCount, bounds }) =>
   if (markersCount === 0) {
     return null
   }
-  
+
   return (
     <m.div
       className="absolute top-4 right-4 z-40 max-w-xs"

@@ -1,5 +1,6 @@
+import type { FC } from 'react'
 import type { UploadFile } from '@/types/upload'
-import { useCallback, useState, type FC } from 'react'
+import { useCallback, useState } from 'react'
 import {
   Drawer,
   DrawerContent,

@@ -2,7 +2,7 @@ import type { CSSProperties, RefObject } from 'react'
 import type { MapLayerMouseEvent, StyleSpecification } from 'react-map-gl/maplibre'
 
 import type { PhotoMarker } from '@/types/map'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
 
 import { ClusterMarker } from './components/ClusterMarker'
