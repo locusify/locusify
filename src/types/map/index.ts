@@ -223,6 +223,7 @@ export interface PhotoInfo {
   description: string
 }
 
+/** Photo manifest item interface */
 export interface PhotoManifestItem extends PhotoInfo {
   id: string
   originalUrl: string

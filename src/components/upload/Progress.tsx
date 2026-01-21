@@ -1,12 +1,12 @@
 import type { FC } from 'react'
-import type { UploadFile } from '@/types/upload'
+import type { Photo } from '@/types/photo'
 import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { LazyImage } from '@/components/ui/lazy-image'
 import { cn } from '@/lib/utils'
 
 interface ProgressProps {
-  files: UploadFile[]
+  files: Photo[]
   progress: Record<string, number>
   isComplete: boolean
 }
@@ -78,10 +78,10 @@ export const Progress: FC<ProgressProps> = ({
         <div className="h-4 overflow-hidden rounded-full bg-gray-300/50 dark:bg-gray-600/50">
           <m.div
             className={cn(
-              'h-full rounded-full transition-all duration-300',
+              'h-full rounded-full transition-all duration-300 bg-gradient-to-r',
               isComplete
-                ? 'bg-gradient-to-r from-green-500 to-emerald-500'
-                : 'bg-gradient-to-r from-blue-500 to-blue-600',
+                ? 'from-green-500 to-emerald-500'
+                : 'from-blue-500 to-blue-600',
             )}
             initial={{ width: 0 }}
             animate={{ width: `${overallProgress}%` }}

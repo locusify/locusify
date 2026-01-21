@@ -1,11 +1,11 @@
-import type { UploadFile } from '@/types/upload'
+import type { Photo } from '@/types/photo'
 import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { LazyImage } from '@/components/ui/lazy-image'
 import { cn } from '@/lib/utils'
 
 interface GPSInfoPanelProps {
-  files: UploadFile[]
+  files: Photo[]
   onConfirm: () => void
   onCancel: () => void
   onRemoveFile: (fileId: string) => void
@@ -37,7 +37,7 @@ export function GPSInfoPanel({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          {t('upload.preview.title')}
+          {t('photos.preview.title')}
         </m.h2>
         <m.p
           className="text-sm text-gray-600 dark:text-gray-400"
@@ -45,7 +45,7 @@ export function GPSInfoPanel({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          {t('upload.preview.description', {
+          {t('photos.preview.description', {
             total: files.length,
             withGPS: filesWithGPS.length,
           })}
@@ -122,10 +122,10 @@ export function GPSInfoPanel({
             <i className="i-mingcute-alert-line mt-0.5 text-xl text-amber-600 dark:text-amber-400" />
             <div>
               <div className="mb-1 font-medium text-amber-900 dark:text-amber-100">
-                {t('upload.warning.no.gps.title')}
+                {t('photos.warning.no.gps.title')}
               </div>
               <div className="text-sm text-amber-700 dark:text-amber-300">
-                {t('upload.warning.no.gps.description', {
+                {t('photos.warning.no.gps.description', {
                   count: filesWithoutGPS.length,
                 })}
               </div>
@@ -146,10 +146,10 @@ export function GPSInfoPanel({
             <i className="i-mingcute-alert-line mt-0.5 text-xl text-red-600 dark:text-red-400" />
             <div>
               <div className="mb-1 font-medium text-red-900 dark:text-red-100">
-                {t('upload.error.no.gps.title')}
+                {t('photos.error.no.gps.title')}
               </div>
               <div className="text-sm text-red-700 dark:text-red-300">
-                {t('upload.error.no.gps.description')}
+                {t('photos.error.no.gps.description')}
               </div>
             </div>
           </div>
@@ -175,7 +175,7 @@ export function GPSInfoPanel({
           onClick={onCancel}
         >
           <i className="i-mingcute-arrow-left-line text-base" />
-          {t('upload.previous')}
+          {t('photos.previous')}
         </button>
         <button
           type="button"
@@ -188,8 +188,8 @@ export function GPSInfoPanel({
           )}
           onClick={onConfirm}
         >
-          <i className="i-mingcute-upload-2-line text-base" />
-          {t('upload.start.upload')}
+          <i className="i-mingcute-check-line text-base" />
+          {t('photos.confirm')}
           {' '}
           (
           {filesWithGPS.length}

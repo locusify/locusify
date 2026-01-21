@@ -16,7 +16,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint --fix",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -51,6 +51,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^7.2.0",
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
     "@egoist/tailwindcss-icons": "^1.9.0",

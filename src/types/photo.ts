@@ -1,6 +1,6 @@
 import type { GPSCoordinates, PickedExif } from './map'
 
-export interface UploadFile {
+export interface Photo {
   id: string
   file: File
   preview: string
@@ -23,10 +23,10 @@ export interface UploadFile {
   }
 }
 
-export interface UploadProgress {
-  fileId: string
-  fileName: string
+export interface PhotoProgress {
+  id: string
+  name: string
   progress: number
-  status: 'pending' | 'uploading' | 'success' | 'error'
+  status: 'pending' | 'processing' | 'completed' | 'error'
   error?: string
 }

@@ -1,8 +1,8 @@
+import type { FC } from 'react'
 import type { PhotoMarker } from '@/types/map'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@radix-ui/react-hover-card'
 import { m } from 'motion/react'
 import { Marker } from 'react-map-gl/maplibre'
-import { Link } from 'react-router'
 import { GlassButton } from '@/components/ui/glass-button'
 import { LazyImage } from '@/components/ui/lazy-image'
 import { cn } from '@/lib/utils'
@@ -14,12 +14,12 @@ interface PhotoMarkerPinProps {
   onClose?: () => void
 }
 
-export function PhotoMarkerPin({
+export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
   marker,
   isSelected = false,
   onClick,
   onClose,
-}: PhotoMarkerPinProps) {
+}) => {
   const handleClick = () => {
     onClick?.(marker)
   }
@@ -36,9 +36,9 @@ export function PhotoMarkerPin({
       latitude={marker.latitude}
     >
       <HoverCard
-        open={isSelected ? true : undefined} // 当选中时强制打开
-        openDelay={isSelected ? 0 : 400} // 选中时立即打开
-        closeDelay={isSelected ? 0 : 100} // 选中时不自动关闭
+        open={isSelected ? true : undefined}
+        openDelay={isSelected ? 0 : 400}
+        closeDelay={isSelected ? 0 : 100}
       >
         <HoverCardTrigger asChild>
           <m.div
@@ -54,21 +54,22 @@ export function PhotoMarkerPin({
             whileTap={{ scale: 0.9 }}
             onClick={handleClick}
           >
-            {/* Selection ring - 只有选中时显示 */}
+            {/* Selection ring */}
             {isSelected && (
               <div className="bg-blue/30 absolute inset-0 -m-2 animate-pulse rounded-full" />
             )}
 
             {/* Photo background preview */}
             <div className="absolute inset-0 overflow-hidden rounded-full">
-              <LazyImage
-                src={marker.photo.thumbnailUrl || marker.photo.originalUrl}
-                alt={marker.photo.title || marker.photo.id}
-                thumbHash={marker.photo.thumbHash}
-                className="size-full object-cover opacity-40"
-                rootMargin="100px"
-                threshold={0.1}
-              />
+              {marker.photo.thumbnailUrl && (
+                <LazyImage
+                  src={marker.photo.thumbnailUrl}
+                  alt={marker.photo.title || marker.id}
+                  className="size-full object-cover opacity-40"
+                  rootMargin="100px"
+                  threshold={0.1}
+                />
+              )}
               {/* Overlay */}
               <div className="from-green/60 to-emerald/80 dark:from-green/70 dark:to-emerald/90 absolute inset-0 bg-gradient-to-br" />
             </div>
@@ -98,14 +99,13 @@ export function PhotoMarkerPin({
           side="top"
           align="center"
           sideOffset={8}
-          // 当选中时阻止点击外部关闭
           onPointerDownOutside={
             isSelected ? e => e.preventDefault() : undefined
           }
           onEscapeKeyDown={isSelected ? e => e.preventDefault() : undefined}
         >
           <div className="relative">
-            {/* 选中时显示关闭按钮 */}
+            {/* Close button when selected */}
             {isSelected && (
               <GlassButton
                 className="absolute top-3 right-3 z-10 size-8"
@@ -117,44 +117,36 @@ export function PhotoMarkerPin({
 
             {/* Photo header */}
             <div className="relative h-32 overflow-hidden">
-              <LazyImage
-                src={marker.photo.thumbnailUrl || marker.photo.originalUrl}
-                alt={marker.photo.title || marker.photo.id}
-                thumbHash={marker.photo.thumbHash}
-                className="size-full object-cover"
-                rootMargin="200px"
-                threshold={0.1}
-              />
+              {marker.photo.thumbnailUrl && (
+                <LazyImage
+                  src={marker.photo.thumbnailUrl}
+                  alt={marker.photo.title || marker.id}
+                  className="size-full object-cover"
+                  rootMargin="200px"
+                  threshold={0.1}
+                />
+              )}
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
 
             {/* Content */}
             <div className="space-y-3 p-4">
-              {/* Title with link */}
-              <Link
-                to={`/${marker.photo.id}`}
-                target="_blank"
-                className="group/link hover:text-blue flex items-center gap-2 transition-colors"
+              {/* Title */}
+              <h3
+                className="text-text truncate text-sm font-semibold"
+                title={marker.photo.title || marker.id}
               >
-                <h3
-                  className="text-text flex-1 truncate text-sm font-semibold"
-                  title={marker.photo.title || marker.photo.id}
-                >
-                  {marker.photo.title || marker.photo.id}
-                </h3>
-                <i className="i-mingcute-arrow-right-line text-text-secondary transition-transform group-hover/link:translate-x-0.5" />
-              </Link>
+                {marker.photo.title || marker.id}
+              </h3>
 
               {/* Metadata */}
               <div className="space-y-2">
-                {marker.photo.exif?.DateTimeOriginal && (
+                {marker.photo.dateTaken && (
                   <div className="text-text-secondary flex items-center gap-2 text-xs">
                     <i className="i-mingcute-calendar-line text-sm" />
                     <span>
-                      {new Date(
-                        marker.photo.exif.DateTimeOriginal,
-                      ).toLocaleDateString('zh-CN', {
+                      {new Date(marker.photo.dateTaken).toLocaleDateString('zh-CN', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
@@ -163,14 +155,10 @@ export function PhotoMarkerPin({
                   </div>
                 )}
 
-                {marker.photo.exif?.Make && marker.photo.exif?.Model && (
+                {marker.photo.description && (
                   <div className="text-text-secondary flex items-center gap-2 text-xs">
                     <i className="i-mingcute-camera-line text-sm" />
-                    <span className="truncate">
-                      {marker.photo.exif.Make}
-                      {' '}
-                      {marker.photo.exif.Model}
-                    </span>
+                    <span className="truncate">{marker.photo.description}</span>
                   </div>
                 )}
 

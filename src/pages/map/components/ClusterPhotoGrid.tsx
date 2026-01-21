@@ -1,7 +1,6 @@
 import type { PhotoMarker } from '@/types/map'
 import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
 
 import { LazyImage } from '@/components/ui/lazy-image'
 
@@ -46,11 +45,8 @@ export function ClusterPhotoGrid({
             }}
             className="group relative aspect-square overflow-hidden rounded-lg"
           >
-            <Link
-              to={`/${photoMarker.photo.id}`}
-              target="_blank"
-              onClick={(e) => {
-                e.stopPropagation()
+            <div
+              onClick={() => {
                 onPhotoClick?.(photoMarker)
               }}
               className="block size-full"
@@ -88,7 +84,7 @@ export function ClusterPhotoGrid({
                   </svg>
                 </div>
               </div>
-            </Link>
+            </div>
           </m.div>
         ))}
 

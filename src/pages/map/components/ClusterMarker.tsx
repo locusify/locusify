@@ -15,6 +15,13 @@ interface ClusterMarkerProps {
   onClusterClick?: (longitude: number, latitude: number) => void
 }
 
+const positions = [
+  { left: '0%', top: '0%', width: '50%', height: '50%' },
+  { left: '50%', top: '0%', width: '50%', height: '50%' },
+  { left: '0%', top: '50%', width: '50%', height: '50%' },
+  { left: '50%', top: '50%', width: '50%', height: '50%' },
+]
+
 export function ClusterMarker({
   longitude,
   latitude,
@@ -66,12 +73,6 @@ export function ClusterMarker({
                 <div className="absolute inset-1 overflow-hidden rounded-full">
                   {/* Show up to 4 photos in a mosaic pattern */}
                   {clusteredPhotos.slice(0, 4).map((photoMarker, index) => {
-                    const positions = [
-                      { left: '0%', top: '0%', width: '50%', height: '50%' },
-                      { left: '50%', top: '0%', width: '50%', height: '50%' },
-                      { left: '0%', top: '50%', width: '50%', height: '50%' },
-                      { left: '50%', top: '50%', width: '50%', height: '50%' },
-                    ]
                     const position = positions[index]
 
                     return (
@@ -121,13 +122,7 @@ export function ClusterMarker({
           sideOffset={8}
         >
           <div className="p-4">
-            <ClusterPhotoGrid
-              photos={clusteredPhotos}
-              onPhotoClick={(_photo) => {
-                // Optional: handle individual photo clicks
-                // Photo click handling can be implemented here if needed
-              }}
-            />
+            <ClusterPhotoGrid photos={clusteredPhotos} />
           </div>
         </HoverCardContent>
       </HoverCard>

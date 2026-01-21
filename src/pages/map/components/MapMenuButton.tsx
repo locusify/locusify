@@ -48,7 +48,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick }) => {
       transition={{ duration: 0.4, delay: 0.2 }}
     >
       {/* Upload Button - Will appear above menu button due to flex-col-reverse */}
-      <div className="bg-material-thick border-fill-tertiary overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-[120px]">
+      <div className="border-red/30 bg-material-thick overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-[120px]">
         <button
           type="button"
           onClick={onUploadClick}
