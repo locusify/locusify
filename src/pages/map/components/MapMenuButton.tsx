@@ -2,6 +2,7 @@ import type { FC } from 'react'
 import { m } from 'motion/react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import {
   Tooltip,
   TooltipContent,
@@ -61,7 +62,10 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
     {
       icon: 'i-mingcute-share-3-line',
       label: t('menu.share', { defaultValue: 'Share' }),
-      onClick: () => console.log('Share clicked'),
+      onClick: () => {
+        navigator.clipboard.writeText('https://locusify.caterpillar-soft.com/')
+        toast.success(t('menu.linkCopied', { defaultValue: 'Link copied to clipboard' }))
+      },
     },
   ]
 

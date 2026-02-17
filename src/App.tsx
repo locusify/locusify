@@ -2,6 +2,7 @@ import type { FC } from 'react'
 import { domAnimation, LazyMotion, MotionConfig } from 'motion/react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { RouterProvider } from 'react-router'
+import { Toaster } from './components/ui/sonner'
 import { TooltipProvider } from './components/ui/tooltip'
 import { router } from './routers'
 
@@ -22,6 +23,7 @@ const App: FC = () => {
         >
           <TooltipProvider>
             <RouterProvider router={router} />
+            <Toaster />
           </TooltipProvider>
         </ErrorBoundary>
       </MotionConfig>
