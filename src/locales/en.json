@@ -94,6 +94,8 @@
   "workspace.controls.processing": "Processing...",
   "workspace.controls.viewReplay": "View Trajectory",
   "workspace.controls.backToGps": "Back to GPS Data",
+  "workspace.controls.exit": "Exit",
+  "workspace.controls.speed": "Speed",
 
   "workspace.status.completed": "Replay completed! Click Play to restart.",
 

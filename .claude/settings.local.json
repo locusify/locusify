@@ -50,7 +50,8 @@
       "Bash(rm:*)",
       "Bash(pnpm supabase db reset:*)",
       "WebFetch(domain:afilmory.innei.in)",
-      "Bash(pnpm typecheck:*)"
+      "Bash(pnpm typecheck:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": [],

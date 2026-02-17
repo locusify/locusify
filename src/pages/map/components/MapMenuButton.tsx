@@ -12,13 +12,14 @@ interface MenuItemProps {
 
 interface MapMenuButtonProps {
   onUploadClick?: () => void
+  onRoutesClick?: () => void
 }
 
 /**
  * MapMenuButton component
  * @description A collapsible menu button in the bottom-right corner that expands upward
  */
-export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick }) => {
+export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick, onRoutesClick }) => {
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -31,7 +32,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick }) => {
     {
       icon: 'i-mingcute-route-line',
       label: t('menu.routes', { defaultValue: 'Routes' }),
-      onClick: () => console.log('Routes clicked'),
+      onClick: onRoutesClick,
     },
     {
       icon: 'i-mingcute-share-3-line',

@@ -3,55 +3,66 @@ import { m } from 'motion/react'
 import { useCallback, useMemo, useState } from 'react'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { PhotoProvider, usePhotos } from '@/contexts'
+import { useReplayStore } from '@/stores/replayStore'
 import { GenericMap } from './components/GenericMap'
 import { MapBackButton } from './components/MapBackButton'
 import { MapInfoPanel } from './components/MapInfoPanel'
 import { MapMenuButton } from './components/MapMenuButton'
+import { TrajectoryOverlay } from './components/TrajectoryOverlay'
 import { MapProvider } from './MapProvider'
 import { calculateMapBounds, getInitialViewStateForMarkers } from './utils'
 
 function MapSectionContent() {
-  // Photo context - markers from selected photos
-  const { markers, selectedMarkerId, setSelectedMarkerId } = usePhotos()
+  const { photos, markers, selectedMarkerId, setSelectedMarkerId } = usePhotos()
 
-  // Upload drawer state
+  const isReplayMode = useReplayStore(s => s.isReplayMode)
+  const startReplay = useReplayStore(s => s.startReplay)
+
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
 
-  // Handle marker click - toggle selection
   const handleMarkerClick = useCallback((marker: PhotoMarker) => {
     setSelectedMarkerId(selectedMarkerId === marker.id ? null : marker.id)
   }, [selectedMarkerId, setSelectedMarkerId])
 
-  // Calculate bounds from markers
   const bounds = useMemo<MapBounds | null>(() => {
     if (markers.length === 0)
       return null
     return calculateMapBounds(markers)
   }, [markers])
 
-  // Initial view state from markers
   const initialViewState = useMemo(() => {
     return getInitialViewStateForMarkers(markers)
   }, [markers])
 
+  const handleRoutesClick = useCallback(() => {
+    startReplay(photos)
+  }, [startReplay, photos])
+
+  // Hide photo markers during replay
+  const displayMarkers = isReplayMode ? [] : markers
+
   return (
     <div className="absolute size-full">
-      {/* Back button */}
       <MapBackButton />
 
-      {/* Map info panel */}
-      <MapInfoPanel markersCount={markers.length} bounds={bounds} />
+      {!isReplayMode && (
+        <MapInfoPanel markersCount={markers.length} bounds={bounds} />
+      )}
 
-      {/* Map menu button */}
-      <MapMenuButton onUploadClick={() => setUploadDrawerOpen(true)} />
+      {!isReplayMode && (
+        <MapMenuButton
+          onUploadClick={() => setUploadDrawerOpen(true)}
+          onRoutesClick={handleRoutesClick}
+        />
+      )}
 
-      {/* Upload drawer */}
       <SelectPhotosDrawer
         open={uploadDrawerOpen}
         onOpenChange={setUploadDrawerOpen}
       />
 
-      {/* Generic Map component */}
+      {isReplayMode && <TrajectoryOverlay />}
+
       <m.div
         initial={{ opacity: 0, scale: 1.02 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -59,10 +70,10 @@ function MapSectionContent() {
         className="size-full"
       >
         <GenericMap
-          markers={markers}
+          markers={displayMarkers}
           initialViewState={initialViewState}
-          autoFitBounds={markers.length > 0}
-          selectedMarkerId={selectedMarkerId}
+          autoFitBounds={displayMarkers.length > 0}
+          selectedMarkerId={isReplayMode ? null : selectedMarkerId}
           onMarkerClick={handleMarkerClick}
           className="size-full"
         />

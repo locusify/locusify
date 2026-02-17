@@ -95,6 +95,8 @@
   "workspace.controls.processing": "处理中...",
   "workspace.controls.viewReplay": "查看轨迹",
   "workspace.controls.backToGps": "返回GPS数据",
+  "workspace.controls.exit": "退出",
+  "workspace.controls.speed": "速度",
 
   "workspace.status.completed": "回放完成！点击播放重新开始。",
 

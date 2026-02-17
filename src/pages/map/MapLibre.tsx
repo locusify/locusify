@@ -4,11 +4,15 @@ import type { MapLayerMouseEvent, StyleSpecification } from 'react-map-gl/maplib
 import type { PhotoMarker } from '@/types/map'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
+import { useReplayStore } from '@/stores/replayStore'
 
 import { ClusterMarker } from './components/ClusterMarker'
 import { GeoJsonLayer } from './components/GeoJsonLayer'
 import { MapControls } from './components/MapControls'
 import { PhotoMarkerPin } from './components/PhotoMarkerPin'
+import { TrajectoryController } from './components/TrajectoryController'
+import { TrajectoryLineLayer } from './components/TrajectoryLineLayer'
+import { WaypointDot } from './components/WaypointDot'
 import MapLibreStyle from './MapLibreStyle.json'
 import { calculateMapBounds } from './utils'
 // Styles
@@ -69,6 +73,7 @@ export function Maplibre({
   mapRef,
   autoFitBounds = true,
 }: PureMaplibreProps) {
+  const isReplayMode = useReplayStore(s => s.isReplayMode)
   const [currentZoom, setCurrentZoom] = useState(initialViewState.zoom)
   const [viewState, setViewState] = useState(initialViewState)
   const [isMapLoaded, setIsMapLoaded] = useState(false)
@@ -417,6 +422,15 @@ export function Maplibre({
 
         {/* GeoJSON Layer */}
         {geoJsonData && <GeoJsonLayer data={geoJsonData} />}
+
+        {/* Trajectory Replay Layers */}
+        {isReplayMode && (
+          <>
+            <TrajectoryLineLayer />
+            <WaypointDot />
+            <TrajectoryController />
+          </>
+        )}
       </Map>
     </div>
   )
