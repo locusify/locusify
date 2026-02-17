@@ -1,37 +1,38 @@
-import type { Photo } from '@/types/photo'
-import type { PlaybackState, TrajectoryWaypoint, UploadedPhoto } from '@/types/workspace'
+import type { PhotoMarker } from '@/types/map'
+import type { PlaybackState } from '@/types/workspace'
 import { create } from 'zustand'
 
 /** Duration per segment in ms at 1x speed */
 const BASE_SEGMENT_DURATION = 2000
 
-function photoToUploadedPhoto(photo: Photo): UploadedPhoto {
-  return {
-    id: photo.id,
-    file: photo.file,
-    previewUrl: photo.preview,
-    size: photo.size,
-    mimeType: photo.type,
-    createdAt: photo.dateTaken ? new Date(photo.dateTaken) : new Date(photo.lastModified),
-  }
+interface ReplayWaypoint {
+  /** Marker ID */
+  id: string
+  /** [longitude, latitude] */
+  position: [number, number]
+  /** The original PhotoMarker for rendering */
+  marker: PhotoMarker
+  /** Timestamp for ordering */
+  timestamp: Date
+  /** Sequence index */
+  index: number
 }
 
-function photosToWaypoints(photos: Photo[]): TrajectoryWaypoint[] {
-  return photos
-    .filter(p => p.gpsInfo && p.dateTaken)
-    .sort((a, b) => new Date(a.dateTaken!).getTime() - new Date(b.dateTaken!).getTime())
-    .map((photo, index) => ({
-      id: photo.id,
-      position: [photo.gpsInfo!.longitude, photo.gpsInfo!.latitude] as [number, number],
-      photoId: photo.id,
-      photo: photoToUploadedPhoto(photo),
-      timestamp: new Date(photo.dateTaken!),
+function markersToWaypoints(markers: PhotoMarker[]): ReplayWaypoint[] {
+  return markers
+    .filter(m => m.photo.dateTaken)
+    .sort((a, b) => new Date(a.photo.dateTaken).getTime() - new Date(b.photo.dateTaken).getTime())
+    .map((marker, index) => ({
+      id: marker.id,
+      position: [marker.longitude, marker.latitude] as [number, number],
+      marker,
+      timestamp: new Date(marker.photo.dateTaken),
       index,
     }))
 }
 
 function computePosition(
-  waypoints: TrajectoryWaypoint[],
+  waypoints: ReplayWaypoint[],
   waypointIndex: number,
   segmentProgress: number,
 ): [number, number] | null {
@@ -51,7 +52,7 @@ function computePosition(
 
 interface ReplayState {
   isReplayMode: boolean
-  waypoints: TrajectoryWaypoint[]
+  waypoints: ReplayWaypoint[]
   status: PlaybackState['status']
   currentWaypointIndex: number
   segmentProgress: number
@@ -59,7 +60,7 @@ interface ReplayState {
   speedMultiplier: number
   currentPosition: [number, number] | null
 
-  startReplay: (photos: Photo[]) => void
+  startReplay: (markers: PhotoMarker[]) => void
   togglePlayPause: () => void
   resetReplay: () => void
   exitReplay: () => void
@@ -79,8 +80,8 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   speedMultiplier: 1,
   currentPosition: null,
 
-  startReplay: (photos) => {
-    const waypoints = photosToWaypoints(photos)
+  startReplay: (markers) => {
+    const waypoints = markersToWaypoints(markers)
     if (waypoints.length < 2)
       return
     set({

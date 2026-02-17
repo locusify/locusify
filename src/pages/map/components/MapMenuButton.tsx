@@ -2,24 +2,46 @@ import type { FC } from 'react'
 import { m } from 'motion/react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 interface MenuItemProps {
   icon: string
   label: string
   onClick?: () => void
+  disabled?: boolean
+  tooltip?: string
 }
 
 interface MapMenuButtonProps {
   onUploadClick?: () => void
   onRoutesClick?: () => void
+  /** Whether the routes button is disabled (e.g. no photos uploaded) */
+  routesDisabled?: boolean
+  /** Tooltip text when routes is disabled */
+  routesDisabledTooltip?: string
+  /** Whether replay mode is active — shows exit button instead of menu */
+  isReplayMode?: boolean
+  /** Callback to exit replay mode */
+  onExitReplay?: () => void
 }
 
 /**
  * MapMenuButton component
  * @description A collapsible menu button in the bottom-right corner that expands upward
  */
-export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick, onRoutesClick }) => {
+export const MapMenuButton: FC<MapMenuButtonProps> = ({
+  onUploadClick,
+  onRoutesClick,
+  routesDisabled,
+  routesDisabledTooltip,
+  isReplayMode,
+  onExitReplay,
+}) => {
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -33,6 +55,8 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick, onRoutesC
       icon: 'i-mingcute-route-line',
       label: t('menu.routes', { defaultValue: 'Routes' }),
       onClick: onRoutesClick,
+      disabled: routesDisabled,
+      tooltip: routesDisabled ? routesDisabledTooltip : undefined,
     },
     {
       icon: 'i-mingcute-share-3-line',
@@ -40,6 +64,36 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick, onRoutesC
       onClick: () => console.log('Share clicked'),
     },
   ]
+
+  // Replay mode: show only an exit button in the same position
+  if (isReplayMode) {
+    return (
+      <m.div
+        className="absolute bottom-4 right-4 z-40"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="bg-material-thick border-fill-tertiary overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-[120px]">
+              <button
+                type="button"
+                onClick={onExitReplay}
+                className="group hover:bg-fill-secondary active:bg-fill-tertiary relative flex size-12 items-center justify-center transition-colors"
+                title={t('workspace.controls.exit', { defaultValue: 'Exit Replay' })}
+              >
+                <i className="i-mingcute-close-line text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
+              </button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            {t('workspace.controls.exit', { defaultValue: 'Exit Replay' })}
+          </TooltipContent>
+        </Tooltip>
+      </m.div>
+    )
+  }
 
   return (
     <m.div
@@ -88,17 +142,56 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({ onUploadClick, onRoutesC
           {menuItems.map((item, index) => (
             <div key={item.label}>
               {index > 0 && <div className="bg-fill-secondary h-px w-full" />}
-              <button
-                type="button"
-                onClick={() => {
-                  item.onClick?.()
-                  setIsExpanded(false)
-                }}
-                className="group hover:bg-fill-secondary active:bg-fill-tertiary flex items-center justify-center p-3 transition-colors size-full"
-                title={item.label}
-              >
-                <i className={cn(item.icon, 'text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95')} />
-              </button>
+              {item.tooltip
+                ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={item.disabled}
+                          onClick={() => {
+                            if (!item.disabled) {
+                              item.onClick?.()
+                              setIsExpanded(false)
+                            }
+                          }}
+                          className={cn(
+                            'group flex items-center justify-center p-3 transition-colors size-full',
+                            item.disabled
+                              ? 'cursor-not-allowed opacity-40'
+                              : 'hover:bg-fill-secondary active:bg-fill-tertiary',
+                          )}
+                          title={item.label}
+                        >
+                          <i className={cn(item.icon, 'text-text size-5 transition-transform', !item.disabled && 'group-hover:scale-110 group-active:scale-95')} />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">
+                        {item.tooltip}
+                      </TooltipContent>
+                    </Tooltip>
+                  )
+                : (
+                    <button
+                      type="button"
+                      disabled={item.disabled}
+                      onClick={() => {
+                        if (!item.disabled) {
+                          item.onClick?.()
+                          setIsExpanded(false)
+                        }
+                      }}
+                      className={cn(
+                        'group flex items-center justify-center p-3 transition-colors size-full',
+                        item.disabled
+                          ? 'cursor-not-allowed opacity-40'
+                          : 'hover:bg-fill-secondary active:bg-fill-tertiary',
+                      )}
+                      title={item.label}
+                    >
+                      <i className={cn(item.icon, 'text-text size-5 transition-transform', !item.disabled && 'group-hover:scale-110 group-active:scale-95')} />
+                    </button>
+                  )}
             </div>
           ))}
         </div>

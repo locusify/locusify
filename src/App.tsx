@@ -2,6 +2,7 @@ import type { FC } from 'react'
 import { domAnimation, LazyMotion, MotionConfig } from 'motion/react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { RouterProvider } from 'react-router'
+import { TooltipProvider } from './components/ui/tooltip'
 import { router } from './routers'
 
 const App: FC = () => {
@@ -19,7 +20,9 @@ const App: FC = () => {
             window.location.reload()
           }}
         >
-          <RouterProvider router={router} />
+          <TooltipProvider>
+            <RouterProvider router={router} />
+          </TooltipProvider>
         </ErrorBoundary>
       </MotionConfig>
     </LazyMotion>

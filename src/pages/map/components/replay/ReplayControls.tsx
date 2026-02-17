@@ -20,7 +20,6 @@ export function ReplayControls() {
   const totalWaypoints = useReplayStore(s => s.waypoints.length)
   const togglePlayPause = useReplayStore(s => s.togglePlayPause)
   const resetReplay = useReplayStore(s => s.resetReplay)
-  const exitReplay = useReplayStore(s => s.exitReplay)
   const setSpeedMultiplier = useReplayStore(s => s.setSpeedMultiplier)
   const seekToWaypoint = useReplayStore(s => s.seekToWaypoint)
 
@@ -54,20 +53,10 @@ export function ReplayControls() {
   const clampedProgress = Math.min(totalProgress, 1)
 
   return (
-    <div className="bg-material-thick border-fill-tertiary relative flex flex-col gap-3 rounded-2xl border px-4 pb-3 pt-10 shadow-2xl backdrop-blur-[120px]">
-      {/* Top-left: Exit button (icon only) */}
-      <button
-        type="button"
-        onClick={exitReplay}
-        className="text-text-secondary hover:text-text hover:bg-white/5 active:bg-white/10 absolute left-1.5 top-1.5 flex size-7 items-center justify-center rounded-lg transition-colors"
-        title={t('workspace.controls.exit', { defaultValue: 'Exit' })}
-      >
-        <i className="i-mingcute-close-line size-4" />
-      </button>
-
+    <div className="bg-material-thick border-fill-tertiary flex flex-col gap-2 rounded-2xl border px-4 py-2.5 shadow-2xl backdrop-blur-[120px]">
       {/* Progress bar */}
       <div
-        className="group relative h-1.5 cursor-pointer rounded-full bg-white/10"
+        className="group relative h-1 cursor-pointer rounded-full bg-white/10"
         onClick={handleProgressClick}
         role="progressbar"
         aria-valuenow={Math.round(clampedProgress * 100)}
@@ -79,14 +68,14 @@ export function ReplayControls() {
           style={{ width: `${clampedProgress * 100}%` }}
         />
         <div
-          className="absolute top-1/2 size-3 -translate-y-1/2 rounded-full bg-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-          style={{ left: `calc(${clampedProgress * 100}% - 6px)` }}
+          className="absolute top-1/2 size-2.5 -translate-y-1/2 rounded-full bg-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+          style={{ left: `calc(${clampedProgress * 100}% - 5px)` }}
         />
       </div>
 
-      {/* Controls row — 3-column grid ensures center group is truly centered */}
+      {/* Controls row: progress text | playback | speed */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-        {/* Left: Progress text */}
+        {/* Left: progress text */}
         <div className="text-text-tertiary text-xs">
           {t('workspace.controls.progress', {
             current: Math.min(currentWaypointIndex + 1, totalWaypoints),
@@ -95,25 +84,25 @@ export function ReplayControls() {
         </div>
 
         {/* Center: Playback controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={resetReplay}
-            className="text-text-secondary hover:text-text flex size-8 items-center justify-center rounded-lg transition-colors"
+            className="text-text-secondary hover:text-text flex size-7 items-center justify-center rounded-lg transition-colors"
             title={t('workspace.controls.reset')}
           >
-            <i className="i-mingcute-refresh-2-line text-base" />
+            <i className="i-mingcute-refresh-2-line text-sm" />
           </button>
 
           <button
             type="button"
             onClick={togglePlayPause}
-            className="flex size-10 items-center justify-center rounded-full bg-sky-400 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+            className="flex size-8 items-center justify-center rounded-full bg-sky-400 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
             title={status === 'playing' ? t('workspace.controls.pause') : t('workspace.controls.play')}
           >
             <i
               className={cn(
-                'text-lg',
+                'text-base',
                 status === 'playing'
                   ? 'i-mingcute-pause-fill'
                   : 'i-mingcute-play-fill',
@@ -124,10 +113,10 @@ export function ReplayControls() {
           <button
             type="button"
             onClick={() => seekToWaypoint(Math.min(currentWaypointIndex + 1, totalWaypoints - 1))}
-            className="text-text-secondary hover:text-text flex size-8 items-center justify-center rounded-lg transition-colors"
+            className="text-text-secondary hover:text-text flex size-7 items-center justify-center rounded-lg transition-colors"
             title={t('workspace.controls.next')}
           >
-            <i className="i-mingcute-skip-forward-fill text-base" />
+            <i className="i-mingcute-skip-forward-fill text-sm" />
           </button>
         </div>
 
@@ -137,7 +126,7 @@ export function ReplayControls() {
             type="button"
             onClick={() => setSpeedMenuOpen(prev => !prev)}
             className={cn(
-              'flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
+              'flex items-center gap-0.5 rounded-lg px-2 py-1 text-xs font-medium transition-colors',
               speedMenuOpen
                 ? 'bg-white/10 text-sky-400'
                 : 'text-text-secondary hover:text-text hover:bg-white/5',
@@ -168,7 +157,7 @@ export function ReplayControls() {
                       setSpeedMenuOpen(false)
                     }}
                     className={cn(
-                      'flex w-full items-center justify-between px-3 py-2 text-xs transition-colors',
+                      'flex w-full items-center justify-between px-3 py-1.5 text-xs transition-colors',
                       speedMultiplier === speed
                         ? 'text-sky-400'
                         : 'text-text-secondary hover:text-text hover:bg-white/5',

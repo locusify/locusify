@@ -10,9 +10,9 @@ import { ClusterMarker } from './components/ClusterMarker'
 import { GeoJsonLayer } from './components/GeoJsonLayer'
 import { MapControls } from './components/MapControls'
 import { PhotoMarkerPin } from './components/PhotoMarkerPin'
+import { ReplayPhotoCard } from './components/replay/ReplayPhotoCard'
 import { TrajectoryController } from './components/TrajectoryController'
 import { TrajectoryLineLayer } from './components/TrajectoryLineLayer'
-import { WaypointDot } from './components/WaypointDot'
 import MapLibreStyle from './MapLibreStyle.json'
 import { calculateMapBounds } from './utils'
 // Styles
@@ -427,7 +427,7 @@ export function Maplibre({
         {isReplayMode && (
           <>
             <TrajectoryLineLayer />
-            <WaypointDot />
+            <ReplayPhotoCard />
             <TrajectoryController />
           </>
         )}

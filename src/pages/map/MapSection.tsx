@@ -1,6 +1,7 @@
 import type { MapBounds, PhotoMarker } from '@/types/map'
 import { m } from 'motion/react'
 import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { PhotoProvider, usePhotos } from '@/contexts'
 import { useReplayStore } from '@/stores/replayStore'
@@ -13,10 +14,12 @@ import { MapProvider } from './MapProvider'
 import { calculateMapBounds, getInitialViewStateForMarkers } from './utils'
 
 function MapSectionContent() {
-  const { photos, markers, selectedMarkerId, setSelectedMarkerId } = usePhotos()
+  const { t } = useTranslation()
+  const { markers, selectedMarkerId, setSelectedMarkerId } = usePhotos()
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
   const startReplay = useReplayStore(s => s.startReplay)
+  const exitReplay = useReplayStore(s => s.exitReplay)
 
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
 
@@ -35,8 +38,11 @@ function MapSectionContent() {
   }, [markers])
 
   const handleRoutesClick = useCallback(() => {
-    startReplay(photos)
-  }, [startReplay, photos])
+    startReplay(markers)
+  }, [startReplay, markers])
+
+  // Need at least 2 photos with GPS to replay
+  const hasEnoughPhotos = markers.length >= 2
 
   // Hide photo markers during replay
   const displayMarkers = isReplayMode ? [] : markers
@@ -49,12 +55,14 @@ function MapSectionContent() {
         <MapInfoPanel markersCount={markers.length} bounds={bounds} />
       )}
 
-      {!isReplayMode && (
-        <MapMenuButton
-          onUploadClick={() => setUploadDrawerOpen(true)}
-          onRoutesClick={handleRoutesClick}
-        />
-      )}
+      <MapMenuButton
+        onUploadClick={() => setUploadDrawerOpen(true)}
+        onRoutesClick={handleRoutesClick}
+        routesDisabled={!hasEnoughPhotos}
+        routesDisabledTooltip={t('workspace.replay.noDataMessage')}
+        isReplayMode={isReplayMode}
+        onExitReplay={exitReplay}
+      />
 
       <SelectPhotosDrawer
         open={uploadDrawerOpen}
