@@ -10,7 +10,7 @@ export function TrajectoryOverlay() {
       {/* Bottom gradient for cinematic feel */}
       <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
 
-      <div className="pointer-events-auto relative mx-20 p-4">
+      <div className="pointer-events-auto relative mx-4 p-2 sm:mx-20 sm:p-4">
         <ReplayControls />
       </div>
     </div>

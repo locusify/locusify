@@ -95,7 +95,7 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
         </HoverCardTrigger>
 
         <HoverCardContent
-          className={cn('w-80 overflow-hidden border-white/20 bg-white/95 p-0 backdrop-blur-[120px] dark:bg-black/95', isSelected ? 'shadow-2xl' : '')}
+          className={cn('w-56 overflow-hidden border-white/20 bg-white/95 p-0 backdrop-blur-[120px] sm:w-80 dark:bg-black/95', isSelected ? 'shadow-2xl' : '')}
           side="top"
           align="center"
           sideOffset={8}

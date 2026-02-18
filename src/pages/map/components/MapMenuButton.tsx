@@ -73,7 +73,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
   if (isReplayMode) {
     return (
       <m.div
-        className="absolute bottom-4 right-4 z-40"
+        className="absolute bottom-3 right-2 z-40 sm:bottom-4 sm:right-4"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
@@ -84,7 +84,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
               <button
                 type="button"
                 onClick={onExitReplay}
-                className="group hover:bg-fill-secondary active:bg-fill-tertiary relative flex size-12 items-center justify-center transition-colors"
+                className="group hover:bg-fill-secondary active:bg-fill-tertiary relative flex size-10 items-center justify-center transition-colors sm:size-12"
                 title={t('workspace.controls.exit', { defaultValue: 'Exit Replay' })}
               >
                 <i className="i-mingcute-close-line text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
@@ -101,7 +101,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
 
   return (
     <m.div
-      className="absolute bottom-4 right-4 z-40 flex flex-col-reverse gap-3"
+      className="absolute bottom-3 right-2 z-40 flex flex-col-reverse gap-2 sm:bottom-4 sm:right-4 sm:gap-3"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
@@ -111,7 +111,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
         <button
           type="button"
           onClick={onUploadClick}
-          className="group hover:bg-red/10 active:bg-red/20 relative flex size-12 items-center justify-center transition-colors"
+          className="group hover:bg-red/10 active:bg-red/20 relative flex size-10 items-center justify-center transition-colors sm:size-12"
           title={t('menu.upload', { defaultValue: 'Upload Photos' })}
         >
           <i className="i-mingcute-add-line text-red size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
@@ -123,7 +123,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="group hover:bg-fill-secondary active:bg-fill-tertiary relative flex size-12 items-center justify-center transition-colors"
+          className="group hover:bg-fill-secondary active:bg-fill-tertiary relative flex size-10 items-center justify-center transition-colors sm:size-12"
           title={t('menu.toggle', { defaultValue: 'Menu' })}
         >
           <i
