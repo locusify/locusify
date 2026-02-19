@@ -1,7 +1,6 @@
 import type { RouteObject } from 'react-router'
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, Navigate } from 'react-router'
 import Layout from '@/layout'
-import NotFound from '@/pages/error/404'
 import { ErrorElement } from '@/pages/error/ErrorElement'
 import { Map } from '@/pages/map'
 import SplashScreen from '@/pages/splashScreen/page'
@@ -25,7 +24,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '*',
-    element: <NotFound />,
+    element: <Navigate to="/map" replace />,
   },
 ]
 

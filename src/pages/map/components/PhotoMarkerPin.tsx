@@ -2,6 +2,7 @@ import type { FC } from 'react'
 import type { PhotoMarker } from '@/types/map'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@radix-ui/react-hover-card'
 import { m } from 'motion/react'
+import { useCallback, useState } from 'react'
 import { Marker } from 'react-map-gl/maplibre'
 import { GlassButton } from '@/components/ui/glass-button'
 import { LazyImage } from '@/components/ui/lazy-image'
@@ -20,14 +21,20 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
   onClick,
   onClose,
 }) => {
+  const [hoverOpen, setHoverOpen] = useState(false)
+
   const handleClick = () => {
     onClick?.(marker)
   }
 
-  const handleClose = (e: React.MouseEvent) => {
+  const handleClose = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
+    setHoverOpen(false)
     onClose?.()
-  }
+  }, [onClose])
+
+  // Selected → always open; otherwise follow hover state
+  const isOpen = isSelected || hoverOpen
 
   return (
     <Marker
@@ -36,9 +43,10 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
       latitude={marker.latitude}
     >
       <HoverCard
-        open={isSelected ? true : undefined}
-        openDelay={isSelected ? 0 : 400}
-        closeDelay={isSelected ? 0 : 100}
+        open={isOpen}
+        onOpenChange={setHoverOpen}
+        openDelay={400}
+        closeDelay={100}
       >
         <HoverCardTrigger asChild>
           <m.div

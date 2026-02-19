@@ -6,7 +6,6 @@ import { SelectPhotosDrawer } from '@/components/upload'
 import { PhotoProvider, usePhotos } from '@/contexts'
 import { useReplayStore } from '@/stores/replayStore'
 import { GenericMap } from './components/GenericMap'
-import { MapBackButton } from './components/MapBackButton'
 import { MapInfoPanel } from './components/MapInfoPanel'
 import { MapMenuButton } from './components/MapMenuButton'
 import { TrajectoryOverlay } from './components/TrajectoryOverlay'
@@ -49,8 +48,6 @@ function MapSectionContent() {
 
   return (
     <div className="absolute size-full">
-      <MapBackButton />
-
       {!isReplayMode && (
         <MapInfoPanel markersCount={markers.length} bounds={bounds} />
       )}

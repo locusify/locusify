@@ -1,89 +1,165 @@
 import { AnimatePresence, m } from 'motion/react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useReplayStore } from '@/stores/replayStore'
 
 const SPEED_OPTIONS = [0.5, 1, 1.5, 2, 4]
 
-/**
- * Bottom control bar: play/pause, reset, speed, progress bar, exit.
- * Reads state from the replay store directly.
- */
 export function ReplayControls() {
   const { t } = useTranslation()
 
   const status = useReplayStore(s => s.status)
-  const totalProgress = useReplayStore(s => s.totalProgress)
+  const waypoints = useReplayStore(s => s.waypoints)
   const speedMultiplier = useReplayStore(s => s.speedMultiplier)
   const currentWaypointIndex = useReplayStore(s => s.currentWaypointIndex)
-  const totalWaypoints = useReplayStore(s => s.waypoints.length)
   const togglePlayPause = useReplayStore(s => s.togglePlayPause)
   const resetReplay = useReplayStore(s => s.resetReplay)
   const setSpeedMultiplier = useReplayStore(s => s.setSpeedMultiplier)
   const seekToWaypoint = useReplayStore(s => s.seekToWaypoint)
 
-  const totalSegments = Math.max(totalWaypoints - 1, 1)
-
   const [speedMenuOpen, setSpeedMenuOpen] = useState(false)
   const speedMenuRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
+  const nodeRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  // Auto-scroll to keep active node centered
+  useEffect(() => {
+    const container = timelineRef.current
+    const activeNode = nodeRefs.current[currentWaypointIndex]
+    if (!container || !activeNode)
+      return
+
+    const containerRect = container.getBoundingClientRect()
+    const nodeRect = activeNode.getBoundingClientRect()
+    const nodeCenter = nodeRect.left + nodeRect.width / 2 - containerRect.left + container.scrollLeft
+    container.scrollTo({ left: nodeCenter - containerRect.width / 2, behavior: 'smooth' })
+  }, [currentWaypointIndex])
 
   useEffect(() => {
     if (!speedMenuOpen)
       return
     function handleClickOutside(e: MouseEvent) {
-      if (speedMenuRef.current && !speedMenuRef.current.contains(e.target as Node)) {
+      if (speedMenuRef.current && !speedMenuRef.current.contains(e.target as Node))
         setSpeedMenuOpen(false)
-      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [speedMenuOpen])
 
-  const handleProgressClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect()
-      const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
-      const targetIndex = Math.round(ratio * totalSegments)
-      seekToWaypoint(targetIndex)
-    },
-    [totalSegments, seekToWaypoint],
-  )
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
-  const clampedProgress = Math.min(totalProgress, 1)
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })
+
+  const formatCoord = (lat: number, lng: number, latRef?: string, lngRef?: string) =>
+    `${Math.abs(lat).toFixed(2)}°${latRef || 'N'} ${Math.abs(lng).toFixed(2)}°${lngRef || 'E'}`
 
   return (
-    <div className="bg-material-thick border-fill-tertiary flex flex-col gap-1.5 rounded-xl border px-3 py-2 shadow-2xl backdrop-blur-[120px] sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5">
-      {/* Progress bar */}
+    <div className="bg-material-thick border-fill-tertiary flex flex-col rounded-xl border shadow-2xl backdrop-blur-[120px] sm:rounded-2xl">
+      {/* Timeline */}
       <div
-        className="group relative h-1 cursor-pointer rounded-full bg-white/10"
-        onClick={handleProgressClick}
-        role="progressbar"
-        aria-valuenow={Math.round(clampedProgress * 100)}
-        aria-valuemin={0}
-        aria-valuemax={100}
+        ref={timelineRef}
+        className="overflow-x-auto px-4 pt-3 pb-2 sm:px-6 sm:pt-4 sm:pb-3 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent"
       >
-        <div
-          className="h-full rounded-full bg-sky-400 transition-[width] duration-100"
-          style={{ width: `${clampedProgress * 100}%` }}
-        />
-        <div
-          className="absolute top-1/2 size-2.5 -translate-y-1/2 rounded-full bg-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-          style={{ left: `calc(${clampedProgress * 100}% - 5px)` }}
-        />
+        <div className="flex min-w-full items-center">
+          {waypoints.map((wp, i) => {
+            const isActive = i === currentWaypointIndex
+            const isPast = i < currentWaypointIndex
+            const isLast = i === waypoints.length - 1
+
+            return (
+              <div key={wp.id} className={cn('flex items-center', !isLast && 'flex-1')}>
+                {/* Waypoint node: dot + label as one clickable unit */}
+                <button
+                  ref={(el) => { nodeRefs.current[i] = el }}
+                  type="button"
+                  onClick={() => seekToWaypoint(i)}
+                  className={cn(
+                    'group flex shrink-0 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all sm:px-3 sm:py-2',
+                    isActive
+                      ? 'bg-white/5'
+                      : 'hover:bg-white/5',
+                  )}
+                >
+                  {/* Dot */}
+                  <div className="relative flex items-center justify-center">
+                    {isActive && (
+                      <m.div
+                        className="absolute rounded-full bg-sky-400/20"
+                        animate={{ scale: [1, 1.8, 1], opacity: [0.4, 0, 0.4] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        style={{ width: 20, height: 20 }}
+                      />
+                    )}
+                    <div
+                      className={cn(
+                        'relative z-10 rounded-full transition-all duration-300',
+                        isActive
+                          ? 'size-3 bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.5)] sm:size-3.5'
+                          : isPast
+                            ? 'size-2 bg-sky-400/50 group-hover:bg-sky-400/70'
+                            : 'size-2 bg-white/25 group-hover:bg-white/50',
+                      )}
+                    />
+                  </div>
+
+                  {/* Label */}
+                  <div
+                    className={cn(
+                      'flex flex-col items-center gap-0.5 transition-opacity duration-200',
+                      isActive ? 'opacity-100' : 'opacity-40 group-hover:opacity-80',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'whitespace-nowrap text-[10px] leading-none sm:text-[11px]',
+                        isActive ? 'font-medium text-sky-400' : 'text-white/60',
+                      )}
+                    >
+                      {formatDate(wp.timestamp)}
+                      {' '}
+                      {formatTime(wp.timestamp)}
+                    </span>
+                    <span
+                      className={cn(
+                        'whitespace-nowrap font-mono text-[9px] leading-none sm:text-[10px]',
+                        isActive ? 'text-sky-300/70' : 'text-white/30',
+                      )}
+                    >
+                      {formatCoord(wp.marker.latitude, wp.marker.longitude, wp.marker.latitudeRef, wp.marker.longitudeRef)}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Connecting line */}
+                {!isLast && (
+                  <div
+                    className={cn(
+                      'h-px min-w-6 flex-1 sm:min-w-12',
+                      isPast ? 'bg-sky-400/50' : 'bg-white/10',
+                    )}
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Controls row: progress text | playback | speed */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-        {/* Left: progress text */}
+      {/* Divider */}
+      <div className="mx-3 h-px bg-white/5 sm:mx-4" />
+
+      {/* Controls row */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-3 py-1.5 sm:px-4 sm:py-2">
         <div className="text-text-tertiary text-[10px] sm:text-xs">
           {t('workspace.controls.progress', {
-            current: Math.min(currentWaypointIndex + 1, totalWaypoints),
-            total: totalWaypoints,
+            current: Math.min(currentWaypointIndex + 1, waypoints.length),
+            total: waypoints.length,
           })}
         </div>
 
-        {/* Center: Playback controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
@@ -100,19 +176,12 @@ export function ReplayControls() {
             className="flex size-7 items-center justify-center rounded-full bg-sky-400 text-white shadow-lg transition-transform hover:scale-105 active:scale-95 sm:size-8"
             title={status === 'playing' ? t('workspace.controls.pause') : t('workspace.controls.play')}
           >
-            <i
-              className={cn(
-                'text-base',
-                status === 'playing'
-                  ? 'i-mingcute-pause-fill'
-                  : 'i-mingcute-play-fill',
-              )}
-            />
+            <i className={cn('text-base', status === 'playing' ? 'i-mingcute-pause-fill' : 'i-mingcute-play-fill')} />
           </button>
 
           <button
             type="button"
-            onClick={() => seekToWaypoint(Math.min(currentWaypointIndex + 1, totalWaypoints - 1))}
+            onClick={() => seekToWaypoint(Math.min(currentWaypointIndex + 1, waypoints.length - 1))}
             className="text-text-secondary hover:text-text flex size-6 items-center justify-center rounded-lg transition-colors sm:size-7"
             title={t('workspace.controls.next')}
           >
@@ -120,16 +189,14 @@ export function ReplayControls() {
           </button>
         </div>
 
-        {/* Right: Speed dropdown */}
+        {/* Speed */}
         <div className="relative flex justify-end" ref={speedMenuRef}>
           <button
             type="button"
             onClick={() => setSpeedMenuOpen(prev => !prev)}
             className={cn(
               'flex items-center gap-0.5 rounded-lg px-2 py-1 text-xs font-medium transition-colors',
-              speedMenuOpen
-                ? 'bg-white/10 text-sky-400'
-                : 'text-text-secondary hover:text-text hover:bg-white/5',
+              speedMenuOpen ? 'bg-white/10 text-sky-400' : 'text-text-secondary hover:text-text hover:bg-white/5',
             )}
           >
             <span>
@@ -158,18 +225,14 @@ export function ReplayControls() {
                     }}
                     className={cn(
                       'flex w-full items-center justify-between px-3 py-1.5 text-xs transition-colors',
-                      speedMultiplier === speed
-                        ? 'text-sky-400'
-                        : 'text-text-secondary hover:text-text hover:bg-white/5',
+                      speedMultiplier === speed ? 'text-sky-400' : 'text-text-secondary hover:text-text hover:bg-white/5',
                     )}
                   >
                     <span>
                       {speed}
                       x
                     </span>
-                    {speedMultiplier === speed && (
-                      <i className="i-mingcute-check-line text-sm" />
-                    )}
+                    {speedMultiplier === speed && <i className="i-mingcute-check-line text-sm" />}
                   </button>
                 ))}
               </m.div>

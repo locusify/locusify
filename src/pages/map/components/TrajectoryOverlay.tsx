@@ -1,8 +1,9 @@
 import { ReplayControls } from './replay/ReplayControls'
+import { ReplayPhotoCard } from './replay/ReplayPhotoCard'
 
 /**
  * Overlay container for replay mode.
- * Only contains the bottom controls — photo is shown on the map via ReplayPhotoCard.
+ * Contains the photo card panel and bottom controls.
  */
 export function TrajectoryOverlay() {
   return (
@@ -10,7 +11,13 @@ export function TrajectoryOverlay() {
       {/* Bottom gradient for cinematic feel */}
       <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
 
-      <div className="pointer-events-auto relative mx-4 p-2 sm:mx-20 sm:p-4">
+      {/* Photo card — fixed panel, bottom-left */}
+      <div className="pointer-events-auto">
+        <ReplayPhotoCard />
+      </div>
+
+      {/* Controls bar */}
+      <div className="pointer-events-auto relative mx-2 pb-2 sm:pb-4">
         <ReplayControls />
       </div>
     </div>
