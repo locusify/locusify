@@ -47,7 +47,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/locusify/locusify.git
+git clone https://github.com/caterpi11ar/locusify.git
 cd locusify
 
 # Install dependencies
