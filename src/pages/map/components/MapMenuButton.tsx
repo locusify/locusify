@@ -160,7 +160,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
                             }
                           }}
                           className={cn(
-                            'group flex items-center justify-center p-3 transition-colors size-full',
+                            'group flex size-10 items-center justify-center transition-colors sm:size-12',
                             item.disabled
                               ? 'cursor-not-allowed opacity-40'
                               : 'hover:bg-fill-secondary active:bg-fill-tertiary',
@@ -186,7 +186,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
                         }
                       }}
                       className={cn(
-                        'group flex items-center justify-center p-3 transition-colors size-full',
+                        'group flex size-10 items-center justify-center transition-colors sm:size-12',
                         item.disabled
                           ? 'cursor-not-allowed opacity-40'
                           : 'hover:bg-fill-secondary active:bg-fill-tertiary',
