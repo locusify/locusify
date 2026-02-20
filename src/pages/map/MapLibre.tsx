@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
 import { useReplayStore } from '@/stores/replayStore'
 
-import { ClusterMarker } from './components/ClusterMarker'
 import { GeoJsonLayer } from './components/GeoJsonLayer'
 import { MapControls } from './components/MapControls'
 import { PhotoMarkerPin } from './components/PhotoMarkerPin'
@@ -47,7 +46,6 @@ export interface PureMaplibreProps {
   onMarkerClick?: (marker: PhotoMarker) => void
   onGeoJsonClick?: (event: MapLayerMouseEvent) => void
   onGeolocate?: (longitude: number, latitude: number) => void
-  onClusterClick?: (longitude: number, latitude: number) => void
   className?: string
   style?: CSSProperties
   mapRef?: RefObject<any>
@@ -67,7 +65,6 @@ export function Maplibre({
   onMarkerClick,
   onGeoJsonClick,
   onGeolocate,
-  onClusterClick,
   className = 'size-full',
   style = { width: '100%', height: '100%' },
   mapRef,
@@ -388,36 +385,20 @@ export function Maplibre({
 
         {/* Photo Markers */}
         {clusteredMarkers.map((clusterPoint) => {
-          if (clusterPoint.properties.cluster) {
-            // Render cluster marker
-            return (
-              <ClusterMarker
-                key={`cluster-${clusterPoint.geometry.coordinates[0]}-${clusterPoint.geometry.coordinates[1]}`}
-                longitude={clusterPoint.geometry.coordinates[0]}
-                latitude={clusterPoint.geometry.coordinates[1]}
-                pointCount={clusterPoint.properties.point_count || 0}
-                representativeMarker={clusterPoint.properties.marker}
-                clusteredPhotos={clusterPoint.properties.clusteredPhotos}
-                onClusterClick={onClusterClick}
-              />
-            )
-          }
-          else {
-            // Render individual marker
-            const { marker } = clusterPoint.properties
-            if (!marker)
-              return null
+          const { marker, clusteredPhotos } = clusterPoint.properties
+          if (!marker)
+            return null
 
-            return (
-              <PhotoMarkerPin
-                key={marker.id}
-                marker={marker}
-                isSelected={selectedMarkerId === marker.id}
-                onClick={handleMarkerClick}
-                onClose={handleMarkerClose}
-              />
-            )
-          }
+          return (
+            <PhotoMarkerPin
+              key={clusterPoint.properties.cluster ? `cluster-${marker.id}` : marker.id}
+              marker={marker}
+              isSelected={selectedMarkerId === marker.id}
+              onClick={handleMarkerClick}
+              onClose={handleMarkerClose}
+              clusteredMarkers={clusterPoint.properties.cluster ? clusteredPhotos : undefined}
+            />
+          )
         })}
 
         {/* GeoJSON Layer */}

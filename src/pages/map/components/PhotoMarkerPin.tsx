@@ -2,17 +2,20 @@ import type { FC } from 'react'
 import type { PhotoMarker } from '@/types/map'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@radix-ui/react-hover-card'
 import { m } from 'motion/react'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Marker } from 'react-map-gl/maplibre'
 import { GlassButton } from '@/components/ui/glass-button'
 import { LazyImage } from '@/components/ui/lazy-image'
 import { cn } from '@/lib/utils'
+import { ClusterPhotoGrid } from './ClusterPhotoGrid'
 
 interface PhotoMarkerPinProps {
   marker: PhotoMarker
   isSelected?: boolean
   onClick?: (marker: PhotoMarker) => void
   onClose?: () => void
+  /** When provided, renders in cluster mode showing a photo grid */
+  clusteredMarkers?: PhotoMarker[]
 }
 
 export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
@@ -20,8 +23,9 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
   isSelected = false,
   onClick,
   onClose,
+  clusteredMarkers,
 }) => {
-  const [hoverOpen, setHoverOpen] = useState(false)
+  const isCluster = !!clusteredMarkers && clusteredMarkers.length > 1
 
   const handleClick = () => {
     onClick?.(marker)
@@ -29,22 +33,18 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
 
   const handleClose = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    setHoverOpen(false)
     onClose?.()
   }, [onClose])
-
-  // Selected → always open; otherwise follow hover state
-  const isOpen = isSelected || hoverOpen
 
   return (
     <Marker
       key={marker.id}
       longitude={marker.longitude}
       latitude={marker.latitude}
+      style={{ zIndex: isSelected ? 10 : 0 }}
     >
       <HoverCard
-        open={isOpen}
-        onOpenChange={setHoverOpen}
+        open={isSelected}
         openDelay={400}
         closeDelay={100}
       >
@@ -98,12 +98,19 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
 
               {/* Subtle inner shadow for depth */}
               <div className="absolute inset-0 rounded-full shadow-inner shadow-black/5" />
+
+              {/* Cluster count badge */}
+              {isCluster && (
+                <div className="bg-blue absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full text-[10px] font-bold text-white ring-2 ring-white dark:ring-black">
+                  {clusteredMarkers!.length}
+                </div>
+              )}
             </div>
           </m.div>
         </HoverCardTrigger>
 
         <HoverCardContent
-          className={cn('w-56 overflow-hidden border-white/20 bg-white/95 p-0 backdrop-blur-[120px] sm:w-80 dark:bg-black/95', isSelected ? 'shadow-2xl' : '')}
+          className={cn('z-50 overflow-hidden border-white/20 bg-white/95 p-0 backdrop-blur-[120px] dark:bg-black/95', isCluster ? 'w-80' : 'w-56 sm:w-80', isSelected ? 'shadow-2xl' : '')}
           side="top"
           align="center"
           sideOffset={8}
@@ -123,87 +130,99 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
               </GlassButton>
             )}
 
-            {/* Photo header */}
-            <div className="relative h-32 overflow-hidden">
-              {marker.photo.thumbnailUrl && (
-                <LazyImage
-                  src={marker.photo.thumbnailUrl}
-                  alt={marker.photo.title || marker.id}
-                  className="size-full object-cover"
-                  rootMargin="200px"
-                  threshold={0.1}
-                />
-              )}
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-            </div>
-
-            {/* Content */}
-            <div className="space-y-3 p-4">
-              {/* Title */}
-              <h3
-                className="text-text truncate text-sm font-semibold"
-                title={marker.photo.title || marker.id}
-              >
-                {marker.photo.title || marker.id}
-              </h3>
-
-              {/* Metadata */}
-              <div className="space-y-2">
-                {marker.photo.dateTaken && (
-                  <div className="text-text-secondary flex items-center gap-2 text-xs">
-                    <i className="i-mingcute-calendar-line text-sm" />
-                    <span>
-                      {new Date(marker.photo.dateTaken).toLocaleDateString('zh-CN', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </span>
+            {isCluster
+              ? (
+                  /* Cluster mode: photo grid */
+                  <div className="p-4">
+                    <ClusterPhotoGrid photos={clusteredMarkers!} />
                   </div>
-                )}
-
-                {marker.photo.description && (
-                  <div className="text-text-secondary flex items-center gap-2 text-xs">
-                    <i className="i-mingcute-camera-line text-sm" />
-                    <span className="truncate">{marker.photo.description}</span>
-                  </div>
-                )}
-
-                <div className="text-text-secondary space-y-1 text-xs">
-                  <div className="flex items-center gap-2">
-                    <i className="i-mingcute-location-line text-sm" />
-                    <span className="font-mono">
-                      <span>
-                        {Math.abs(marker.latitude).toFixed(4)}
-                        °
-                      </span>
-                      <span>{marker.latitudeRef || 'N'}</span>
-                      <span>, </span>
-                      <span>
-                        {Math.abs(marker.longitude).toFixed(4)}
-                        °
-                      </span>
-                      <span>{marker.longitudeRef || 'E'}</span>
-                    </span>
-                  </div>
-                  {marker.altitude !== undefined && (
-                    <div className="flex items-center gap-2">
-                      <i className="i-mingcute-mountain-2-line text-sm" />
-                      <span className="font-mono">
-                        <span>
-                          {marker.altitudeRef === 'Below Sea Level' ? '-' : ''}
-                        </span>
-                        <span>
-                          {Math.abs(marker.altitude).toFixed(1)}
-                          m
-                        </span>
-                      </span>
+                )
+              : (
+                  /* Single photo mode */
+                  <>
+                    {/* Photo header */}
+                    <div className="relative h-32 overflow-hidden">
+                      {marker.photo.thumbnailUrl && (
+                        <LazyImage
+                          src={marker.photo.thumbnailUrl}
+                          alt={marker.photo.title || marker.id}
+                          className="size-full object-cover"
+                          rootMargin="200px"
+                          threshold={0.1}
+                        />
+                      )}
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
+
+                    {/* Content */}
+                    <div className="space-y-3 p-4">
+                      {/* Title */}
+                      <h3
+                        className="text-text truncate text-sm font-semibold"
+                        title={marker.photo.title || marker.id}
+                      >
+                        {marker.photo.title || marker.id}
+                      </h3>
+
+                      {/* Metadata */}
+                      <div className="space-y-2">
+                        {marker.photo.dateTaken && (
+                          <div className="text-text-secondary flex items-center gap-2 text-xs">
+                            <i className="i-mingcute-calendar-line text-sm" />
+                            <span>
+                              {new Date(marker.photo.dateTaken).toLocaleDateString('zh-CN', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </span>
+                          </div>
+                        )}
+
+                        {marker.photo.description && (
+                          <div className="text-text-secondary flex items-center gap-2 text-xs">
+                            <i className="i-mingcute-camera-line text-sm" />
+                            <span className="truncate">{marker.photo.description}</span>
+                          </div>
+                        )}
+
+                        <div className="text-text-secondary space-y-1 text-xs">
+                          <div className="flex items-center gap-2">
+                            <i className="i-mingcute-location-line text-sm" />
+                            <span className="font-mono">
+                              <span>
+                                {Math.abs(marker.latitude).toFixed(4)}
+                                °
+                              </span>
+                              <span>{marker.latitudeRef || 'N'}</span>
+                              <span>, </span>
+                              <span>
+                                {Math.abs(marker.longitude).toFixed(4)}
+                                °
+                              </span>
+                              <span>{marker.longitudeRef || 'E'}</span>
+                            </span>
+                          </div>
+                          {marker.altitude !== undefined && (
+                            <div className="flex items-center gap-2">
+                              <i className="i-mingcute-mountain-2-line text-sm" />
+                              <span className="font-mono">
+                                <span>
+                                  {marker.altitudeRef === 'Below Sea Level' ? '-' : ''}
+                                </span>
+                                <span>
+                                  {Math.abs(marker.altitude).toFixed(1)}
+                                  m
+                                </span>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
           </div>
         </HoverCardContent>
       </HoverCard>

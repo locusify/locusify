@@ -1,7 +1,9 @@
 import type { PhotoMarker } from '@/types/map'
 
 import { m } from 'motion/react'
+import { useCallback, useState } from 'react'
 import { Marker } from 'react-map-gl/maplibre'
+import { GlassButton } from '@/components/ui/glass-button'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { LazyImage } from '@/components/ui/lazy-image'
 import { ClusterPhotoGrid } from './ClusterPhotoGrid'
@@ -31,10 +33,26 @@ export function ClusterMarker({
   onClusterClick,
 }: ClusterMarkerProps) {
   const size = Math.min(64, Math.max(40, 32 + Math.log(pointCount) * 8))
+  const [hoverOpen, setHoverOpen] = useState(false)
+  const [isSelected, setIsSelected] = useState(false)
+
+  const handleClick = () => {
+    setIsSelected(true)
+    onClusterClick?.(longitude, latitude)
+  }
+
+  const handleClose = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    setHoverOpen(false)
+    setIsSelected(false)
+  }, [])
+
+  // Selected → always open; otherwise follow hover state
+  const isOpen = isSelected || hoverOpen
 
   return (
     <Marker longitude={longitude} latitude={latitude}>
-      <HoverCard openDelay={300} closeDelay={150}>
+      <HoverCard open={isOpen} onOpenChange={setHoverOpen} openDelay={300} closeDelay={150}>
         <HoverCardTrigger asChild>
           <m.div
             className="group relative cursor-pointer"
@@ -47,7 +65,7 @@ export function ClusterMarker({
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => onClusterClick?.(longitude, latitude)}
+            onClick={handleClick}
           >
             {/* Subtle pulse ring for attention */}
             <div
@@ -120,8 +138,18 @@ export function ClusterMarker({
           side="top"
           align="center"
           sideOffset={8}
+          onPointerDownOutside={isSelected ? e => e.preventDefault() : undefined}
+          onEscapeKeyDown={isSelected ? e => e.preventDefault() : undefined}
         >
-          <div className="p-4">
+          <div className="relative p-4">
+            {isSelected && (
+              <GlassButton
+                className="absolute top-0 right-0 z-10 size-8"
+                onClick={handleClose}
+              >
+                <i className="i-mingcute-close-line text-lg" />
+              </GlassButton>
+            )}
             <ClusterPhotoGrid photos={clusteredPhotos} />
           </div>
         </HoverCardContent>

@@ -13,26 +13,18 @@ export function ClusterPhotoGrid({
   photos,
   onPhotoClick,
 }: ClusterPhotoGridProps) {
-  // 最多显示 6 张照片
-  const displayPhotos = photos.slice(0, 6)
-  const remainingCount = Math.max(0, photos.length - 6)
   const { t, i18n } = useTranslation()
 
   return (
     <div className="space-y-3">
       {/* 标题 */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-text text-sm font-semibold">
-          {t('explory.cluster.photos', { count: photos.length })}
-        </h3>
-        <div className="text-text-secondary text-xs">
-          {t('explory.cluster.click.details')}
-        </div>
-      </div>
+      <h3 className="text-text text-sm font-semibold">
+        {t('explory.cluster.photos', { count: photos.length })}
+      </h3>
 
-      {/* 照片网格 */}
-      <div className="grid grid-cols-3 gap-2">
-        {displayPhotos.map((photoMarker, index) => (
+      {/* 横向滚动照片列表，每次展示 3 张 */}
+      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+        {photos.map((photoMarker, index) => (
           <m.div
             key={photoMarker.photo.id}
             initial={{ opacity: 0, scale: 0.8 }}
@@ -43,12 +35,10 @@ export function ClusterPhotoGrid({
               bounce: 0,
               delay: index * 0.05,
             }}
-            className="group relative aspect-square overflow-hidden rounded-lg"
+            className="group relative aspect-square w-[90px] flex-none overflow-hidden rounded-lg"
           >
             <div
-              onClick={() => {
-                onPhotoClick?.(photoMarker)
-              }}
+              onClick={() => onPhotoClick?.(photoMarker)}
               className="block size-full"
             >
               <LazyImage
@@ -65,53 +55,9 @@ export function ClusterPhotoGrid({
 
               {/* 悬停遮罩 */}
               <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/20" />
-
-              {/* 悬停图标 */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <div className="rounded-full bg-black/50 p-2 backdrop-blur-sm">
-                  <svg
-                    className="size-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </div>
-              </div>
             </div>
           </m.div>
         ))}
-
-        {/* 更多照片指示器 */}
-        {remainingCount > 0 && (
-          <m.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              type: 'spring',
-              duration: 0.4,
-              bounce: 0,
-              delay: displayPhotos.length * 0.05,
-            }}
-            className="bg-fill-secondary flex aspect-square items-center justify-center rounded-lg"
-          >
-            <div className="text-center">
-              <div className="text-text text-lg font-bold">
-                +
-                {remainingCount}
-              </div>
-              <div className="text-text-secondary text-xs">
-                {t('explory.cluster.more')}
-              </div>
-            </div>
-          </m.div>
-        )}
       </div>
 
       {/* 位置信息 */}

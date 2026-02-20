@@ -1,19 +1,16 @@
-import type { MapBounds, PhotoMarker } from '@/types/map'
+import type { PhotoMarker } from '@/types/map'
 import { m } from 'motion/react'
 import { useCallback, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { PhotoProvider, usePhotos } from '@/contexts'
 import { useReplayStore } from '@/stores/replayStore'
 import { GenericMap } from './components/GenericMap'
-import { MapInfoPanel } from './components/MapInfoPanel'
 import { MapMenuButton } from './components/MapMenuButton'
 import { TrajectoryOverlay } from './components/TrajectoryOverlay'
 import { MapProvider } from './MapProvider'
-import { calculateMapBounds, getInitialViewStateForMarkers } from './utils'
+import { getInitialViewStateForMarkers } from './utils'
 
 function MapSectionContent() {
-  const { t } = useTranslation()
   const { markers, selectedMarkerId, setSelectedMarkerId } = usePhotos()
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
@@ -25,12 +22,6 @@ function MapSectionContent() {
   const handleMarkerClick = useCallback((marker: PhotoMarker) => {
     setSelectedMarkerId(selectedMarkerId === marker.id ? null : marker.id)
   }, [selectedMarkerId, setSelectedMarkerId])
-
-  const bounds = useMemo<MapBounds | null>(() => {
-    if (markers.length === 0)
-      return null
-    return calculateMapBounds(markers)
-  }, [markers])
 
   const initialViewState = useMemo(() => {
     return getInitialViewStateForMarkers(markers)
@@ -48,15 +39,10 @@ function MapSectionContent() {
 
   return (
     <div className="absolute size-full">
-      {!isReplayMode && (
-        <MapInfoPanel markersCount={markers.length} bounds={bounds} />
-      )}
-
       <MapMenuButton
         onUploadClick={() => setUploadDrawerOpen(true)}
         onRoutesClick={handleRoutesClick}
         routesDisabled={!hasEnoughPhotos}
-        routesDisabledTooltip={t('workspace.replay.noDataMessage')}
         isReplayMode={isReplayMode}
         onExitReplay={exitReplay}
       />
