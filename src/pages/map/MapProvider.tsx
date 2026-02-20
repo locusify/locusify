@@ -48,7 +48,7 @@ const defaultConfig: SiteConfig = {
   title: 'Locusify',
   description:
     'Locusify is a map application that allows you to view your photos on a map.',
-  url: 'https://locusify.caterpillar-soft.com',
+  url: 'https://locusify.caterpi11ar.com',
   accentColor: '#007bff',
   author: {
     name: 'Caterpi11ar',

@@ -63,7 +63,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
       icon: 'i-mingcute-share-3-line',
       label: t('menu.share', { defaultValue: 'Share' }),
       onClick: () => {
-        navigator.clipboard.writeText('https://locusify.caterpillar-soft.com/')
+        navigator.clipboard.writeText('https://locusify.caterpi11ar.com/')
         toast.success(t('menu.linkCopied', { defaultValue: 'Link copied to clipboard' }))
       },
     },
