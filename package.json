@@ -7,8 +7,9 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/locusify/locusify"
+    "url": "https://github.com/caterpi11ar/locusify"
   },
+  "keywords": ["travel", "photo", "map", "route", "vlog", "geotagging"],
   "scripts": {
     "prepare": "husky install",
     "preinstall": "npx only-allow pnpm",
