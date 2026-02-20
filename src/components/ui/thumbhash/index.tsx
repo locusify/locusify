@@ -22,5 +22,5 @@ export function Thumbhash({
     return thumbHashToDataURL(thumbHash)
   }, [thumbHash])
 
-  return <img src={dataURL} className={cn('size-full', className)} />
+  return <img alt="Thumbhash" src={dataURL} className={cn('size-full', className)} />
 }
