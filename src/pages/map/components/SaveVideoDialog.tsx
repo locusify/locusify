@@ -3,7 +3,8 @@ import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 
 interface SaveVideoDialogProps {
-  pendingVideo: PendingVideo
+  pendingVideo: PendingVideo | null
+  isProcessing: boolean
   onSave: () => void
   onDiscard: () => void
 }
@@ -14,7 +15,7 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
-export function SaveVideoDialog({ pendingVideo, onSave, onDiscard }: SaveVideoDialogProps) {
+export function SaveVideoDialog({ pendingVideo, isProcessing, onSave, onDiscard }: SaveVideoDialogProps) {
   const { t } = useTranslation()
 
   return (
@@ -39,15 +40,21 @@ export function SaveVideoDialog({ pendingVideo, onSave, onDiscard }: SaveVideoDi
         {/* Header */}
         <div className="flex items-center gap-3 px-5 pt-5 pb-4">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-400/15">
-            <i className="i-mingcute-video-camera-line text-xl text-sky-400" />
+            <i className={`text-xl text-sky-400 ${isProcessing ? 'i-mingcute-loading-line animate-spin' : 'i-mingcute-video-camera-line'}`} />
           </div>
           <div className="min-w-0">
             <p className="text-text text-sm font-semibold leading-tight">
-              {t('workspace.recording.ready.title')}
+              {pendingVideo
+                ? t('workspace.recording.ready.title')
+                : isProcessing
+                  ? t('workspace.recording.processing', { defaultValue: 'Processing video…' })
+                  : t('workspace.recording.replayComplete', { defaultValue: 'Replay Complete' })}
             </p>
-            <p className="text-text-secondary mt-0.5 text-xs">
-              {formatBytes(pendingVideo.blob.size)}
-            </p>
+            {pendingVideo && (
+              <p className="text-text-secondary mt-0.5 text-xs">
+                {formatBytes(pendingVideo.blob.size)}
+              </p>
+            )}
           </div>
         </div>
 
@@ -56,20 +63,24 @@ export function SaveVideoDialog({ pendingVideo, onSave, onDiscard }: SaveVideoDi
 
         {/* Actions */}
         <div className="flex gap-2 p-4">
-          <button
-            type="button"
-            onClick={onSave}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-sky-400 px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 active:opacity-80"
-          >
-            <i className="i-mingcute-download-2-line text-base" />
-            {t('workspace.recording.save')}
-          </button>
+          {pendingVideo && (
+            <button
+              type="button"
+              onClick={onSave}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-sky-400 px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 active:opacity-80"
+            >
+              <i className="i-mingcute-download-2-line text-base" />
+              {t('workspace.recording.save')}
+            </button>
+          )}
           <button
             type="button"
             onClick={onDiscard}
-            className="border-fill-tertiary text-text-secondary hover:text-text rounded-xl border px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
+            className="border-fill-tertiary text-text-secondary hover:text-text flex-1 rounded-xl border px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
           >
-            {t('workspace.recording.discard')}
+            {pendingVideo
+              ? t('workspace.recording.discard')
+              : t('workspace.recording.close', { defaultValue: 'Close' })}
           </button>
         </div>
       </m.div>

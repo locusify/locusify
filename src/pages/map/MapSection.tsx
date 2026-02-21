@@ -16,6 +16,7 @@ function MapSectionContent() {
   const { markers, selectedMarkerId, setSelectedMarkerId } = usePhotos()
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
+  const replayStatus = useReplayStore(s => s.status)
   const startReplay = useReplayStore(s => s.startReplay)
   const exitReplay = useReplayStore(s => s.exitReplay)
 
@@ -31,15 +32,13 @@ function MapSectionContent() {
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
   const [videoDialogOpen, setVideoDialogOpen] = useState(false)
 
-  // Auto-show dialog 2 seconds after video becomes ready
+  // Show dialog 2 seconds after replay completes (regardless of whether video is ready)
   useEffect(() => {
-    if (!pendingVideo) {
-      setVideoDialogOpen(false)
+    if (replayStatus !== 'completed')
       return
-    }
     const t = setTimeout(() => setVideoDialogOpen(true), 2000)
     return () => clearTimeout(t)
-  }, [pendingVideo])
+  }, [replayStatus])
 
   const handleMarkerClick = useCallback((marker: PhotoMarker) => {
     setSelectedMarkerId(selectedMarkerId === marker.id ? null : marker.id)
@@ -64,10 +63,12 @@ function MapSectionContent() {
 
   const handleSaveVideo = useCallback(() => {
     saveVideo()
+    setVideoDialogOpen(false)
   }, [saveVideo])
 
   const handleDiscardVideo = useCallback(() => {
     discardVideo()
+    setVideoDialogOpen(false)
   }, [discardVideo])
 
   const hasEnoughPhotos = markers.length >= 2
@@ -92,11 +93,12 @@ function MapSectionContent() {
 
       {isReplayMode && <TrajectoryOverlay />}
 
-      {/* Save / Discard dialog — auto-shown 2 s after recording finishes */}
+      {/* Save / Discard dialog — shown 2 s after replay completes */}
       <AnimatePresence>
-        {videoDialogOpen && pendingVideo && (
+        {videoDialogOpen && (
           <SaveVideoDialog
             pendingVideo={pendingVideo}
+            isProcessing={isProcessing}
             onSave={handleSaveVideo}
             onDiscard={handleDiscardVideo}
           />

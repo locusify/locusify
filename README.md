@@ -16,7 +16,7 @@
 
 ## Demo
 
-<video src="./public/example.mp4" controls width="100%"></video>
+<video src="https://raw.githubusercontent.com/caterpi11ar/locusify/main/public/example.mp4" controls width="100%"></video>
 
 ## Features
 

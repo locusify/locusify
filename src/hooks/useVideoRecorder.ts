@@ -286,14 +286,28 @@ const WAIT_MS = 2000
 
 // ─── Shared canvas factory ─────────────────────────────────────────────────────
 
-/** Creates a 2D composite canvas sized to match the source map canvas. */
+/**
+ * Maximum pixel length on either axis for the recording canvas.
+ * 1280px (≈ 720p) balances quality and file size for mobile sharing.
+ * Caps high-DPR canvases (e.g. 1170×2532 on iPhone 3× DPR) to a size
+ * that iOS/Android VideoEncoder hardware handles reliably.
+ */
+const MAX_RECORDING_DIMENSION = 1280
+
+/**
+ * Creates a 2D composite canvas scaled to fit within MAX_RECORDING_DIMENSION.
+ * Dimensions are rounded to even numbers as required by H.264 YUV encoding.
+ */
 function createCompositeCanvas(mapCanvas: HTMLCanvasElement): {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
 } {
+  const { width: srcW, height: srcH } = mapCanvas
+  const scale = Math.min(1, MAX_RECORDING_DIMENSION / Math.max(srcW, srcH))
   const canvas = document.createElement('canvas')
-  canvas.width = mapCanvas.width
-  canvas.height = mapCanvas.height
+  // H.264 YUV encoding requires even dimensions
+  canvas.width = Math.round(srcW * scale) & ~1
+  canvas.height = Math.round(srcH * scale) & ~1
   const ctx = canvas.getContext('2d')!
   return { canvas, ctx }
 }
@@ -305,6 +319,8 @@ interface SessionCallbacks {
   onStopping: () => void
   /** Called once the encoded blob is ready (transition to 'idle'). */
   onComplete: (blob: Blob, mimeType: string) => void
+  /** Called if the session fails to initialize (e.g. WebCodecs unavailable at runtime). */
+  onError?: () => void
 }
 
 // ─── Recording phase ───────────────────────────────────────────────────────────
@@ -377,19 +393,25 @@ class Mp4RecordingSession {
   }
 
   private async initAndStart(): Promise<void> {
-    const bufferTarget = new BufferTarget()
-    const output = new Output({ format: new Mp4OutputFormat(), target: bufferTarget })
-    const videoSource = new CanvasSource(this.canvas, { codec: 'avc', bitrate: 8_000_000 })
-    output.addVideoTrack(videoSource, { frameRate: 30 })
-    await output.start()
+    try {
+      const bufferTarget = new BufferTarget()
+      const output = new Output({ format: new Mp4OutputFormat(), target: bufferTarget })
+      const videoSource = new CanvasSource(this.canvas, { codec: 'avc', bitrate: 4_000_000 })
+      output.addVideoTrack(videoSource, { frameRate: 30 })
+      await output.start()
 
-    if (this.disposed)
-      return // user may have exited during async init
+      if (this.disposed)
+        return // user may have exited during async init
 
-    this.output = output
-    this.bufferTarget = bufferTarget
-    this.videoSource = videoSource
-    this.rafId = requestAnimationFrame(this.drawFrame)
+      this.output = output
+      this.bufferTarget = bufferTarget
+      this.videoSource = videoSource
+      this.rafId = requestAnimationFrame(this.drawFrame)
+    }
+    catch {
+      if (!this.disposed)
+        this.callbacks.onError?.()
+    }
   }
 
   private cancelRaf(): void {
@@ -403,9 +425,10 @@ class Mp4RecordingSession {
     if (this.startTime === null)
       this.startTime = timestamp
     const elapsed = timestamp - this.startTime
-    const { width: W, height: H } = this.mapCanvas
+    // Use composite canvas dimensions (may be scaled down from mapCanvas)
+    const { width: W, height: H } = this.canvas
 
-    // Always composite the map frame first
+    // Always composite the map frame first (scaled to fit composite canvas)
     this.ctx.drawImage(this.mapCanvas, 0, 0, W, H)
 
     let done = false
@@ -543,7 +566,8 @@ class WebmRecordingSession {
     if (this.startTime === null)
       this.startTime = timestamp
     const elapsed = timestamp - this.startTime
-    const { width: W, height: H } = this.mapCanvas
+    // Use composite canvas dimensions (may be scaled down from mapCanvas)
+    const { width: W, height: H } = this.canvas
 
     this.ctx.drawImage(this.mapCanvas, 0, 0, W, H)
 
@@ -649,6 +673,10 @@ export function useVideoRecorder() {
       onStopping: () => setStatus('processing'),
       onComplete: (blob, mimeType) => {
         setPendingVideo({ blob, mimeType })
+        setStatus('idle')
+        sessionRef.current = null
+      },
+      onError: () => {
         setStatus('idle')
         sessionRef.current = null
       },
