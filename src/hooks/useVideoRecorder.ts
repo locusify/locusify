@@ -279,6 +279,11 @@ function drawWatermark(ctx: CanvasRenderingContext2D, W: number, H: number): voi
   ctx.restore()
 }
 
+// ─── Timing constants ──────────────────────────────────────────────────────────
+
+/** How long to keep showing the map after replay ends before the outro. */
+const WAIT_MS = 2000
+
 // ─── Shared canvas factory ─────────────────────────────────────────────────────
 
 /** Creates a 2D composite canvas sized to match the source map canvas. */
@@ -293,85 +298,82 @@ function createCompositeCanvas(mapCanvas: HTMLCanvasElement): {
   return { canvas, ctx }
 }
 
-/** Draws the current frame (map + overlays) onto the composite ctx. */
-function renderCompositeFrame(
-  ctx: CanvasRenderingContext2D,
-  mapCanvas: HTMLCanvasElement,
-  elapsed: number,
-  introEnded: boolean,
-): boolean {
-  const { width: W, height: H } = mapCanvas
-  ctx.drawImage(mapCanvas, 0, 0, W, H)
+// ─── Session callbacks & shared types ─────────────────────────────────────────
 
-  if (!introEnded) {
-    const stillIntro = drawIntro(ctx, W, H, elapsed)
-    if (!stillIntro)
-      return true // intro just ended
-  }
-  else {
-    drawPhotoCard(ctx, W, H)
-    drawWatermark(ctx, W, H)
-  }
-
-  return false
+interface SessionCallbacks {
+  /** Called the moment the session decides to stop (transition to 'processing'). */
+  onStopping: () => void
+  /** Called once the encoded blob is ready (transition to 'idle'). */
+  onComplete: (blob: Blob, mimeType: string) => void
 }
 
-// ─── Mp4RecordingSession ───────────────────────────────────────────────────────
+// ─── Recording phase ───────────────────────────────────────────────────────────
 
-type OnCompleteCallback = (blob: Blob, mimeType: string) => void
+type RecordingPhase = 'intro' | 'recording' | 'wait'
+
+// ─── Mp4RecordingSession ───────────────────────────────────────────────────────
 
 /**
  * Records the composite canvas to MP4 (H.264) using WebCodecs + Mediabunny.
  * Compatible with iOS Safari 16.4+, Android Chrome, and desktop Chrome/Edge.
+ *
+ * Phase state machine:
+ *   intro → recording → wait (WAIT_MS) → finalize
+ *
+ * The session self-terminates after the 2s wait completes —
+ * no external timer or watcher needed.
  */
 class Mp4RecordingSession {
   readonly canvas: HTMLCanvasElement
 
   private readonly ctx: CanvasRenderingContext2D
   private readonly mapCanvas: HTMLCanvasElement
-  private readonly onComplete: OnCompleteCallback
+  private readonly shouldStop: () => boolean
+  private readonly callbacks: SessionCallbacks
 
   private output: Output | null = null
   private videoSource: CanvasSource | null = null
   private bufferTarget: BufferTarget | null = null
 
   private startTime: number | null = null
-  private introEnded = false
+  private phase: RecordingPhase = 'intro'
+  private phaseStartTimestamp = 0
   private lastFrameElapsed = 0
   private rafId: number | null = null
   private disposed = false
 
-  constructor(mapCanvas: HTMLCanvasElement, onComplete: OnCompleteCallback) {
+  constructor(
+    mapCanvas: HTMLCanvasElement,
+    shouldStop: () => boolean,
+    callbacks: SessionCallbacks,
+  ) {
     this.mapCanvas = mapCanvas
-    this.onComplete = onComplete
+    this.shouldStop = shouldStop
+    this.callbacks = callbacks
     const { canvas, ctx } = createCompositeCanvas(mapCanvas)
     this.canvas = canvas
     this.ctx = ctx
   }
 
-  /** Initialises Mediabunny output and starts the rAF render loop. */
   start(): void {
     void this.initAndStart()
-  }
-
-  /** Stops the render loop and finalises the MP4 file asynchronously. */
-  stop(): void {
-    this.cancelRaf()
-    const { output, bufferTarget } = this
-    if (!output || !bufferTarget || this.disposed)
-      return
-    void output.finalize().then(() => {
-      const { buffer } = bufferTarget
-      if (buffer && !this.disposed) {
-        this.onComplete(new Blob([buffer], { type: 'video/mp4' }), 'video/mp4')
-      }
-    })
   }
 
   /** Tears down without emitting a blob (user exits replay before saving). */
   dispose(): void {
     this.disposed = true
     this.cancelRaf()
+  }
+
+  private finalize(): void {
+    const { output, bufferTarget } = this
+    if (!output || !bufferTarget || this.disposed)
+      return
+    void output.finalize().then(() => {
+      const { buffer } = bufferTarget
+      if (buffer && !this.disposed)
+        this.callbacks.onComplete(new Blob([buffer], { type: 'video/mp4' }), 'video/mp4')
+    })
   }
 
   private async initAndStart(): Promise<void> {
@@ -401,19 +403,57 @@ class Mp4RecordingSession {
     if (this.startTime === null)
       this.startTime = timestamp
     const elapsed = timestamp - this.startTime
+    const { width: W, height: H } = this.mapCanvas
 
-    const introJustEnded = renderCompositeFrame(this.ctx, this.mapCanvas, elapsed, this.introEnded)
-    if (introJustEnded)
-      this.introEnded = true
+    // Always composite the map frame first
+    this.ctx.drawImage(this.mapCanvas, 0, 0, W, H)
 
-    if (this.videoSource && !this.disposed) {
-      const t = elapsed / 1000
-      const dur = Math.max((elapsed - this.lastFrameElapsed) / 1000, 1 / 60)
-      this.lastFrameElapsed = elapsed
-      void this.videoSource.add(t, dur)
+    let done = false
+
+    switch (this.phase) {
+      case 'intro': {
+        const stillIntro = drawIntro(this.ctx, W, H, elapsed)
+        if (!stillIntro)
+          this.phase = 'recording'
+        break
+      }
+      case 'recording': {
+        drawPhotoCard(this.ctx, W, H)
+        drawWatermark(this.ctx, W, H)
+        if (this.shouldStop()) {
+          this.phase = 'wait'
+          this.phaseStartTimestamp = timestamp
+        }
+        break
+      }
+      case 'wait': {
+        drawPhotoCard(this.ctx, W, H)
+        drawWatermark(this.ctx, W, H)
+        if (timestamp - this.phaseStartTimestamp >= WAIT_MS)
+          done = true
+        break
+      }
     }
 
-    this.rafId = requestAnimationFrame(this.drawFrame)
+    if (!this.videoSource || this.disposed)
+      return
+
+    const t = elapsed / 1000
+    const dur = Math.max((elapsed - this.lastFrameElapsed) / 1000, 1 / 60)
+    this.lastFrameElapsed = elapsed
+
+    // Encode the current frame; finalise after the last one.
+    void this.videoSource.add(t, dur).then(() => {
+      if (this.disposed)
+        return
+      if (done) {
+        this.callbacks.onStopping()
+        this.finalize()
+      }
+    })
+
+    if (!done)
+      this.rafId = requestAnimationFrame(this.drawFrame)
   }
 }
 
@@ -422,6 +462,9 @@ class Mp4RecordingSession {
 /**
  * Records the composite canvas to WebM using the MediaRecorder API.
  * Used as a fallback on browsers without WebCodecs H.264 support (Firefox).
+ *
+ * Same phase state machine as Mp4RecordingSession:
+ *   intro → recording → wait (WAIT_MS) → finalize
  */
 class WebmRecordingSession {
   readonly canvas: HTMLCanvasElement
@@ -429,19 +472,25 @@ class WebmRecordingSession {
   private readonly ctx: CanvasRenderingContext2D
   private readonly mapCanvas: HTMLCanvasElement
   private readonly recorder: MediaRecorder
+  private readonly shouldStop: () => boolean
+  private readonly callbacks: SessionCallbacks
   private readonly chunks: Blob[] = []
 
   private startTime: number | null = null
-  private introEnded = false
+  private phase: RecordingPhase = 'intro'
+  private phaseStartTimestamp = 0
   private rafId: number | null = null
   private disposed = false
 
   constructor(
     mapCanvas: HTMLCanvasElement,
     mimeType: string,
-    onComplete: OnCompleteCallback,
+    shouldStop: () => boolean,
+    callbacks: SessionCallbacks,
   ) {
     this.mapCanvas = mapCanvas
+    this.shouldStop = shouldStop
+    this.callbacks = callbacks
     const { canvas, ctx } = createCompositeCanvas(mapCanvas)
     this.canvas = canvas
     this.ctx = ctx
@@ -456,9 +505,8 @@ class WebmRecordingSession {
 
     this.recorder.onstop = () => {
       this.cancelRaf()
-      if (!this.disposed) {
-        onComplete(new Blob(this.chunks, { type: mimeType }), mimeType)
-      }
+      if (!this.disposed)
+        callbacks.onComplete(new Blob(this.chunks, { type: mimeType }), mimeType)
     }
   }
 
@@ -467,7 +515,14 @@ class WebmRecordingSession {
     this.recorder.start()
   }
 
-  stop(): void {
+  dispose(): void {
+    this.disposed = true
+    this.cancelRaf()
+    if (this.recorder.state !== 'inactive')
+      this.recorder.stop()
+  }
+
+  private stopRecorder(): void {
     if (this.recorder.state === 'inactive')
       return
     try {
@@ -475,14 +530,6 @@ class WebmRecordingSession {
     }
     catch { /* no-op */ }
     this.recorder.stop()
-    // onstop will call cancelRaf and deliver the blob
-  }
-
-  dispose(): void {
-    this.disposed = true
-    this.cancelRaf()
-    if (this.recorder.state !== 'inactive')
-      this.recorder.stop()
   }
 
   private cancelRaf(): void {
@@ -496,10 +543,44 @@ class WebmRecordingSession {
     if (this.startTime === null)
       this.startTime = timestamp
     const elapsed = timestamp - this.startTime
+    const { width: W, height: H } = this.mapCanvas
 
-    const introJustEnded = renderCompositeFrame(this.ctx, this.mapCanvas, elapsed, this.introEnded)
-    if (introJustEnded)
-      this.introEnded = true
+    this.ctx.drawImage(this.mapCanvas, 0, 0, W, H)
+
+    let done = false
+
+    switch (this.phase) {
+      case 'intro': {
+        const stillIntro = drawIntro(this.ctx, W, H, elapsed)
+        if (!stillIntro)
+          this.phase = 'recording'
+        break
+      }
+      case 'recording': {
+        drawPhotoCard(this.ctx, W, H)
+        drawWatermark(this.ctx, W, H)
+        if (this.shouldStop()) {
+          this.phase = 'wait'
+          this.phaseStartTimestamp = timestamp
+        }
+        break
+      }
+      case 'wait': {
+        drawPhotoCard(this.ctx, W, H)
+        drawWatermark(this.ctx, W, H)
+        if (timestamp - this.phaseStartTimestamp >= WAIT_MS)
+          done = true
+        break
+      }
+    }
+
+    // MediaRecorder samples the canvas stream automatically each frame.
+    // Stop the recorder after the final frame so that frame is included.
+    if (done) {
+      this.callbacks.onStopping()
+      this.stopRecorder()
+      return
+    }
 
     this.rafId = requestAnimationFrame(this.drawFrame)
   }
@@ -518,7 +599,6 @@ type AnyRecordingSession = Mp4RecordingSession | WebmRecordingSession
 
 export function useVideoRecorder() {
   const mapInstance = useMapStore(s => s.mapInstance)
-  const replayStatus = useReplayStore(s => s.status)
 
   const [status, setStatus] = useState<RecordingStatus>('idle')
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null)
@@ -545,25 +625,13 @@ export function useVideoRecorder() {
     })
   }, [])
 
-  const stopRecording = useCallback(() => {
-    const session = sessionRef.current
-    if (session) {
-      setStatus('processing')
-      session.stop()
-    }
-  }, [])
-
-  // Auto-stop when replay animation completes
-  useEffect(() => {
-    if (status === 'recording' && replayStatus === 'completed')
-      stopRecording()
-  }, [replayStatus, status, stopRecording])
-
   /**
    * Starts recording immediately.
    * Uses MP4 (H.264 via WebCodecs) when available, falls back to WebM.
    * The logo intro is drawn on the composite canvas for INTRO_MS, in sync
    * with ReplayIntroOverlay which calls togglePlayPause on exit.
+   * Sessions are self-terminating: they observe the replay store via
+   * `shouldStop` and finalize themselves when the replay completes.
    */
   const startAutoRecord = useCallback(() => {
     if (!mapInstance || status !== 'idle')
@@ -575,15 +643,20 @@ export function useVideoRecorder() {
     const mapCanvas = mapInstance.getCanvas()
     mapInstance.triggerRepaint()
 
-    const onComplete: OnCompleteCallback = (blob, mimeType) => {
-      setPendingVideo({ blob, mimeType })
-      setStatus('idle')
-      sessionRef.current = null
+    const shouldStop = () => useReplayStore.getState().status === 'completed'
+
+    const callbacks: SessionCallbacks = {
+      onStopping: () => setStatus('processing'),
+      onComplete: (blob, mimeType) => {
+        setPendingVideo({ blob, mimeType })
+        setStatus('idle')
+        sessionRef.current = null
+      },
     }
 
     const session: AnyRecordingSession = cap.type === 'mp4'
-      ? new Mp4RecordingSession(mapCanvas, onComplete)
-      : new WebmRecordingSession(mapCanvas, cap.mimeType, onComplete)
+      ? new Mp4RecordingSession(mapCanvas, shouldStop, callbacks)
+      : new WebmRecordingSession(mapCanvas, cap.mimeType, shouldStop, callbacks)
 
     sessionRef.current = session
     session.start()
@@ -605,7 +678,10 @@ export function useVideoRecorder() {
   }, [pendingVideo])
 
   const discardVideo = useCallback(() => {
+    sessionRef.current?.dispose()
+    sessionRef.current = null
     setPendingVideo(null)
+    setStatus(prev => (prev === 'recording' || prev === 'processing') ? 'idle' : prev)
   }, [])
 
   // Cleanup on unmount
