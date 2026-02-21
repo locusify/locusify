@@ -53,7 +53,8 @@
       "Bash(pnpm typecheck:*)",
       "Bash(python3:*)",
       "Bash(node --version:*)",
-      "Bash(pnpm --version:*)"
+      "Bash(pnpm --version:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": [],

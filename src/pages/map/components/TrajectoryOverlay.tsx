@@ -1,4 +1,5 @@
 import { ReplayControls } from './replay/ReplayControls'
+import { ReplayIntroOverlay } from './replay/ReplayIntroOverlay'
 import { ReplayPhotoCard } from './replay/ReplayPhotoCard'
 
 /**
@@ -8,10 +9,15 @@ import { ReplayPhotoCard } from './replay/ReplayPhotoCard'
 export function TrajectoryOverlay() {
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-end">
+      {/* Opening logo animation — pointer-events-auto so it blocks interaction during intro */}
+      <div className="pointer-events-auto">
+        <ReplayIntroOverlay />
+      </div>
+
       {/* Bottom gradient for cinematic feel */}
       <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
 
-      {/* Photo card — fixed panel, bottom-left */}
+      {/* Photo card */}
       <div className="pointer-events-auto">
         <ReplayPhotoCard />
       </div>

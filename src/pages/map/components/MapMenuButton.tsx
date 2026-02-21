@@ -27,6 +27,10 @@ interface MapMenuButtonProps {
   isReplayMode?: boolean
   /** Callback to exit replay mode */
   onExitReplay?: () => void
+  /** Whether video is currently being recorded */
+  isRecording?: boolean
+  /** Whether recorded video is being processed */
+  isProcessing?: boolean
 }
 
 /**
@@ -39,6 +43,8 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
   routesDisabled,
   isReplayMode,
   onExitReplay,
+  isRecording,
+  isProcessing,
 }) => {
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
@@ -72,7 +78,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
     },
   ]
 
-  // Replay mode: show only an exit button in the same position
+  // Replay mode: exit button with optional recording indicator
   if (isReplayMode) {
     return (
       <m.div
@@ -91,11 +97,30 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
                 title={t('workspace.controls.exit', { defaultValue: 'Exit Replay' })}
               >
                 <i className="i-mingcute-close-line text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
+                {/* Recording status dot */}
+                {(isRecording || isProcessing) && (
+                  <span className="absolute top-1.5 right-1.5 flex size-2 items-center justify-center sm:top-2 sm:right-2">
+                    <span className={cn(
+                      'absolute inline-flex size-full rounded-full',
+                      isRecording ? 'animate-ping bg-red-400 opacity-60' : 'bg-amber-400',
+                    )}
+                    />
+                    <span className={cn(
+                      'relative inline-flex size-1.5 rounded-full',
+                      isRecording ? 'bg-red-400' : 'bg-amber-400',
+                    )}
+                    />
+                  </span>
+                )}
               </button>
             </div>
           </TooltipTrigger>
           <TooltipContent side="right">
-            {t('workspace.controls.exit', { defaultValue: 'Exit Replay' })}
+            {isRecording
+              ? t('workspace.recording.recording')
+              : isProcessing
+                ? t('workspace.recording.processing')
+                : t('workspace.controls.exit', { defaultValue: 'Exit Replay' })}
           </TooltipContent>
         </Tooltip>
       </m.div>

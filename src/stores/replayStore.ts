@@ -60,7 +60,7 @@ interface ReplayState {
   speedMultiplier: number
   currentPosition: [number, number] | null
 
-  startReplay: (markers: PhotoMarker[]) => void
+  startReplay: (markers: PhotoMarker[], startPaused?: boolean) => void
   togglePlayPause: () => void
   resetReplay: () => void
   exitReplay: () => void
@@ -80,14 +80,14 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   speedMultiplier: 1,
   currentPosition: null,
 
-  startReplay: (markers) => {
+  startReplay: (markers, startPaused = false) => {
     const waypoints = markersToWaypoints(markers)
     if (waypoints.length < 2)
       return
     set({
       isReplayMode: true,
       waypoints,
-      status: 'playing',
+      status: startPaused ? 'paused' : 'playing',
       currentWaypointIndex: 0,
       segmentProgress: 0,
       totalProgress: 0,

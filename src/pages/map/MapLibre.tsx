@@ -1,9 +1,10 @@
 import type { CSSProperties, RefObject } from 'react'
-import type { MapLayerMouseEvent, StyleSpecification } from 'react-map-gl/maplibre'
+import type { MapLayerMouseEvent, MapRef, StyleSpecification } from 'react-map-gl/maplibre'
 
 import type { PhotoMarker } from '@/types/map'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
+import { useMapStore } from '@/stores/mapStore'
 import { useReplayStore } from '@/stores/replayStore'
 
 import { GeoJsonLayer } from './components/GeoJsonLayer'
@@ -48,7 +49,7 @@ export interface PureMaplibreProps {
   onGeolocate?: (longitude: number, latitude: number) => void
   className?: string
   style?: CSSProperties
-  mapRef?: RefObject<any>
+  mapRef?: RefObject<MapRef | null>
   autoFitBounds?: boolean
 }
 
@@ -71,6 +72,8 @@ export function Maplibre({
   autoFitBounds = true,
 }: PureMaplibreProps) {
   const isReplayMode = useReplayStore(s => s.isReplayMode)
+  const registerMap = useMapStore(s => s.registerMap)
+  const unregisterMap = useMapStore(s => s.unregisterMap)
   const [currentZoom, setCurrentZoom] = useState(initialViewState.zoom)
   const [viewState, setViewState] = useState(initialViewState)
   const [isMapLoaded, setIsMapLoaded] = useState(false)
@@ -350,8 +353,16 @@ export function Maplibre({
       map.setProjection({
         type: 'mercator',
       })
+      registerMap(map)
     }
-  }, [])
+  }, [registerMap])
+
+  // 组件卸载时注销 map 实例
+  useEffect(() => {
+    return () => {
+      unregisterMap()
+    }
+  }, [unregisterMap])
 
   // 当标记点变化时，重新适配边界
   useEffect(() => {
@@ -372,6 +383,7 @@ export function Maplibre({
         style={{ width: '100%', height: '100%' }}
         mapStyle={MapLibreStyle as StyleSpecification}
         attributionControl={false}
+        canvasContextAttributes={{ preserveDrawingBuffer: true }}
         interactiveLayerIds={geoJsonData ? ['data'] : undefined}
         onClick={onGeoJsonClick}
         onLoad={handleMapLoad}
