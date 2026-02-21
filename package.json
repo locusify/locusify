@@ -9,7 +9,14 @@
     "type": "git",
     "url": "https://github.com/caterpi11ar/locusify"
   },
-  "keywords": ["travel", "photo", "map", "route", "vlog", "geotagging"],
+  "keywords": [
+    "travel",
+    "photo",
+    "map",
+    "route",
+    "vlog",
+    "geotagging"
+  ],
   "scripts": {
     "prepare": "husky install",
     "preinstall": "npx only-allow pnpm",
@@ -36,6 +43,7 @@
     "exiftool-vendored": "^31.2.0",
     "lucide-react": "^0.544.0",
     "maplibre-gl": "^5.10.0",
+    "mediabunny": "^1.34.4",
     "motion": "^12.23.24",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",

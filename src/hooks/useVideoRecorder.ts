@@ -1,3 +1,10 @@
+import {
+  BufferTarget,
+  canEncodeVideo,
+  CanvasSource,
+  Mp4OutputFormat,
+  Output,
+} from 'mediabunny'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import locusifyLogoUrl from '@/assets/locusify-fit.png'
 import { useMapStore } from '@/stores/mapStore'
@@ -7,7 +14,6 @@ export type RecordingStatus = 'idle' | 'recording' | 'processing' | 'unsupported
 
 // ─── Image cache ───────────────────────────────────────────────────────────────
 
-// Module-level image cache — persists across renders
 const imageCache = new Map<string, HTMLImageElement>()
 
 function loadImage(url: string): void {
@@ -22,22 +28,34 @@ function loadImage(url: string): void {
 // Eagerly load the logo so it's ready when recording starts
 loadImage(locusifyLogoUrl)
 
-// ─── Browser support ───────────────────────────────────────────────────────────
+// ─── Capability detection ──────────────────────────────────────────────────────
 
-function detectMimeType(): string | null {
-  if (typeof MediaRecorder === 'undefined')
-    return null
-  const test = document.createElement('canvas')
-  if (typeof test.captureStream !== 'function')
-    return null // iOS Safari
-  const candidates = [
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8',
-    'video/webm',
-    'video/mp4;codecs=h264',
-    'video/mp4',
-  ]
-  return candidates.find(t => MediaRecorder.isTypeSupported(t)) ?? null
+type RecordingCapability
+  = | { type: 'mp4' }
+    | { type: 'webm', mimeType: string }
+    | { type: 'unsupported' }
+
+async function detectCapability(): Promise<RecordingCapability> {
+  // Prefer H.264 via WebCodecs — produces native MP4 playable on iOS/Android
+  try {
+    if (await canEncodeVideo('avc')) {
+      return { type: 'mp4' }
+    }
+  }
+  catch { /* fall through */ }
+
+  // Fallback: MediaRecorder WebM (desktop Chrome/Firefox, Android Chrome)
+  if (typeof MediaRecorder !== 'undefined') {
+    const canvas = document.createElement('canvas')
+    if (typeof canvas.captureStream === 'function') {
+      const candidates = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']
+      const mimeType = candidates.find(t => MediaRecorder.isTypeSupported(t))
+      if (mimeType)
+        return { type: 'webm', mimeType }
+    }
+  }
+
+  return { type: 'unsupported' }
 }
 
 // ─── Canvas drawing helpers ────────────────────────────────────────────────────
@@ -95,7 +113,6 @@ function drawIntro(ctx: CanvasRenderingContext2D, W: number, H: number, elapsed:
 
   ctx.save()
 
-  // Dark overlay
   ctx.globalAlpha = alpha * 0.92
   ctx.fillStyle = '#0a0a0a'
   ctx.fillRect(0, 0, W, H)
@@ -104,7 +121,6 @@ function drawIntro(ctx: CanvasRenderingContext2D, W: number, H: number, elapsed:
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
 
-  // Logo image
   const logoImg = imageCache.get(locusifyLogoUrl)
   const logoSize = Math.max(24, Math.round(W * 0.038))
   const imgSize = Math.max(64, Math.round(W * 0.09))
@@ -122,12 +138,10 @@ function drawIntro(ctx: CanvasRenderingContext2D, W: number, H: number, elapsed:
     ctx.restore()
   }
 
-  // Brand name
   ctx.font = `700 ${logoSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
   ctx.fillStyle = '#ffffff'
   ctx.fillText('Locusify', W / 2, blockTop + imgSize + gap + logoSize / 2)
 
-  // Tagline
   const subSize = Math.max(11, Math.round(W * 0.013))
   ctx.font = `400 ${subSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
   ctx.fillStyle = 'rgba(255,255,255,0.4)'
@@ -164,11 +178,9 @@ function drawPhotoCard(ctx: CanvasRenderingContext2D, W: number, _H: number): vo
   const cy = MARGIN
 
   ctx.save()
-
   ctx.beginPath()
   ctx.roundRect(cx, cy, CARD_W, CARD_H, RADIUS)
   ctx.clip()
-
   ctx.fillStyle = 'rgba(0,0,0,0.85)'
   ctx.fillRect(cx, cy, CARD_W, CARD_H)
 
@@ -225,46 +237,196 @@ function drawPhotoCard(ctx: CanvasRenderingContext2D, W: number, _H: number): vo
 }
 
 function drawWatermark(ctx: CanvasRenderingContext2D, W: number, H: number): void {
-  const text = 'Made with Locusify'
-  const fontSize = Math.max(12, Math.round(W * 0.018))
+  const text = 'Powered by Locusify'
+  const fontSize = Math.max(11, Math.round(W * 0.016))
+  const logoImg = imageCache.get(locusifyLogoUrl)
+
   ctx.save()
   ctx.font = `${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
-  const textW = ctx.measureText(text).width
+
   const paddingX = fontSize * 0.7
   const paddingY = fontSize * 0.5
-  const pillW = textW + paddingX * 2
-  const pillH = fontSize + paddingY * 2
+  const gap = fontSize * 0.5 // gap between logo and text
+  const logoSize = fontSize + paddingY * 2 // logo square matches pill height
+  const textW = ctx.measureText(text).width
+  const pillH = logoSize
+  const pillW = (logoImg ? logoSize + gap : 0) + textW + paddingX * 2
   const margin = Math.max(10, W * 0.015)
   const x = W - pillW - margin
   const y = H - pillH - margin
   const r = pillH / 2
 
-  ctx.globalAlpha = 0.55
+  // Background pill
+  ctx.globalAlpha = 0.6
   ctx.fillStyle = '#000000'
   ctx.beginPath()
   ctx.roundRect(x, y, pillW, pillH, r)
   ctx.fill()
 
+  // Logo image (left side, square, no clipping)
+  if (logoImg) {
+    ctx.globalAlpha = 1
+    ctx.drawImage(logoImg, x, y, logoSize, logoSize)
+  }
+
+  // "Powered by Locusify" text
   ctx.globalAlpha = 1
   ctx.fillStyle = '#ffffff'
   ctx.textBaseline = 'middle'
-  ctx.fillText(text, x + paddingX, y + pillH / 2)
+  const textX = x + (logoImg ? logoSize + gap : paddingX)
+  ctx.fillText(text, textX, y + pillH / 2)
+
   ctx.restore()
 }
 
-// ─── RecordingSession class ────────────────────────────────────────────────────
+// ─── Shared canvas factory ─────────────────────────────────────────────────────
+
+/** Creates a 2D composite canvas sized to match the source map canvas. */
+function createCompositeCanvas(mapCanvas: HTMLCanvasElement): {
+  canvas: HTMLCanvasElement
+  ctx: CanvasRenderingContext2D
+} {
+  const canvas = document.createElement('canvas')
+  canvas.width = mapCanvas.width
+  canvas.height = mapCanvas.height
+  const ctx = canvas.getContext('2d')!
+  return { canvas, ctx }
+}
+
+/** Draws the current frame (map + overlays) onto the composite ctx. */
+function renderCompositeFrame(
+  ctx: CanvasRenderingContext2D,
+  mapCanvas: HTMLCanvasElement,
+  elapsed: number,
+  introEnded: boolean,
+): boolean {
+  const { width: W, height: H } = mapCanvas
+  ctx.drawImage(mapCanvas, 0, 0, W, H)
+
+  if (!introEnded) {
+    const stillIntro = drawIntro(ctx, W, H, elapsed)
+    if (!stillIntro)
+      return true // intro just ended
+  }
+  else {
+    drawPhotoCard(ctx, W, H)
+    drawWatermark(ctx, W, H)
+  }
+
+  return false
+}
+
+// ─── Mp4RecordingSession ───────────────────────────────────────────────────────
+
+type OnCompleteCallback = (blob: Blob, mimeType: string) => void
 
 /**
- * Encapsulates the composite canvas + MediaRecorder lifecycle for one
- * recording session. All rAF / chunk / recorder state is internal.
+ * Records the composite canvas to MP4 (H.264) using WebCodecs + Mediabunny.
+ * Compatible with iOS Safari 16.4+, Android Chrome, and desktop Chrome/Edge.
  */
-class RecordingSession {
-  /** The composite canvas whose stream is being recorded */
+class Mp4RecordingSession {
   readonly canvas: HTMLCanvasElement
 
   private readonly ctx: CanvasRenderingContext2D
-  private readonly W: number
-  private readonly H: number
+  private readonly mapCanvas: HTMLCanvasElement
+  private readonly onComplete: OnCompleteCallback
+
+  private output: Output | null = null
+  private videoSource: CanvasSource | null = null
+  private bufferTarget: BufferTarget | null = null
+
+  private startTime: number | null = null
+  private introEnded = false
+  private lastFrameElapsed = 0
+  private rafId: number | null = null
+  private disposed = false
+
+  constructor(mapCanvas: HTMLCanvasElement, onComplete: OnCompleteCallback) {
+    this.mapCanvas = mapCanvas
+    this.onComplete = onComplete
+    const { canvas, ctx } = createCompositeCanvas(mapCanvas)
+    this.canvas = canvas
+    this.ctx = ctx
+  }
+
+  /** Initialises Mediabunny output and starts the rAF render loop. */
+  start(): void {
+    void this.initAndStart()
+  }
+
+  /** Stops the render loop and finalises the MP4 file asynchronously. */
+  stop(): void {
+    this.cancelRaf()
+    const { output, bufferTarget } = this
+    if (!output || !bufferTarget || this.disposed)
+      return
+    void output.finalize().then(() => {
+      const { buffer } = bufferTarget
+      if (buffer && !this.disposed) {
+        this.onComplete(new Blob([buffer], { type: 'video/mp4' }), 'video/mp4')
+      }
+    })
+  }
+
+  /** Tears down without emitting a blob (user exits replay before saving). */
+  dispose(): void {
+    this.disposed = true
+    this.cancelRaf()
+  }
+
+  private async initAndStart(): Promise<void> {
+    const bufferTarget = new BufferTarget()
+    const output = new Output({ format: new Mp4OutputFormat(), target: bufferTarget })
+    const videoSource = new CanvasSource(this.canvas, { codec: 'avc', bitrate: 8_000_000 })
+    output.addVideoTrack(videoSource, { frameRate: 30 })
+    await output.start()
+
+    if (this.disposed)
+      return // user may have exited during async init
+
+    this.output = output
+    this.bufferTarget = bufferTarget
+    this.videoSource = videoSource
+    this.rafId = requestAnimationFrame(this.drawFrame)
+  }
+
+  private cancelRaf(): void {
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId)
+      this.rafId = null
+    }
+  }
+
+  private readonly drawFrame = (timestamp: number): void => {
+    if (this.startTime === null)
+      this.startTime = timestamp
+    const elapsed = timestamp - this.startTime
+
+    const introJustEnded = renderCompositeFrame(this.ctx, this.mapCanvas, elapsed, this.introEnded)
+    if (introJustEnded)
+      this.introEnded = true
+
+    if (this.videoSource && !this.disposed) {
+      const t = elapsed / 1000
+      const dur = Math.max((elapsed - this.lastFrameElapsed) / 1000, 1 / 60)
+      this.lastFrameElapsed = elapsed
+      void this.videoSource.add(t, dur)
+    }
+
+    this.rafId = requestAnimationFrame(this.drawFrame)
+  }
+}
+
+// ─── WebmRecordingSession ──────────────────────────────────────────────────────
+
+/**
+ * Records the composite canvas to WebM using the MediaRecorder API.
+ * Used as a fallback on browsers without WebCodecs H.264 support (Firefox).
+ */
+class WebmRecordingSession {
+  readonly canvas: HTMLCanvasElement
+
+  private readonly ctx: CanvasRenderingContext2D
   private readonly mapCanvas: HTMLCanvasElement
   private readonly recorder: MediaRecorder
   private readonly chunks: Blob[] = []
@@ -277,19 +439,14 @@ class RecordingSession {
   constructor(
     mapCanvas: HTMLCanvasElement,
     mimeType: string,
-    onComplete: (blob: Blob) => void,
+    onComplete: OnCompleteCallback,
   ) {
     this.mapCanvas = mapCanvas
-    this.W = mapCanvas.width
-    this.H = mapCanvas.height
+    const { canvas, ctx } = createCompositeCanvas(mapCanvas)
+    this.canvas = canvas
+    this.ctx = ctx
 
-    const composite = document.createElement('canvas')
-    composite.width = this.W
-    composite.height = this.H
-    this.canvas = composite
-    this.ctx = composite.getContext('2d')!
-
-    const stream = composite.captureStream(30)
+    const stream = canvas.captureStream(30)
     this.recorder = new MediaRecorder(stream, { mimeType })
 
     this.recorder.ondataavailable = (e) => {
@@ -300,19 +457,16 @@ class RecordingSession {
     this.recorder.onstop = () => {
       this.cancelRaf()
       if (!this.disposed) {
-        const blob = new Blob(this.chunks, { type: mimeType })
-        onComplete(blob)
+        onComplete(new Blob(this.chunks, { type: mimeType }), mimeType)
       }
     }
   }
 
-  /** Begin composite rendering and MediaRecorder capture */
   start(): void {
     this.rafId = requestAnimationFrame(this.drawFrame)
     this.recorder.start()
   }
 
-  /** Flush remaining data and stop — triggers onComplete via onstop */
   stop(): void {
     if (this.recorder.state === 'inactive')
       return
@@ -321,9 +475,9 @@ class RecordingSession {
     }
     catch { /* no-op */ }
     this.recorder.stop()
+    // onstop will call cancelRaf and deliver the blob
   }
 
-  /** Tear down without emitting a blob (e.g. user discards before stop) */
   dispose(): void {
     this.disposed = true
     this.cancelRaf()
@@ -343,18 +497,9 @@ class RecordingSession {
       this.startTime = timestamp
     const elapsed = timestamp - this.startTime
 
-    this.ctx.drawImage(this.mapCanvas, 0, 0, this.W, this.H)
-
-    if (!this.introEnded) {
-      const stillIntro = drawIntro(this.ctx, this.W, this.H, elapsed)
-      if (!stillIntro)
-        this.introEnded = true
-    }
-
-    if (this.introEnded) {
-      drawPhotoCard(this.ctx, this.W, this.H)
-      drawWatermark(this.ctx, this.W, this.H)
-    }
+    const introJustEnded = renderCompositeFrame(this.ctx, this.mapCanvas, elapsed, this.introEnded)
+    if (introJustEnded)
+      this.introEnded = true
 
     this.rafId = requestAnimationFrame(this.drawFrame)
   }
@@ -369,6 +514,8 @@ export interface PendingVideo {
 
 // ─── Hook ──────────────────────────────────────────────────────────────────────
 
+type AnyRecordingSession = Mp4RecordingSession | WebmRecordingSession
+
 export function useVideoRecorder() {
   const mapInstance = useMapStore(s => s.mapInstance)
   const replayStatus = useReplayStore(s => s.status)
@@ -376,15 +523,16 @@ export function useVideoRecorder() {
   const [status, setStatus] = useState<RecordingStatus>('idle')
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null)
 
-  const mimeTypeRef = useRef<string | null>(null)
-  const sessionRef = useRef<RecordingSession | null>(null)
+  const capabilityRef = useRef<RecordingCapability | null>(null)
+  const sessionRef = useRef<AnyRecordingSession | null>(null)
 
-  // Detect browser support on mount
+  // Detect browser capability on mount
   useEffect(() => {
-    const mime = detectMimeType()
-    mimeTypeRef.current = mime
-    if (mime === null)
-      setStatus('unsupported')
+    detectCapability().then((cap) => {
+      capabilityRef.current = cap
+      if (cap.type === 'unsupported')
+        setStatus('unsupported')
+    })
   }, [])
 
   // Eagerly preload waypoint photos into cache
@@ -413,27 +561,30 @@ export function useVideoRecorder() {
 
   /**
    * Starts recording immediately.
-   * Draws the logo intro on the composite canvas for INTRO_MS, then switches
-   * to drawing the map with photo card + watermark overlay.
-   * The visible UI intro is handled by ReplayIntroOverlay which calls
-   * togglePlayPause when its animation completes — both share the same duration
-   * so they stay in sync.
+   * Uses MP4 (H.264 via WebCodecs) when available, falls back to WebM.
+   * The logo intro is drawn on the composite canvas for INTRO_MS, in sync
+   * with ReplayIntroOverlay which calls togglePlayPause on exit.
    */
   const startAutoRecord = useCallback(() => {
     if (!mapInstance || status !== 'idle')
       return
-    const mimeType = mimeTypeRef.current
-    if (mimeType === null)
+    const cap = capabilityRef.current
+    if (!cap || cap.type === 'unsupported')
       return
 
     const mapCanvas = mapInstance.getCanvas()
     mapInstance.triggerRepaint()
 
-    const session = new RecordingSession(mapCanvas, mimeType, (blob) => {
+    const onComplete: OnCompleteCallback = (blob, mimeType) => {
       setPendingVideo({ blob, mimeType })
       setStatus('idle')
       sessionRef.current = null
-    })
+    }
+
+    const session: AnyRecordingSession = cap.type === 'mp4'
+      ? new Mp4RecordingSession(mapCanvas, onComplete)
+      : new WebmRecordingSession(mapCanvas, cap.mimeType, onComplete)
+
     sessionRef.current = session
     session.start()
     setStatus('recording')
