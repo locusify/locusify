@@ -14,6 +14,10 @@
   <img src="https://img.shields.io/badge/pnpm-%3E%3D10-f69220" alt="pnpm" />
 </p>
 
+## Demo
+
+<video src="./public/example.mp4" controls width="100%"></video>
+
 ## Features
 
 - **Photo Upload** — Drag-and-drop upload with automatic EXIF / GPS extraction

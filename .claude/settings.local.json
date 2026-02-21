@@ -65,7 +65,8 @@
       "WebFetch(domain:blog.nidhin.dev)",
       "WebFetch(domain:news.ycombinator.com)",
       "WebFetch(domain:webcodecsfundamentals.org)",
-      "WebFetch(domain:dayverse.id)"
+      "WebFetch(domain:dayverse.id)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": [],
