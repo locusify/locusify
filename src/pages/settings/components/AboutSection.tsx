@@ -2,7 +2,7 @@ import type { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Separator } from '@/components/ui/separator'
 
-const APP_VERSION = 'v0.1.0'
+const APP_VERSION = 'v1.0.0'
 const GITHUB_URL = 'https://github.com/caterpi11ar/locusify'
 
 export const AboutSection: FC = () => {
