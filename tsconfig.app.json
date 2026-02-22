@@ -16,6 +16,7 @@
       "@/*": ["./src/*"],
       "@pkg": ["./package.json"]
     },
+    "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
 
     /* Linting */
@@ -27,8 +28,7 @@
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": false,
     "skipLibCheck": true,
-    "noUncheckedSideEffectImports": true,
-    "resolveJsonModule": true
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src"]
 }

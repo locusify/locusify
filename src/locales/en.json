@@ -135,6 +135,13 @@
   "photos.complete.description": "Photos have been added to the map.",
   "photos.added.count": "{{count}} photos added to map",
 
+  "menu.gallery": "My Photos",
+  "menu.upload.hint": "Upload GPS photos to begin",
+  "gallery.empty.title": "No photos yet",
+  "gallery.empty.description": "Upload photos with GPS to see them here",
+  "gallery.photo.count": "{{count}} photos",
+  "gallery.remove": "Remove photo",
+
   "navbar.home": "Home",
   "navbar.profile": "My",
 

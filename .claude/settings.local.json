@@ -78,7 +78,8 @@
       "mcp__xiaohongshu-mcp__delete_cookies",
       "mcp__xiaohongshu-mcp__get_login_qrcode",
       "Bash(git tag:*)",
-      "Bash(gh release:*)"
+      "Bash(gh release:*)",
+      "Bash(git:*)"
     ],
     "deny": [],
     "ask": [],

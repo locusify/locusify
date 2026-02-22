@@ -22,6 +22,7 @@ interface MapMenuButtonProps {
   onUploadClick?: () => void
   onRoutesClick?: () => void
   onSettingsClick?: () => void
+  onGalleryClick?: () => void
   /** Whether the routes button is disabled (e.g. no photos uploaded) */
   routesDisabled?: boolean
   /** Whether replay mode is active — shows exit button instead of menu */
@@ -42,6 +43,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
   onUploadClick,
   onRoutesClick,
   onSettingsClick,
+  onGalleryClick,
   routesDisabled,
   isReplayMode,
   onExitReplay,
@@ -51,7 +53,15 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
   const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
   const [showRoutesHint, setShowRoutesHint] = useState(false)
+  const [showUploadHint, setShowUploadHint] = useState(false)
   const prevRoutesDisabled = useRef(routesDisabled)
+
+  // Show upload hint tooltip on mount for 3 seconds
+  useEffect(() => {
+    setShowUploadHint(true)
+    const timer = setTimeout(() => setShowUploadHint(false), 3000)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Show hint tooltip when routes button first becomes available
   useEffect(() => {
@@ -68,7 +78,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
     {
       icon: 'i-mingcute-photo-album-line',
       label: t('menu.gallery', { defaultValue: 'Gallery' }),
-      onClick: () => console.log('Gallery clicked'),
+      onClick: onGalleryClick,
     },
     {
       icon: 'i-mingcute-share-3-line',
@@ -142,15 +152,32 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
       transition={{ duration: 0.4, delay: 0.2 }}
     >
       {/* Upload Button - Will appear above menu button due to flex-col-reverse */}
-      <div className="border-red/30 bg-material-thick overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-[120px]">
-        <button
-          type="button"
-          onClick={onUploadClick}
-          className="group hover:bg-red/10 active:bg-red/20 relative flex size-10 items-center justify-center transition-colors sm:size-12"
-          title={t('menu.upload', { defaultValue: 'Upload Photos' })}
-        >
-          <i className="i-mingcute-add-line text-red size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
-        </button>
+      <div className="relative flex items-center">
+        {/* First-load hint tooltip */}
+        <AnimatePresence>
+          {showUploadHint && (
+            <m.div
+              className="absolute right-full mr-2 whitespace-nowrap rounded-xl bg-black/80 px-3 py-1.5 text-xs text-white backdrop-blur-sm"
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {t('menu.upload.hint', { defaultValue: 'Upload GPS photos to begin' })}
+            </m.div>
+          )}
+        </AnimatePresence>
+
+        <div className="border-red/30 bg-material-thick overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-[120px]">
+          <button
+            type="button"
+            onClick={onUploadClick}
+            className="group hover:bg-red/10 active:bg-red/20 relative flex size-10 items-center justify-center transition-colors sm:size-12"
+            title={t('menu.upload', { defaultValue: 'Upload Photos' })}
+          >
+            <i className="i-mingcute-add-line text-red size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
+          </button>
+        </div>
       </div>
 
       {/* Routes Button - Standalone, only shown when photos exist */}
