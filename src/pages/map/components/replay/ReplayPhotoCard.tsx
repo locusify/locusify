@@ -27,7 +27,7 @@ export function ReplayPhotoCard() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.96 }}
           transition={{ duration: 0.25 }}
-          className="w-56 overflow-hidden rounded-xl border border-white/10 bg-black/80 shadow-2xl backdrop-blur-[80px] sm:w-80 lg:w-96"
+          className="w-56 overflow-hidden rounded-xl border border-fill-tertiary shadow-2xl backdrop-blur-[80px] sm:w-80 lg:w-96 bg-white/90 dark:bg-black/80"
         >
           {/* Photo */}
           <div className="relative h-40 overflow-hidden sm:h-52 lg:h-64">
@@ -44,7 +44,7 @@ export function ReplayPhotoCard() {
 
             {/* Time overlay on photo */}
             {photo.dateTaken && (
-              <div className="absolute bottom-2 left-2.5 flex items-center gap-1.5 text-[10px] text-white/80 sm:text-xs">
+              <div className="absolute bottom-2 left-2.5 flex items-center gap-1.5 text-[10px] text-white/90 sm:text-xs">
                 <i className="i-mingcute-calendar-line" />
                 <span>
                   {new Date(photo.dateTaken).toLocaleDateString('zh-CN', {
@@ -60,11 +60,11 @@ export function ReplayPhotoCard() {
 
           {/* Info */}
           <div className="space-y-1.5 px-2.5 py-2 sm:px-3 sm:py-2.5">
-            <h4 className="truncate text-xs font-medium text-white sm:text-sm">
+            <h4 className="truncate text-xs font-medium text-text sm:text-sm">
               {photo.title || marker.id}
             </h4>
 
-            <div className="space-y-1 text-[10px] text-white/50 sm:text-xs">
+            <div className="space-y-1 text-[10px] text-text/50 sm:text-xs">
               {photo.description && (
                 <div className="flex items-center gap-1.5">
                   <i className="i-mingcute-camera-line shrink-0" />

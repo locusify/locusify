@@ -57,11 +57,11 @@ export function ReplayControls() {
     `${Math.abs(lat).toFixed(2)}°${latRef || 'N'} ${Math.abs(lng).toFixed(2)}°${lngRef || 'E'}`
 
   return (
-    <div className="bg-material-thick border-fill-tertiary flex flex-col rounded-xl border shadow-2xl backdrop-blur-[120px] sm:rounded-2xl">
+    <div className="border-fill-tertiary flex flex-col rounded-xl border shadow-2xl backdrop-blur-[120px] sm:rounded-2xl bg-white/90 dark:bg-black/70">
       {/* Timeline */}
       <div
         ref={timelineRef}
-        className="overflow-x-auto px-4 pt-3 pb-2 sm:px-6 sm:pt-4 sm:pb-3 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15 [&::-webkit-scrollbar-track]:bg-transparent"
+        className="overflow-x-auto px-4 pt-3 pb-2 sm:px-6 sm:pt-4 sm:pb-3 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-text/15 [&::-webkit-scrollbar-track]:bg-transparent"
       >
         <div className="flex min-w-full items-center">
           {waypoints.map((wp, i) => {
@@ -79,8 +79,8 @@ export function ReplayControls() {
                   className={cn(
                     'group flex shrink-0 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all sm:px-3 sm:py-2',
                     isActive
-                      ? 'bg-white/5'
-                      : 'hover:bg-white/5',
+                      ? 'bg-text/5'
+                      : 'hover:bg-text/5',
                   )}
                 >
                   {/* Dot */}
@@ -100,7 +100,7 @@ export function ReplayControls() {
                           ? 'size-3 bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.5)] sm:size-3.5'
                           : isPast
                             ? 'size-2 bg-sky-400/50 group-hover:bg-sky-400/70'
-                            : 'size-2 bg-white/25 group-hover:bg-white/50',
+                            : 'size-2 bg-text/25 group-hover:bg-text/50',
                       )}
                     />
                   </div>
@@ -115,7 +115,7 @@ export function ReplayControls() {
                     <span
                       className={cn(
                         'whitespace-nowrap text-[10px] leading-none sm:text-[11px]',
-                        isActive ? 'font-medium text-sky-400' : 'text-white/60',
+                        isActive ? 'font-medium text-sky-400' : 'text-text/60',
                       )}
                     >
                       {formatDate(wp.timestamp)}
@@ -125,7 +125,7 @@ export function ReplayControls() {
                     <span
                       className={cn(
                         'whitespace-nowrap font-mono text-[9px] leading-none sm:text-[10px]',
-                        isActive ? 'text-sky-300/70' : 'text-white/30',
+                        isActive ? 'text-sky-300/70' : 'text-text/30',
                       )}
                     >
                       {formatCoord(wp.marker.latitude, wp.marker.longitude, wp.marker.latitudeRef, wp.marker.longitudeRef)}
@@ -138,7 +138,7 @@ export function ReplayControls() {
                   <div
                     className={cn(
                       'h-px min-w-6 flex-1 sm:min-w-12',
-                      isPast ? 'bg-sky-400/50' : 'bg-white/10',
+                      isPast ? 'bg-sky-400/50' : 'bg-text/10',
                     )}
                   />
                 )}
@@ -149,7 +149,7 @@ export function ReplayControls() {
       </div>
 
       {/* Divider */}
-      <div className="mx-3 h-px bg-white/5 sm:mx-4" />
+      <div className="mx-3 h-px bg-text/8 sm:mx-4" />
 
       {/* Controls row */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center px-3 py-1.5 sm:px-4 sm:py-2">
@@ -196,7 +196,7 @@ export function ReplayControls() {
             onClick={() => setSpeedMenuOpen(prev => !prev)}
             className={cn(
               'flex items-center gap-0.5 rounded-lg px-2 py-1 text-xs font-medium transition-colors',
-              speedMenuOpen ? 'bg-white/10 text-sky-400' : 'text-text-secondary hover:text-text hover:bg-white/5',
+              speedMenuOpen ? 'bg-text/10 text-sky-400' : 'text-text-secondary hover:text-text hover:bg-text/5',
             )}
           >
             <span>
@@ -213,7 +213,7 @@ export function ReplayControls() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 4, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="bg-material-thick border-fill-tertiary absolute bottom-full right-0 mb-2 min-w-[100px] overflow-hidden rounded-xl border py-1 shadow-2xl backdrop-blur-[120px]"
+                className="border-fill-tertiary absolute bottom-full right-0 mb-2 min-w-[100px] overflow-hidden rounded-xl border py-1 shadow-2xl backdrop-blur-[120px] bg-white/90 dark:bg-black/70"
               >
                 {SPEED_OPTIONS.map(speed => (
                   <button
@@ -225,7 +225,7 @@ export function ReplayControls() {
                     }}
                     className={cn(
                       'flex w-full items-center justify-between px-3 py-1.5 text-xs transition-colors',
-                      speedMultiplier === speed ? 'text-sky-400' : 'text-text-secondary hover:text-text hover:bg-white/5',
+                      speedMultiplier === speed ? 'text-sky-400' : 'text-text-secondary hover:text-text hover:bg-text/5',
                     )}
                   >
                     <span>

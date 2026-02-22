@@ -185,5 +185,19 @@
   "auth.signup.oauth.github": "Sign up with GitHub",
   "auth.signup.switch.text": "Already have an account?",
   "auth.signup.switch.link": "Sign in",
-  "auth.signup.success.message": "Verification email sent to {{email}}. Please check your inbox and verify your email to continue."
+  "auth.signup.success.message": "Verification email sent to {{email}}. Please check your inbox and verify your email to continue.",
+
+  "settings.title": "Settings",
+  "settings.section.appearance": "Appearance",
+  "settings.section.about": "About",
+  "settings.language.label": "Language",
+  "settings.language.en": "English",
+  "settings.language.zh": "中文",
+  "settings.theme.label": "Theme",
+  "settings.theme.light": "Light",
+  "settings.theme.dark": "Dark",
+  "settings.theme.system": "System",
+  "settings.about.version": "Version",
+  "settings.about.github": "GitHub",
+  "settings.about.appName": "Locusify"
 }

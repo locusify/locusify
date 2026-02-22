@@ -21,6 +21,7 @@ interface MenuItemProps {
 interface MapMenuButtonProps {
   onUploadClick?: () => void
   onRoutesClick?: () => void
+  onSettingsClick?: () => void
   /** Whether the routes button is disabled (e.g. no photos uploaded) */
   routesDisabled?: boolean
   /** Whether replay mode is active — shows exit button instead of menu */
@@ -40,6 +41,7 @@ interface MapMenuButtonProps {
 export const MapMenuButton: FC<MapMenuButtonProps> = ({
   onUploadClick,
   onRoutesClick,
+  onSettingsClick,
   routesDisabled,
   isReplayMode,
   onExitReplay,
@@ -75,6 +77,11 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
         navigator.clipboard.writeText('https://locusify.caterpi11ar.com/')
         toast.success(t('menu.linkCopied', { defaultValue: 'Link copied to clipboard' }))
       },
+    },
+    {
+      icon: 'i-mingcute-settings-3-line',
+      label: t('settings.title', { defaultValue: 'Settings' }),
+      onClick: onSettingsClick,
     },
   ]
 
@@ -215,7 +222,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         className="overflow-hidden"
       >
-        <div className="bg-material-thick border-fill-tertiary flex flex-col overflow-hidden rounded-2xl border shadow-2xl backdrop-blur-[120px]">
+        <div className="bg-material-thick border-fill-tertiary flex flex-col overflow-hidden rounded-2xl border backdrop-blur-[120px]">
           {menuItems.map((item, index) => (
             <div key={item.label}>
               {index > 0 && <div className="bg-fill-secondary h-px w-full" />}

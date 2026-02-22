@@ -2,6 +2,7 @@ import type { CSSProperties, RefObject } from 'react'
 import type { MapLayerMouseEvent, MapRef, StyleSpecification } from 'react-map-gl/maplibre'
 
 import type { PhotoMarker } from '@/types/map'
+import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
 import { useMapStore } from '@/stores/mapStore'
@@ -13,7 +14,8 @@ import { PhotoMarkerPin } from './components/PhotoMarkerPin'
 import { TrajectoryController } from './components/TrajectoryController'
 import { TrajectoryLineLayer } from './components/TrajectoryLineLayer'
 import { WaypointDot } from './components/WaypointDot'
-import MapLibreStyle from './MapLibreStyle.json'
+import MapStyleDark from './MapLibreStyleDark.json'
+import MapStyleLight from './MapLibreStyleLight.json'
 import { calculateMapBounds } from './utils'
 // Styles
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -71,6 +73,9 @@ export function Maplibre({
   mapRef,
   autoFitBounds = true,
 }: PureMaplibreProps) {
+  const { resolvedTheme } = useTheme()
+  const mapStyle = (resolvedTheme === 'light' ? MapStyleLight : MapStyleDark) as StyleSpecification
+
   const isReplayMode = useReplayStore(s => s.isReplayMode)
   const registerMap = useMapStore(s => s.registerMap)
   const unregisterMap = useMapStore(s => s.unregisterMap)
@@ -381,7 +386,7 @@ export function Maplibre({
         ref={mapRef}
         {...viewState}
         style={{ width: '100%', height: '100%' }}
-        mapStyle={MapLibreStyle as StyleSpecification}
+        mapStyle={mapStyle}
         attributionControl={false}
         canvasContextAttributes={{ preserveDrawingBuffer: true }}
         interactiveLayerIds={geoJsonData ? ['data'] : undefined}

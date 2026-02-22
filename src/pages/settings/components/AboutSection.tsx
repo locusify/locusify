@@ -1,0 +1,39 @@
+import type { FC } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Separator } from '@/components/ui/separator'
+
+const APP_VERSION = 'v0.1.0'
+const GITHUB_URL = 'https://github.com/caterpi11ar/locusify'
+
+export const AboutSection: FC = () => {
+  const { t } = useTranslation()
+
+  return (
+    <div>
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="i-mingcute-app-line size-4 text-text/50" />
+          <span className="text-sm font-medium text-text">{t('settings.about.appName')}</span>
+        </div>
+        <span className="text-xs text-text/50">
+          {t('settings.about.version')}
+          {' '}
+          {APP_VERSION}
+        </span>
+      </div>
+      <Separator />
+      <a
+        href={GITHUB_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-between px-4 py-3 hover:bg-fill-secondary transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="i-mingcute-github-line size-4 text-text/50" />
+          <span className="text-sm font-medium text-text">{t('settings.about.github')}</span>
+        </div>
+        <span className="i-mingcute-arrow-right-line size-4 text-text/50" />
+      </a>
+    </div>
+  )
+}

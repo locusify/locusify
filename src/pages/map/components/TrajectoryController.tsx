@@ -18,7 +18,8 @@ export function TrajectoryController() {
   const { current: map } = useMap()
 
   useEffect(() => {
-    if (!map) return
+    if (!map)
+      return
 
     let initialised = false
 

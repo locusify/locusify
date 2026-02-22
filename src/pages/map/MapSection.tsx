@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { PhotoProvider, usePhotos } from '@/contexts'
 import { useVideoRecorder } from '@/hooks/useVideoRecorder'
+import { SettingsDrawer } from '@/pages/settings'
 import { useReplayStore } from '@/stores/replayStore'
 import { GenericMap } from './components/GenericMap'
 import { MapMenuButton } from './components/MapMenuButton'
@@ -31,6 +32,7 @@ function MapSectionContent() {
 
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
   const [videoDialogOpen, setVideoDialogOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   // Show dialog 2 seconds after replay completes (regardless of whether video is ready)
   useEffect(() => {
@@ -79,6 +81,7 @@ function MapSectionContent() {
       <MapMenuButton
         onUploadClick={() => setUploadDrawerOpen(true)}
         onRoutesClick={handleRoutesClick}
+        onSettingsClick={() => setSettingsOpen(true)}
         routesDisabled={!hasEnoughPhotos}
         isReplayMode={isReplayMode}
         onExitReplay={handleExitReplay}
@@ -90,6 +93,8 @@ function MapSectionContent() {
         open={uploadDrawerOpen}
         onOpenChange={setUploadDrawerOpen}
       />
+
+      <SettingsDrawer open={settingsOpen} onOpenChange={setSettingsOpen} />
 
       {isReplayMode && <TrajectoryOverlay />}
 

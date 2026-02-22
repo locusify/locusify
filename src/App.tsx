@@ -1,5 +1,6 @@
 import type { FC } from 'react'
 import { domAnimation, LazyMotion, MotionConfig } from 'motion/react'
+import { ThemeProvider } from 'next-themes'
 import { ErrorBoundary } from 'react-error-boundary'
 import { RouterProvider } from 'react-router'
 import { Toaster } from './components/ui/sonner'
@@ -8,26 +9,28 @@ import { router } from './routers'
 
 const App: FC = () => {
   return (
-    <LazyMotion features={domAnimation} strict key="framer">
-      <MotionConfig transition={{
-        type: 'spring',
-        duration: 0.4,
-        bounce: 0,
-      }}
-      >
-        <ErrorBoundary
-          fallbackRender={({ error }) => <div>{error.message}</div>}
-          onReset={() => {
-            window.location.reload()
-          }}
+    <ThemeProvider attribute="data-theme" defaultTheme="dark" enableSystem disableTransitionOnChange>
+      <LazyMotion features={domAnimation} strict key="framer">
+        <MotionConfig transition={{
+          type: 'spring',
+          duration: 0.4,
+          bounce: 0,
+        }}
         >
-          <TooltipProvider>
-            <RouterProvider router={router} />
-            <Toaster />
-          </TooltipProvider>
-        </ErrorBoundary>
-      </MotionConfig>
-    </LazyMotion>
+          <ErrorBoundary
+            fallbackRender={({ error }) => <div>{error.message}</div>}
+            onReset={() => {
+              window.location.reload()
+            }}
+          >
+            <TooltipProvider>
+              <RouterProvider router={router} />
+              <Toaster />
+            </TooltipProvider>
+          </ErrorBoundary>
+        </MotionConfig>
+      </LazyMotion>
+    </ThemeProvider>
   )
 }
 

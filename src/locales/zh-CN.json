@@ -186,5 +186,19 @@
   "auth.signup.oauth.github": "使用 GitHub 注册",
   "auth.signup.switch.text": "已有账户？",
   "auth.signup.switch.link": "登录",
-  "auth.signup.success.message": "验证邮件已发送至 {{email}}。请检查您的收件箱并验证邮箱以继续。"
+  "auth.signup.success.message": "验证邮件已发送至 {{email}}。请检查您的收件箱并验证邮箱以继续。",
+
+  "settings.title": "设置",
+  "settings.section.appearance": "外观",
+  "settings.section.about": "关于",
+  "settings.language.label": "语言",
+  "settings.language.en": "English",
+  "settings.language.zh": "中文",
+  "settings.theme.label": "主题",
+  "settings.theme.light": "浅色",
+  "settings.theme.dark": "深色",
+  "settings.theme.system": "跟随系统",
+  "settings.about.version": "版本",
+  "settings.about.github": "GitHub",
+  "settings.about.appName": "Locusify"
 }
