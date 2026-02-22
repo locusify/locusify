@@ -1,35 +1,46 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
 import { useReplayStore } from '@/stores/replayStore'
 
 /**
- * Pure logic component: flies the map camera to each new waypoint.
- * Only re-renders when currentWaypointIndex changes (not every frame).
+ * Pure logic component: tracks the interpolated replay position in real-time.
+ *
+ * Previously subscribed to currentWaypointIndex and called flyTo() on each
+ * waypoint transition, which caused a visible 1-beat lag — the camera only
+ * started moving after the marker had already left the waypoint.
+ *
+ * Now subscribes directly to currentPosition (updated every RAF frame by the
+ * replay store) and calls jumpTo() each frame, so the camera is always in
+ * sync with the animated marker. The first frame uses flyTo() to smoothly
+ * bring the viewport to the starting position.
  */
 export function TrajectoryController() {
   const { current: map } = useMap()
-  const waypoints = useReplayStore(s => s.waypoints)
-  const currentWaypointIndex = useReplayStore(s => s.currentWaypointIndex)
-  const status = useReplayStore(s => s.status)
-  const prevIndexRef = useRef(-1)
 
   useEffect(() => {
-    if (!map || status === 'idle')
-      return
-    if (prevIndexRef.current === currentWaypointIndex)
-      return
-    if (currentWaypointIndex >= waypoints.length)
-      return
+    if (!map) return
 
-    prevIndexRef.current = currentWaypointIndex
+    let initialised = false
 
-    const waypoint = waypoints[currentWaypointIndex]
-    map.flyTo({
-      center: waypoint.position,
-      zoom: 12,
-      duration: 1200,
+    return useReplayStore.subscribe((state) => {
+      if (state.status === 'idle' || !state.currentPosition) {
+        // Reset so the next replay gets a fresh flyTo entrance.
+        initialised = false
+        return
+      }
+
+      if (!initialised) {
+        initialised = true
+        map.flyTo({ center: state.currentPosition, zoom: 12, duration: 800 })
+        return
+      }
+
+      // Track interpolated position every frame — zero camera lag.
+      // Only the center is updated; zoom is left to the user after the
+      // initial flyTo so they can zoom in/out freely during playback.
+      map.jumpTo({ center: state.currentPosition })
     })
-  }, [map, currentWaypointIndex, waypoints, status])
+  }, [map])
 
   return null
 }
