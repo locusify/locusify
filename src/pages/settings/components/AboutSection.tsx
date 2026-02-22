@@ -1,9 +1,11 @@
 import type { FC } from 'react'
+import pkg from '@pkg'
 import { useTranslation } from 'react-i18next'
+
 import { Separator } from '@/components/ui/separator'
 
-const APP_VERSION = 'v1.0.0'
-const GITHUB_URL = 'https://github.com/caterpi11ar/locusify'
+const APP_VERSION = `v${pkg.version}`
+const GITHUB_URL = pkg.repository.url
 
 export const AboutSection: FC = () => {
   const { t } = useTranslation()
