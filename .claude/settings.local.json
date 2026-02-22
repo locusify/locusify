@@ -76,7 +76,8 @@
       "mcp__xiaohongshu-mcp__search_feeds",
       "mcp__xiaohongshu-mcp__user_profile",
       "mcp__xiaohongshu-mcp__delete_cookies",
-      "mcp__xiaohongshu-mcp__get_login_qrcode"
+      "mcp__xiaohongshu-mcp__get_login_qrcode",
+      "Bash(git tag:*)"
     ],
     "deny": [],
     "ask": [],
