@@ -100,7 +100,7 @@
   "workspace.recording.recording": "Recording...",
   "workspace.recording.processing": "Processing...",
   "workspace.recording.ready.title": "Replay Video Ready",
-  "workspace.recording.save": "Save Video",
+  "workspace.recording.save": "Save",
   "workspace.recording.discard": "Discard",
 
   "workspace.status.completed": "Replay completed! Click Play to restart.",

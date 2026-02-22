@@ -151,7 +151,7 @@ function drawIntro(ctx: CanvasRenderingContext2D, W: number, H: number, elapsed:
   return true
 }
 
-function drawPhotoCard(ctx: CanvasRenderingContext2D, W: number, _H: number): void {
+function drawPhotoCard(ctx: CanvasRenderingContext2D, W: number, H: number): void {
   const { waypoints, currentWaypointIndex } = useReplayStore.getState()
   const waypoint = waypoints[currentWaypointIndex]
   if (!waypoint)
@@ -163,16 +163,19 @@ function drawPhotoCard(ctx: CanvasRenderingContext2D, W: number, _H: number): vo
   if (photo.thumbnailUrl)
     loadImage(photo.thumbnailUrl)
 
-  const MARGIN = Math.max(16, Math.round(W * 0.018))
-  const CARD_W = Math.round(W * 0.26)
-  const PHOTO_H = Math.round(CARD_W * 0.65)
-  const FONT_TITLE = Math.max(12, Math.round(W * 0.014))
-  const FONT_META = Math.max(10, Math.round(W * 0.011))
+  const MARGIN = Math.max(12, Math.round(W * 0.020))
+  // Portrait-aware card width: take the smaller of 38% of width or 45% of height,
+  // so the card is proportionally large on both portrait mobile and landscape desktop.
+  const CARD_W = Math.min(Math.round(W * 0.38), Math.round(H * 0.45))
+  const PHOTO_H = Math.round(CARD_W * 0.68)
+  // Font sizes relative to card width so they scale with the card on all aspect ratios.
+  const FONT_TITLE = Math.max(13, Math.round(CARD_W * 0.062))
+  const FONT_META = Math.max(10, Math.round(CARD_W * 0.048))
   const LINE_H = Math.round(FONT_TITLE * 1.6)
   const PAD = Math.round(FONT_TITLE * 0.7)
   const INFO_H = PAD * 2 + LINE_H + Math.round(FONT_META * 1.6)
   const CARD_H = PHOTO_H + INFO_H
-  const RADIUS = Math.max(10, Math.round(W * 0.009))
+  const RADIUS = Math.max(8, Math.round(CARD_W * 0.045))
 
   const cx = W - CARD_W - MARGIN
   const cy = MARGIN
