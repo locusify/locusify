@@ -10,6 +10,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { AboutSection } from './components/AboutSection'
 import { LanguageSetting } from './components/LanguageSetting'
+import { PrivacySection } from './components/PrivacySection'
 import { SettingsSection } from './components/SettingsSection'
 import { ThemeSetting } from './components/ThemeSetting'
 
@@ -35,6 +36,9 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange }) 
               <ThemeSetting />
               <Separator />
               <LanguageSetting />
+            </SettingsSection>
+            <SettingsSection label={t('settings.section.privacy')}>
+              <PrivacySection />
             </SettingsSection>
             <SettingsSection label={t('settings.section.about')}>
               <AboutSection />

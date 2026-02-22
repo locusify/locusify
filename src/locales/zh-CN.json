@@ -198,6 +198,13 @@
   "settings.theme.light": "浅色",
   "settings.theme.dark": "深色",
   "settings.theme.system": "跟随系统",
+  "settings.section.privacy": "隐私",
+  "settings.privacy.heading": "隐私承诺",
+  "settings.privacy.noCollection": "我们不收集任何个人信息",
+  "settings.privacy.locationDisplay": "位置数据仅用于地图展示，不做任何存储或上传",
+  "settings.privacy.localOnly": "所有照片处理均在您的设备本地完成",
+  "settings.privacy.noTracking": "无数据分析、行为追踪或第三方数据共享",
+
   "settings.about.version": "版本",
   "settings.about.github": "GitHub",
   "settings.about.appName": "Locusify"
