@@ -27,10 +27,7 @@ This file provides comprehensive guidance to Claude Code (claude.ai/code) when w
 ```
 Locusify/
 ├── .claude/                  # Claude Code configuration
-│   ├── agents/              # Specialized agents
-│   └── commands/            # Custom commands
 ├── .husky/                  # Git hooks
-├── PRPs/                    # Product Requirements and Progress docs
 ├── public/                  # Static assets
 ├── src/                     # Source code
 │   ├── assets/             # Asset files
@@ -58,51 +55,7 @@ Locusify/
 
 The project leverages Claude Code's multi-agent architecture for domain-specific expertise:
 
-#### Available Agents (`/.claude/agents/`)
-
-| Agent                  | Role                | Primary Responsibilities                                    |
-| ---------------------- | ------------------- | ----------------------------------------------------------- |
-| **product-manager**    | Strategy & Planning | Requirements analysis, PRP generation                       |
-| **ui-ux-designer**     | Design & UX         | User experience, design systems                             |
-| **frontend-developer** | Implementation      | React web architecture, cross-platform optimization         |
-| **code-reviewer**      | Quality Assurance   | Security analysis, performance review, production readiness |
-
-#### Available Commands (`/.claude/commands/`)
-
-**Primary Workflow:**
-```bash
-/workflow <feature-name> [priority]
-```
-
 ## Development Workflow
-
-### Feature Development Process
-
-Use the standardized 4-stage workflow for all new features:
-
-```
-Requirements → Design → Architecture → Quality
-```
-
-| Stage               | Agent                 | Deliverables                                              |
-| ------------------- | --------------------- | --------------------------------------------------------- |
-| **1. Requirements** | `@product-manager`    | PRP documents, user stories, acceptance criteria          |
-| **2. Design**       | `@ui-ux-designer`     | Wireframes, UI mockups, interaction flows                 |
-| **3. Architecture** | `@frontend-developer` | Technical specs, API design, data models                  |
-| **4. Quality**      | `@code-reviewer`      | Testing strategy, security review, performance benchmarks |
-
-**Automation:** All PRPs saved to `/PRPs/[YYYY-MM-DD]/` with structured documentation and automatic progress tracking.
-
-### PRP Documentation Structure
-
-```
-/PRPs/[YYYY-MM-DD]/
-├── [feature-name]-progress.md    # Progress tracking (auto-generated)
-├── [feature-name]-prd.md         # Product requirements
-├── [feature-name]-design.md      # Design specifications
-├── [feature-name]-tech.md        # Technical architecture
-└── [feature-name]-qa.md          # Quality assurance
-```
 
 ## Development Standards
 
