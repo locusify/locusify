@@ -14,6 +14,12 @@
   <img src="https://img.shields.io/badge/pnpm-%3E%3D10-f69220" alt="pnpm" />
 </p>
 
+## Demo
+
+<p align="center">
+  <img src="example/locusify-replay.gif" alt="Locusify Demo" width="600" />
+</p>
+
 ## Features
 
 - **Photo Upload** — Drag-and-drop upload with automatic EXIF / GPS extraction

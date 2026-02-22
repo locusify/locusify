@@ -66,7 +66,17 @@
       "WebFetch(domain:news.ycombinator.com)",
       "WebFetch(domain:webcodecsfundamentals.org)",
       "WebFetch(domain:dayverse.id)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(claude mcp:*)",
+      "mcp__xiaohongshu-mcp__check_login_status",
+      "mcp__xiaohongshu-mcp__publish_with_video",
+      "Bash(tail:*)",
+      "Bash(ffprobe:*)",
+      "mcp__xiaohongshu-mcp__publish_content",
+      "mcp__xiaohongshu-mcp__search_feeds",
+      "mcp__xiaohongshu-mcp__user_profile",
+      "mcp__xiaohongshu-mcp__delete_cookies",
+      "mcp__xiaohongshu-mcp__get_login_qrcode"
     ],
     "deny": [],
     "ask": [],
