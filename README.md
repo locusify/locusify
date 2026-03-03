@@ -95,6 +95,22 @@ Your photos never leave your device. Close the browser tab and they're gone.
 
 ---
 
+## Competitors
+
+| Feature | Locusify | [Travel Animator](https://www.travelanimator.com/) | [Polarsteps](https://www.polarsteps.com/) |
+|---------|----------|-----------------|------------|
+| Platform | Browser (no install) | Mobile App | Mobile App + Web |
+| Pricing | 100% Free | Free + PRO | Free + Paid Books |
+| Route Source | Photo EXIF (auto) | Manual / GPX / Google Maps | Real-time GPS tracking |
+| Video Export | MP4 replay | 4K animated route video | None |
+| Privacy | 100% local processing | Cloud-based | Cloud-based |
+| AI Features | Planned (transitions, vlog) | None | None |
+| Map Styles | MapLibre GL | 30+ styles, flat + globe | Built-in |
+| 3D Models | — | 250+ vehicles | — |
+| Account Required | No | Yes | Yes |
+
+---
+
 ## Frequently Asked Questions
 
 **What is GPS photo mapping?**
