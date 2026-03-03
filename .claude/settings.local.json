@@ -83,7 +83,9 @@
       "WebFetch(domain:www.producthunt.com)",
       "Bash(grep:*)",
       "Bash(ln:*)",
-      "Bash(sips:*)"
+      "Bash(sips:*)",
+      "WebFetch(domain:www.travelanimator.com)",
+      "WebFetch(domain:www.polarsteps.com)"
     ],
     "deny": [],
     "ask": [],
