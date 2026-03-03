@@ -216,5 +216,9 @@
 
   "settings.about.version": "版本",
   "settings.about.github": "GitHub",
-  "settings.about.appName": "Locusify"
+  "settings.about.appName": "Locusify",
+
+  "map.announcement.title": "最新公告",
+  "map.announcement.body": "欢迎使用 Locusify！上传带有GPS信息的照片，即可自动生成可视化路线图和电影级旅行视频。",
+  "map.announcement.dismiss": "我知道了"
 }

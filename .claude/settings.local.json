@@ -81,7 +81,8 @@
       "Bash(gh release:*)",
       "Bash(git:*)",
       "WebFetch(domain:www.producthunt.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ln:*)"
     ],
     "deny": [],
     "ask": [],

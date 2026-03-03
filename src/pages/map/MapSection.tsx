@@ -1,4 +1,5 @@
 import type { PhotoMarker } from '@/types/map'
+import pkg from '@pkg'
 import { AnimatePresence, m } from 'motion/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SelectPhotosDrawer } from '@/components/upload'
@@ -6,6 +7,7 @@ import { PhotoProvider, usePhotos } from '@/contexts'
 import { useVideoRecorder } from '@/hooks/useVideoRecorder'
 import { SettingsDrawer } from '@/pages/settings'
 import { useReplayStore } from '@/stores/replayStore'
+import { AnnouncementDialog } from './components/AnnouncementDialog'
 import { GalleryDrawer } from './components/GalleryDrawer'
 import { GenericMap } from './components/GenericMap'
 import { MapMenuButton } from './components/MapMenuButton'
@@ -13,6 +15,9 @@ import { SaveVideoDialog } from './components/SaveVideoDialog'
 import { TrajectoryOverlay } from './components/TrajectoryOverlay'
 import { MapProvider } from './MapProvider'
 import { getInitialViewStateForMarkers } from './utils'
+
+const ANNOUNCEMENT_VERSION = pkg.version
+const ANNOUNCEMENT_STORAGE_KEY = 'locusify:version'
 
 function MapSectionContent() {
   const { markers, selectedMarkerId, setSelectedMarkerId } = usePhotos()
@@ -35,6 +40,9 @@ function MapSectionContent() {
   const [videoDialogOpen, setVideoDialogOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [galleryOpen, setGalleryOpen] = useState(false)
+  const [announcementOpen, setAnnouncementOpen] = useState(
+    () => localStorage.getItem(ANNOUNCEMENT_STORAGE_KEY) !== ANNOUNCEMENT_VERSION,
+  )
 
   // Show dialog 2 seconds after replay completes (regardless of whether video is ready)
   useEffect(() => {
@@ -75,6 +83,11 @@ function MapSectionContent() {
     setVideoDialogOpen(false)
   }, [discardVideo])
 
+  const handleDismissAnnouncement = useCallback(() => {
+    localStorage.setItem(ANNOUNCEMENT_STORAGE_KEY, ANNOUNCEMENT_VERSION)
+    setAnnouncementOpen(false)
+  }, [])
+
   const hasEnoughPhotos = markers.length >= 2
   const displayMarkers = isReplayMode ? [] : markers
 
@@ -101,6 +114,16 @@ function MapSectionContent() {
       <GalleryDrawer open={galleryOpen} onOpenChange={setGalleryOpen} />
 
       {isReplayMode && <TrajectoryOverlay />}
+
+      {/* Announcement dialog — shown once per version */}
+      <AnimatePresence>
+        {announcementOpen && (
+          <AnnouncementDialog
+            open={announcementOpen}
+            onClose={handleDismissAnnouncement}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Save / Discard dialog — shown 2 s after replay completes */}
       <AnimatePresence>
