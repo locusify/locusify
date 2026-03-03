@@ -2,12 +2,12 @@ import type { FC } from 'react'
 import { AnimatePresence, m } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useWebShare } from '@/hooks/useWebShare'
 import { cn, glassPanel } from '@/lib/utils'
 
 interface MenuItemProps {
@@ -51,6 +51,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
   isProcessing,
 }) => {
   const { t } = useTranslation()
+  const { shareLink } = useWebShare()
   const [isExpanded, setIsExpanded] = useState(false)
   const [showRoutesHint, setShowRoutesHint] = useState(false)
   const [showUploadHint, setShowUploadHint] = useState(false)
@@ -79,8 +80,11 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
       icon: 'i-mingcute-share-3-line',
       label: t('menu.share', { defaultValue: 'Share' }),
       onClick: () => {
-        navigator.clipboard.writeText('https://locusify.caterpi11ar.com/')
-        toast.success(t('menu.linkCopied', { defaultValue: 'Link copied to clipboard' }))
+        shareLink({
+          title: t('share.appTitle', { defaultValue: 'Locusify' }),
+          text: t('share.appText', { defaultValue: 'Transform your travel photos into visual route maps and cinematic vlogs' }),
+          url: 'https://locusify.caterpi11ar.com/',
+        })
       },
     },
     {

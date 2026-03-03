@@ -225,5 +225,11 @@
 
   "map.announcement.title": "What's New",
   "map.announcement.body": "Welcome to Locusify! Upload your GPS-tagged photos to generate visual route maps and cinematic travel vlogs automatically.",
-  "map.announcement.dismiss": "Got it"
+  "map.announcement.dismiss": "Got it",
+
+  "share.appTitle": "Locusify",
+  "share.appText": "Transform your travel photos into visual route maps and cinematic vlogs",
+  "share.videoTitle": "My Locusify Journey",
+  "share.videoText": "Check out my travel trajectory replay!",
+  "share.error": "Failed to share"
 }
