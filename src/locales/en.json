@@ -158,7 +158,7 @@
   "auth.logout": "Logout",
   "auth.error": "Login failed. Please try again.",
   "auth.notConfigured": "This login method is not configured yet.",
-  "auth.loggedInAs": "Logged in as {{name}}",
+  "auth.loggedInAs": "Hi, {{name}}",
   "auth.popupBlocked": "Popup was blocked. Please allow popups and try again.",
 
   "auth.drawer.login.title": "Welcome Back",

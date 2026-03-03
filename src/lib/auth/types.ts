@@ -14,5 +14,5 @@ export interface AuthProvider {
   type: AuthProviderType
   name: string
   icon: ComponentType
-  login: () => Promise<AuthUser>
+  login: () => Promise<void>
 }

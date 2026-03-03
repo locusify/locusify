@@ -28,7 +28,7 @@ export const LoginButton: FC<LoginButtonProps> = ({ onClick }) => {
                 <img
                   src={user.avatarUrl}
                   alt={user.name}
-                  className="size-6 rounded-full object-cover sm:size-7"
+                  className="size-9 rounded-full object-cover"
                   referrerPolicy="no-referrer"
                 />
               )

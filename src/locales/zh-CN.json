@@ -159,7 +159,7 @@
   "auth.logout": "退出登录",
   "auth.error": "登录失败，请重试。",
   "auth.notConfigured": "该登录方式尚未配置。",
-  "auth.loggedInAs": "已登录为 {{name}}",
+  "auth.loggedInAs": "Hi, {{name}}",
   "auth.popupBlocked": "弹窗被阻止，请允许弹窗后重试。",
 
   "auth.drawer.login.title": "欢迎回来",

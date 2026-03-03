@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/drawer'
 import { Separator } from '@/components/ui/separator'
 import { getAuthProviders } from '@/lib/auth'
+import { supabase } from '@/lib/supabase'
 import { cn, glassPanel } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -24,8 +25,6 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
   const { t } = useTranslation()
   const user = useAuthStore(s => s.user)
   const isLoggingIn = useAuthStore(s => s.isLoggingIn)
-  const setUser = useAuthStore(s => s.setUser)
-  const clearUser = useAuthStore(s => s.clearUser)
   const setLoggingIn = useAuthStore(s => s.setLoggingIn)
 
   const handleLogin = useCallback(async (provider: AuthProvider) => {
@@ -33,31 +32,19 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
 
     setLoggingIn(true)
     try {
-      const authUser = await provider.login()
-      setUser(authUser)
-      onOpenChange(false)
+      await provider.login()
+      // Redirect flow — page will navigate away; no need to close drawer
     }
-    catch (err) {
-      const message = err instanceof Error ? err.message : ''
-      if (message === 'NOT_CONFIGURED') {
-        toast.error(t('auth.notConfigured'))
-      }
-      else if (message === 'Popup blocked') {
-        toast.error(t('auth.popupBlocked'))
-      }
-      else if (message !== 'Popup closed by user') {
-        toast.error(t('auth.error'))
-      }
-    }
-    finally {
+    catch {
+      toast.error(t('auth.error'))
       setLoggingIn(false)
     }
-  }, [isLoggingIn, setLoggingIn, setUser, onOpenChange, t])
+  }, [isLoggingIn, setLoggingIn, t])
 
-  const handleLogout = useCallback(() => {
-    clearUser()
+  const handleLogout = useCallback(async () => {
+    await supabase.auth.signOut()
     onOpenChange(false)
-  }, [clearUser, onOpenChange])
+  }, [onOpenChange])
 
   const providers = getAuthProviders()
 
