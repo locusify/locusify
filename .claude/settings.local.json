@@ -82,7 +82,8 @@
       "Bash(git:*)",
       "WebFetch(domain:www.producthunt.com)",
       "Bash(grep:*)",
-      "Bash(ln:*)"
+      "Bash(ln:*)",
+      "Bash(sips:*)"
     ],
     "deny": [],
     "ask": [],
