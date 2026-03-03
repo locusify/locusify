@@ -156,6 +156,12 @@
   "splash.cta.getStarted": "开始使用",
   "splash.cta.createAccount": "创建账户",
 
+  "auth.logout": "退出登录",
+  "auth.error": "登录失败，请重试。",
+  "auth.notConfigured": "该登录方式尚未配置。",
+  "auth.loggedInAs": "已登录为 {{name}}",
+  "auth.popupBlocked": "弹窗被阻止，请允许弹窗后重试。",
+
   "auth.drawer.login.title": "欢迎回来",
   "auth.drawer.login.description": "登录以继续您的旅程",
   "auth.drawer.signup.title": "开始使用",

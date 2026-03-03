@@ -2,6 +2,7 @@ import type { PhotoMarker } from '@/types/map'
 import pkg from '@pkg'
 import { AnimatePresence, m } from 'motion/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { PhotoProvider, usePhotos } from '@/contexts'
 import { useVideoRecorder } from '@/hooks/useVideoRecorder'
@@ -40,6 +41,7 @@ function MapSectionContent() {
   const [videoDialogOpen, setVideoDialogOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [galleryOpen, setGalleryOpen] = useState(false)
+  const [loginDrawerOpen, setLoginDrawerOpen] = useState(false)
   const [announcementOpen, setAnnouncementOpen] = useState(
     () => localStorage.getItem(ANNOUNCEMENT_STORAGE_KEY) !== ANNOUNCEMENT_VERSION,
   )
@@ -112,6 +114,11 @@ function MapSectionContent() {
 
       <SettingsDrawer open={settingsOpen} onOpenChange={setSettingsOpen} />
       <GalleryDrawer open={galleryOpen} onOpenChange={setGalleryOpen} />
+      <LoginDrawer open={loginDrawerOpen} onOpenChange={setLoginDrawerOpen} />
+
+      {!isReplayMode && (
+        <LoginButton onClick={() => setLoginDrawerOpen(true)} />
+      )}
 
       {isReplayMode && <TrajectoryOverlay />}
 
