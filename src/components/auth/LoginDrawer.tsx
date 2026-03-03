@@ -1,6 +1,6 @@
-import type { AuthProvider } from '@/lib/auth/types'
 import type { FC } from 'react'
-import { useCallback } from 'react'
+import type { AuthProvider, AuthProviderType } from '@/lib/auth/types'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
@@ -11,6 +11,7 @@ import {
   DrawerTitle,
 } from '@/components/ui/drawer'
 import { Separator } from '@/components/ui/separator'
+import { Spinner } from '@/components/ui/spinner'
 import { getAuthProviders } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 import { cn, glassPanel } from '@/lib/utils'
@@ -26,11 +27,14 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
   const user = useAuthStore(s => s.user)
   const isLoggingIn = useAuthStore(s => s.isLoggingIn)
   const setLoggingIn = useAuthStore(s => s.setLoggingIn)
+  const [activeProvider, setActiveProvider] = useState<AuthProviderType | null>(null)
 
   const handleLogin = useCallback(async (provider: AuthProvider) => {
-    if (isLoggingIn) return
+    if (isLoggingIn)
+      return
 
     setLoggingIn(true)
+    setActiveProvider(provider.type)
     try {
       await provider.login()
       // Redirect flow — page will navigate away; no need to close drawer
@@ -38,6 +42,7 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
     catch {
       toast.error(t('auth.error'))
       setLoggingIn(false)
+      setActiveProvider(null)
     }
   }, [isLoggingIn, setLoggingIn, t])
 
@@ -90,25 +95,30 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
                     <Separator className="bg-fill-secondary" />
 
                     <div className="flex flex-col gap-3">
-                      {providers.map(provider => (
-                        <button
-                          key={provider.type}
-                          type="button"
-                          disabled={isLoggingIn}
-                          onClick={() => handleLogin(provider)}
-                          className={cn(
-                            'bg-fill-secondary hover:bg-fill-tertiary flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors',
-                            'text-text disabled:opacity-50',
-                          )}
-                        >
-                          <provider.icon />
-                          <span>
-                            {provider.type === 'google'
-                              ? t('auth.login.oauth.google')
-                              : t('auth.login.oauth.github')}
-                          </span>
-                        </button>
-                      ))}
+                      {providers.map((provider) => {
+                        const isActive = activeProvider === provider.type
+                        return (
+                          <button
+                            key={provider.type}
+                            type="button"
+                            disabled={isLoggingIn}
+                            onClick={() => handleLogin(provider)}
+                            className={cn(
+                              'bg-fill-secondary hover:bg-fill-tertiary flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors',
+                              'text-text disabled:opacity-50',
+                              isActive && 'cursor-wait',
+                              isLoggingIn && !isActive && 'cursor-not-allowed',
+                            )}
+                          >
+                            {isActive ? <Spinner className="size-6" /> : <provider.icon />}
+                            <span>
+                              {provider.type === 'google'
+                                ? t('auth.login.oauth.google')
+                                : t('auth.login.oauth.github')}
+                            </span>
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
                 )}

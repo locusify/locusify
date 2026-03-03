@@ -4,6 +4,7 @@ import { Camera, Map, Video } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+
 const logoUrl = 'https://raw.githubusercontent.com/caterpi11ar/assets/main/logo/locusify.png'
 
 /**
