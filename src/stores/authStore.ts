@@ -1,6 +1,7 @@
 import type { User } from '@supabase/supabase-js'
 import type { AuthUser } from '@/lib/auth/types'
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { supabase } from '@/lib/supabase'
 
 interface AuthState {
@@ -23,23 +24,29 @@ function mapSupabaseUser(user: User): AuthUser {
 }
 
 export const useAuthStore = create<AuthState>()(
-  set => ({
-    user: null,
-    isLoggingIn: false,
-    setUser: user => set({ user, isLoggingIn: false }),
-    clearUser: () => set({ user: null }),
-    setLoggingIn: isLoggingIn => set({ isLoggingIn }),
-  }),
+  persist(
+    set => ({
+      user: null,
+      isLoggingIn: false,
+      setUser: user => set({ user, isLoggingIn: false }),
+      clearUser: () => set({ user: null }),
+      setLoggingIn: isLoggingIn => set({ isLoggingIn }),
+    }),
+    {
+      name: 'locusify-auth',
+      partialize: state => ({ user: state.user }),
+    },
+  ),
 )
 
 export async function initializeAuth() {
-  // Clean up legacy persisted auth data
-  localStorage.removeItem('locusify-auth')
-
   // Hydrate from existing session
   const { data: { session } } = await supabase.auth.getSession()
   if (session?.user) {
     useAuthStore.getState().setUser(mapSupabaseUser(session.user))
+  }
+  else {
+    useAuthStore.getState().clearUser()
   }
 
   // Listen for auth state changes (login, logout, token refresh)
