@@ -132,7 +132,8 @@ Locusify validates GPS data during upload and clearly marks which photos have lo
 - [x] Dark mode + multi-language
 - [ ] Trip history — save and revisit past journeys
 - [ ] Multi-trip view — display multiple trips on a single map
-- [ ] GPX export — export your route as a GPX file for use in other apps
+- [ ] AI transitions — intelligent scene-aware transitions between photos during trajectory replay
+- [ ] AI video generation — automatically produce cinematic travel vlogs with smart editing, pacing, and storytelling
 
 ---
 
