@@ -134,6 +134,7 @@ Locusify validates GPS data during upload and clearly marks which photos have lo
 - [ ] Multi-trip view — display multiple trips on a single map
 - [ ] AI transitions — intelligent scene-aware transitions between photos during trajectory replay
 - [ ] AI video generation — automatically produce cinematic travel vlogs with smart editing, pacing, and storytelling
+- [ ] Landing page — SEO-optimized marketing page to improve search engine visibility and organic traffic
 
 ---
 
