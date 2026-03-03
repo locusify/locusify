@@ -56,20 +56,15 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
   const [showUploadHint, setShowUploadHint] = useState(false)
   const prevRoutesDisabled = useRef(routesDisabled)
 
-  // Show upload hint tooltip on mount for 3 seconds
+  // Show upload hint tooltip on mount until user clicks upload
   useEffect(() => {
     setShowUploadHint(true)
-    const timer = setTimeout(() => setShowUploadHint(false), 3000)
-    return () => clearTimeout(timer)
   }, [])
 
-  // Show hint tooltip when routes button first becomes available
+  // Show hint tooltip when routes button first becomes available, until user clicks it
   useEffect(() => {
     if (prevRoutesDisabled.current && !routesDisabled) {
       setShowRoutesHint(true)
-      const timer = setTimeout(() => setShowRoutesHint(false), 3000)
-      prevRoutesDisabled.current = routesDisabled
-      return () => clearTimeout(timer)
     }
     prevRoutesDisabled.current = routesDisabled
   }, [routesDisabled])
@@ -171,7 +166,10 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
         <div className={cn(glassPanel, 'border-red/30 overflow-hidden')}>
           <button
             type="button"
-            onClick={onUploadClick}
+            onClick={() => {
+              setShowUploadHint(false)
+              onUploadClick?.()
+            }}
             className="group hover:bg-red/10 active:bg-red/20 relative flex size-10 items-center justify-center transition-colors sm:size-12"
             title={t('menu.upload', { defaultValue: 'Upload Photos' })}
           >
@@ -210,7 +208,10 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
                 <div className={cn(glassPanel, 'overflow-hidden')}>
                   <button
                     type="button"
-                    onClick={onRoutesClick}
+                    onClick={() => {
+                      setShowRoutesHint(false)
+                      onRoutesClick?.()
+                    }}
                     className="group hover:bg-fill-secondary active:bg-fill-tertiary flex size-10 items-center justify-center transition-colors sm:size-12"
                   >
                     <i className="i-mingcute-route-line text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
