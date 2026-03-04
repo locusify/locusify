@@ -1,6 +1,8 @@
 import type { PhotoMarker } from '@/types/map'
+import type { SegmentMeta, TransportMode } from '@/types/replay'
 import type { PlaybackState } from '@/types/workspace'
 import { create } from 'zustand'
+import { haversineDistance } from '@/lib/geo'
 
 /** Duration per segment in ms at 1x speed */
 const BASE_SEGMENT_DURATION = 2000
@@ -50,6 +52,24 @@ function computePosition(
   ]
 }
 
+function computeSegments(waypoints: ReplayWaypoint[]): SegmentMeta[] {
+  const segments: SegmentMeta[] = []
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const from = waypoints[i]
+    const to = waypoints[i + 1]
+    const distanceKm = haversineDistance(from.position, to.position)
+    const timeDeltaMs = to.timestamp.getTime() - from.timestamp.getTime()
+    segments.push({
+      fromIndex: i,
+      toIndex: i + 1,
+      distanceKm,
+      timeDeltaMs,
+      mode: 'walking',
+    })
+  }
+  return segments
+}
+
 interface ReplayState {
   isReplayMode: boolean
   waypoints: ReplayWaypoint[]
@@ -59,13 +79,18 @@ interface ReplayState {
   totalProgress: number
   speedMultiplier: number
   currentPosition: [number, number] | null
+  segments: SegmentMeta[]
+  currentSegmentMode: TransportMode
 
   startReplay: (markers: PhotoMarker[], startPaused?: boolean) => void
+  prepareReplay: (markers: PhotoMarker[]) => void
+  confirmConfig: () => void
   togglePlayPause: () => void
   resetReplay: () => void
   exitReplay: () => void
   setSpeedMultiplier: (speed: number) => void
   seekToWaypoint: (index: number) => void
+  setSegmentMode: (segmentIndex: number, mode: TransportMode) => void
   /** Internal: advance animation by delta ms */
   _tick: (delta: number) => void
 }
@@ -79,14 +104,19 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   totalProgress: 0,
   speedMultiplier: 1,
   currentPosition: null,
+  segments: [],
+  currentSegmentMode: 'walking',
 
   startReplay: (markers, startPaused = false) => {
     const waypoints = markersToWaypoints(markers)
     if (waypoints.length < 2)
       return
+    const segments = computeSegments(waypoints)
     set({
       isReplayMode: true,
       waypoints,
+      segments,
+      currentSegmentMode: segments[0]?.mode ?? 'walking',
       status: startPaused ? 'paused' : 'playing',
       currentWaypointIndex: 0,
       segmentProgress: 0,
@@ -94,6 +124,32 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       speedMultiplier: get().speedMultiplier,
       currentPosition: waypoints[0].position,
     })
+  },
+
+  prepareReplay: (markers) => {
+    const waypoints = markersToWaypoints(markers)
+    if (waypoints.length < 2)
+      return
+    const segments = computeSegments(waypoints)
+    set({
+      isReplayMode: true,
+      waypoints,
+      segments,
+      currentSegmentMode: segments[0]?.mode ?? 'walking',
+      status: 'configuring',
+      currentWaypointIndex: 0,
+      segmentProgress: 0,
+      totalProgress: 0,
+      speedMultiplier: get().speedMultiplier,
+      currentPosition: waypoints[0].position,
+    })
+  },
+
+  confirmConfig: () => {
+    const { status } = get()
+    if (status === 'configuring') {
+      set({ status: 'paused' })
+    }
   },
 
   togglePlayPause: () => {
@@ -137,6 +193,8 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       segmentProgress: 0,
       totalProgress: 0,
       currentPosition: null,
+      segments: [],
+      currentSegmentMode: 'walking',
     })
   },
 
@@ -167,6 +225,19 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       currentPosition: waypoints[clampedIndex].position,
       status: status === 'completed' ? 'paused' : status,
     })
+  },
+
+  setSegmentMode: (segmentIndex, mode) => {
+    const { segments, currentWaypointIndex } = get()
+    if (segmentIndex < 0 || segmentIndex >= segments.length)
+      return
+    const updated = [...segments]
+    updated[segmentIndex] = { ...updated[segmentIndex], mode }
+    const patch: Partial<ReplayState> = { segments: updated }
+    if (segmentIndex === currentWaypointIndex) {
+      patch.currentSegmentMode = mode
+    }
+    set(patch as ReplayState)
   },
 
   _tick: (delta) => {
@@ -214,6 +285,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       segmentProgress: segProg,
       totalProgress,
       currentPosition,
+      currentSegmentMode: state.segments[wpIdx]?.mode ?? 'walking',
     })
   },
 }))

@@ -79,8 +79,8 @@ export interface TrajectoryWaypoint {
  * 回放状态
  */
 export interface PlaybackState {
-  /** 回放状态：空闲 | 播放中 | 暂停 | 已完成 */
-  status: 'idle' | 'playing' | 'paused' | 'completed'
+  /** 回放状态：空闲 | 配置中 | 播放中 | 暂停 | 已完成 */
+  status: 'idle' | 'configuring' | 'playing' | 'paused' | 'completed'
   /** 当前路径点索引 */
   currentWaypointIndex: number
   /** 当前段落进度（0-1） */

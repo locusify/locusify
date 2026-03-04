@@ -85,6 +85,9 @@
   "workspace.replay.noData": "No trajectory data available",
   "workspace.replay.noDataMessage": "At least 2 photos with valid GPS coordinates are required. Please go back and upload more photos.",
 
+  "workspace.config.title": "Configure Route",
+  "workspace.config.start": "Start Replay",
+
   "workspace.controls.play": "Play",
   "workspace.controls.pause": "Pause",
   "workspace.controls.reset": "Reset",
@@ -222,6 +225,21 @@
   "settings.about.version": "Version",
   "settings.about.github": "GitHub",
   "settings.about.appName": "Locusify",
+
+  "settings.section.replay": "Replay",
+  "settings.avatar": "Avatar",
+  "settings.avatarProfile": "Profile",
+  "settings.avatarNone": "Default",
+  "settings.avatar.preset.traveler": "Traveler",
+  "settings.avatar.preset.photographer": "Photographer",
+  "settings.avatar.preset.explorer": "Explorer",
+  "settings.avatar.preset.backpacker": "Backpacker",
+  "settings.avatar.preset.cyclist": "Cyclist",
+  "settings.transport.walking": "Walking",
+  "settings.transport.cycling": "Cycling",
+  "settings.transport.driving": "Driving",
+  "settings.transport.train": "Train",
+  "settings.transport.flying": "Flying",
 
   "map.announcement.title": "What's New",
   "map.announcement.body": "Welcome to Locusify! Upload your GPS-tagged photos to generate visual route maps and cinematic travel vlogs automatically.",

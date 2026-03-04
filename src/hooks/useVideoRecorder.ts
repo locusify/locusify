@@ -7,27 +7,125 @@ import {
 } from 'mediabunny'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import locusifyLogoUrl from '@/assets/locusify-fit.png'
+import { ICON_VIEWBOX, iconPaths } from '@/data/iconPaths'
+import { presetAvatars } from '@/data/presetAvatars'
+import { transportModeIcons } from '@/data/transportModes'
+import {
+  AVATAR_BORDER_COLOR,
+  AVATAR_BORDER_WIDTH,
+  AVATAR_GLOW_BLUR,
+  AVATAR_GLOW_COLOR,
+  AVATAR_SIZE_PX,
+  BADGE_BG_COLOR,
+  BADGE_ICON_COLOR,
+  BADGE_ICON_SIZE_PX,
+  BADGE_SIZE_PX,
+  DEFAULT_DOT_COLOR,
+  DEFAULT_DOT_GLOW_BLUR,
+  DEFAULT_DOT_GLOW_COLOR,
+  DEFAULT_DOT_SIZE_PX,
+  PRESET_ICON_SIZE_RATIO,
+  PROFILE_FALLBACK_BG,
+  PROFILE_FALLBACK_FONT_RATIO,
+  PROFILE_FALLBACK_TEXT,
+  REFERENCE_WIDTH,
+} from '@/data/waypointStyle'
 import { formatCoordinates, formatDate } from '@/lib/formatters'
+import { useAuthStore } from '@/stores/authStore'
 import { useMapStore } from '@/stores/mapStore'
 import { useReplayStore } from '@/stores/replayStore'
+import { useSettingsStore } from '@/stores/settingsStore'
 
 export type RecordingStatus = 'idle' | 'recording' | 'processing' | 'unsupported'
 
 // ─── Image cache ───────────────────────────────────────────────────────────────
 
 const imageCache = new Map<string, HTMLImageElement>()
+const imageLoading = new Set<string>()
+const imageFailed = new Set<string>()
 
 function loadImage(url: string): void {
-  if (imageCache.has(url))
+  if (imageCache.has(url) || imageLoading.has(url) || imageFailed.has(url))
     return
+  imageLoading.add(url)
   const img = new Image()
   img.crossOrigin = 'anonymous'
-  img.onload = () => imageCache.set(url, img)
+  img.onload = () => {
+    imageLoading.delete(url)
+    imageCache.set(url, img)
+  }
+  img.onerror = () => {
+    imageLoading.delete(url)
+    // CORS failure — retry via fetch+blob to bypass cross-origin restriction
+    loadImageViaFetch(url)
+  }
   img.src = url
+}
+
+function loadImageViaFetch(url: string): void {
+  if (imageCache.has(url) || imageLoading.has(url) || imageFailed.has(url))
+    return
+  imageLoading.add(url)
+  fetch(url)
+    .then(res => res.blob())
+    .then((blob) => {
+      const blobUrl = URL.createObjectURL(blob)
+      const img = new Image()
+      img.onload = () => {
+        imageLoading.delete(url)
+        imageCache.set(url, img)
+        // Don't revoke — image stays in cache for the recording lifetime
+      }
+      img.onerror = () => {
+        imageLoading.delete(url)
+        imageFailed.add(url)
+        URL.revokeObjectURL(blobUrl)
+      }
+      img.src = blobUrl
+    })
+    .catch(() => {
+      imageLoading.delete(url)
+      imageFailed.add(url)
+    })
 }
 
 // Eagerly load the logo so it's ready when recording starts
 loadImage(locusifyLogoUrl)
+
+// ─── SVG icon canvas helper ───────────────────────────────────────────────────
+
+const path2DCache = new Map<string, Path2D>()
+
+/**
+ * Draws an SVG icon (from iconPaths) onto a canvas at the given center/size.
+ * Caches parsed Path2D objects for 30fps performance.
+ */
+function drawSvgIcon(
+  ctx: CanvasRenderingContext2D,
+  iconName: string,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string,
+): void {
+  const pathData = iconPaths[iconName]
+  if (!pathData)
+    return
+
+  let path = path2DCache.get(iconName)
+  if (!path) {
+    path = new Path2D(pathData)
+    path2DCache.set(iconName, path)
+  }
+
+  const scale = size / ICON_VIEWBOX
+  ctx.save()
+  ctx.translate(cx - size / 2, cy - size / 2)
+  ctx.scale(scale, scale)
+  ctx.fillStyle = color
+  ctx.fill(path)
+  ctx.restore()
+}
 
 // ─── Capability detection ──────────────────────────────────────────────────────
 
@@ -283,6 +381,205 @@ function drawWatermark(ctx: CanvasRenderingContext2D, W: number, H: number): voi
   ctx.restore()
 }
 
+// ─── Avatar & transport badge drawing ─────────────────────────────────────────
+
+/**
+ * Projects the current replay position to canvas coordinates.
+ * Uses CSS pixel dimensions (clientWidth/clientHeight) to match
+ * mapInstance.project() which returns CSS pixels — not physical pixels.
+ * Returns null if position/map unavailable.
+ */
+function projectReplayPosition(
+  W: number,
+  H: number,
+): { px: number, py: number } | null {
+  const { currentPosition } = useReplayStore.getState()
+  const mapInstance = useMapStore.getState().mapInstance
+  if (!currentPosition || !mapInstance)
+    return null
+  const container = mapInstance.getContainer()
+  const point = mapInstance.project(currentPosition as [number, number])
+  return {
+    px: point.x * (W / container.clientWidth),
+    py: point.y * (H / container.clientHeight),
+  }
+}
+
+function drawAvatar(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+): void {
+  const pos = projectReplayPosition(W, H)
+  if (!pos)
+    return
+
+  const { avatarSource } = useSettingsStore.getState()
+  const { px, py } = pos
+  const scale = W / REFERENCE_WIDTH
+  const SIZE = Math.round(AVATAR_SIZE_PX * scale)
+  const R = SIZE / 2
+  const borderW = Math.max(1, Math.round(AVATAR_BORDER_WIDTH * scale))
+
+  if (avatarSource.type === 'profile') {
+    const user = useAuthStore.getState().user
+    const avatarUrl = user?.avatarUrl
+    if (avatarUrl) {
+      loadImage(avatarUrl)
+      const img = imageCache.get(avatarUrl)
+      if (img) {
+        // Glow
+        ctx.save()
+        ctx.shadowColor = AVATAR_GLOW_COLOR
+        ctx.shadowBlur = AVATAR_GLOW_BLUR * scale
+        ctx.beginPath()
+        ctx.arc(px, py, R, 0, Math.PI * 2)
+        ctx.fillStyle = 'transparent'
+        ctx.fill()
+        ctx.restore()
+        // Clipped image (object-cover)
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(px, py, R, 0, Math.PI * 2)
+        ctx.clip()
+        drawImageCover(ctx, img, px - R, py - R, SIZE, SIZE)
+        ctx.restore()
+        // Border
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(px, py, R, 0, Math.PI * 2)
+        ctx.strokeStyle = AVATAR_BORDER_COLOR
+        ctx.lineWidth = borderW
+        ctx.stroke()
+        ctx.restore()
+        return
+      }
+    }
+    // Fallback: initial letter in sky-400 circle
+    const initial = (user?.name?.[0] ?? '?').toUpperCase()
+    ctx.save()
+    ctx.shadowColor = AVATAR_GLOW_COLOR
+    ctx.shadowBlur = AVATAR_GLOW_BLUR * scale
+    ctx.beginPath()
+    ctx.arc(px, py, R, 0, Math.PI * 2)
+    ctx.fillStyle = PROFILE_FALLBACK_BG
+    ctx.fill()
+    ctx.restore()
+    // Border
+    ctx.save()
+    ctx.beginPath()
+    ctx.arc(px, py, R, 0, Math.PI * 2)
+    ctx.strokeStyle = AVATAR_BORDER_COLOR
+    ctx.lineWidth = borderW
+    ctx.stroke()
+    ctx.restore()
+    // Letter
+    ctx.save()
+    ctx.font = `600 ${Math.round(SIZE * PROFILE_FALLBACK_FONT_RATIO)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
+    ctx.fillStyle = PROFILE_FALLBACK_TEXT
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(initial, px, py)
+    ctx.restore()
+    return
+  }
+
+  if (avatarSource.type === 'preset') {
+    const preset = presetAvatars.find(
+      p => p.id === (avatarSource as { type: 'preset', presetId: string }).presetId,
+    )
+    if (preset) {
+      // Glow
+      ctx.save()
+      ctx.shadowColor = AVATAR_GLOW_COLOR
+      ctx.shadowBlur = AVATAR_GLOW_BLUR * scale
+      ctx.beginPath()
+      ctx.arc(px, py, R, 0, Math.PI * 2)
+      ctx.fillStyle = preset.color
+      ctx.fill()
+      ctx.restore()
+      // Border
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(px, py, R, 0, Math.PI * 2)
+      ctx.strokeStyle = preset.color
+      ctx.lineWidth = borderW
+      ctx.stroke()
+      ctx.restore()
+      // Icon
+      const iconName = preset.icon.replace('i-mingcute-', '')
+      drawSvgIcon(ctx, iconName, px, py, SIZE * PRESET_ICON_SIZE_RATIO, '#ffffff')
+      return
+    }
+  }
+
+  // Default: blue dot
+  const dotR = Math.round(DEFAULT_DOT_SIZE_PX * scale) / 2
+  ctx.save()
+  ctx.shadowColor = DEFAULT_DOT_GLOW_COLOR
+  ctx.shadowBlur = DEFAULT_DOT_GLOW_BLUR * scale
+  ctx.beginPath()
+  ctx.arc(px, py, dotR, 0, Math.PI * 2)
+  ctx.fillStyle = DEFAULT_DOT_COLOR
+  ctx.fill()
+  ctx.restore()
+}
+
+function drawTransportBadge(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+): void {
+  const { currentSegmentMode } = useReplayStore.getState()
+  if (currentSegmentMode === 'unknown')
+    return
+
+  const pos = projectReplayPosition(W, H)
+  if (!pos)
+    return
+
+  const { px, py } = pos
+  const { avatarSource } = useSettingsStore.getState()
+  const scale = W / REFERENCE_WIDTH
+  const badgeD = Math.round(BADGE_SIZE_PX * scale)
+  const badgeR = badgeD / 2
+
+  // Determine host element radius for badge positioning
+  const isSmallDot = avatarSource.type === 'none'
+    || (avatarSource.type === 'preset' && !presetAvatars.find(
+      p => p.id === (avatarSource as { type: 'preset', presetId: string }).presetId,
+    ))
+  const hostR = isSmallDot
+    ? Math.round(DEFAULT_DOT_SIZE_PX * scale) / 2
+    : Math.round(AVATAR_SIZE_PX * scale) / 2
+
+  // Position: bottom-right of host circle (matches CSS -right-1 -bottom-1)
+  const offset = Math.round(4 * scale) // ~4px CSS offset
+  const bx = px + hostR - offset
+  const by = py + hostR - offset
+
+  // Shadow (matches shadow-sm)
+  ctx.save()
+  ctx.shadowColor = 'rgba(0,0,0,0.2)'
+  ctx.shadowBlur = 2 * scale
+  ctx.shadowOffsetY = 1 * scale
+
+  // Badge background
+  ctx.beginPath()
+  ctx.arc(bx, by, badgeR, 0, Math.PI * 2)
+  ctx.fillStyle = BADGE_BG_COLOR
+  ctx.fill()
+  ctx.restore()
+
+  // Transport icon
+  const iconClass = transportModeIcons[currentSegmentMode]
+  if (iconClass) {
+    const iconName = iconClass.replace('i-mingcute-', '')
+    const iconSize = Math.round(BADGE_ICON_SIZE_PX * scale)
+    drawSvgIcon(ctx, iconName, bx, by, iconSize, BADGE_ICON_COLOR)
+  }
+}
+
 // ─── Timing constants ──────────────────────────────────────────────────────────
 
 /** How long to keep showing the map after replay ends before the outro. */
@@ -445,6 +742,8 @@ class Mp4RecordingSession {
         break
       }
       case 'recording': {
+        drawAvatar(this.ctx, W, H)
+        drawTransportBadge(this.ctx, W, H)
         drawPhotoCard(this.ctx, W, H)
         drawWatermark(this.ctx, W, H)
         if (this.shouldStop()) {
@@ -454,6 +753,8 @@ class Mp4RecordingSession {
         break
       }
       case 'wait': {
+        drawAvatar(this.ctx, W, H)
+        drawTransportBadge(this.ctx, W, H)
         drawPhotoCard(this.ctx, W, H)
         drawWatermark(this.ctx, W, H)
         if (timestamp - this.phaseStartTimestamp >= WAIT_MS)
@@ -585,6 +886,8 @@ class WebmRecordingSession {
         break
       }
       case 'recording': {
+        drawAvatar(this.ctx, W, H)
+        drawTransportBadge(this.ctx, W, H)
         drawPhotoCard(this.ctx, W, H)
         drawWatermark(this.ctx, W, H)
         if (this.shouldStop()) {
@@ -594,6 +897,8 @@ class WebmRecordingSession {
         break
       }
       case 'wait': {
+        drawAvatar(this.ctx, W, H)
+        drawTransportBadge(this.ctx, W, H)
         drawPhotoCard(this.ctx, W, H)
         drawWatermark(this.ctx, W, H)
         if (timestamp - this.phaseStartTimestamp >= WAIT_MS)
@@ -643,8 +948,11 @@ export function useVideoRecorder() {
     })
   }, [])
 
-  // Eagerly preload waypoint photos into cache
+  // Eagerly preload waypoint photos and user avatar into cache
   useEffect(() => {
+    const avatarUrl = useAuthStore.getState().user?.avatarUrl
+    if (avatarUrl)
+      loadImage(avatarUrl)
     return useReplayStore.subscribe((state) => {
       for (const wp of state.waypoints) {
         if (wp.marker.photo.thumbnailUrl)

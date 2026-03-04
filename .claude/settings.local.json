@@ -85,7 +85,9 @@
       "Bash(ln:*)",
       "Bash(sips:*)",
       "WebFetch(domain:www.travelanimator.com)",
-      "WebFetch(domain:www.polarsteps.com)"
+      "WebFetch(domain:www.polarsteps.com)",
+      "mcp__context7__resolve-library-id",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "ask": [],

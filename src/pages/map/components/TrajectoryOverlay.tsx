@@ -2,11 +2,15 @@ import { ReplayControls } from './replay/ReplayControls'
 import { ReplayIntroOverlay } from './replay/ReplayIntroOverlay'
 import { ReplayPhotoCard } from './replay/ReplayPhotoCard'
 
+interface TrajectoryOverlayProps {
+  onStartReplay?: () => void
+}
+
 /**
  * Overlay container for replay mode.
  * Contains the photo card panel and bottom controls.
  */
-export function TrajectoryOverlay() {
+export function TrajectoryOverlay({ onStartReplay }: TrajectoryOverlayProps) {
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-end">
       {/* Opening logo animation — pointer-events-auto so it blocks interaction during intro */}
@@ -24,7 +28,7 @@ export function TrajectoryOverlay() {
 
       {/* Controls bar */}
       <div className="pointer-events-auto relative mx-2 pb-2 sm:pb-4">
-        <ReplayControls />
+        <ReplayControls onStartReplay={onStartReplay} />
       </div>
     </div>
   )

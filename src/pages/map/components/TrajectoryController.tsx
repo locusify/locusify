@@ -30,9 +30,13 @@ export function TrajectoryController() {
         return
       }
 
+      // Skip camera movement during configuring phase —
+      // let the user browse the map freely before playback starts.
+      if (state.status === 'configuring') return
+
       if (!initialised) {
         initialised = true
-        map.flyTo({ center: state.currentPosition, zoom: 12, duration: 800 })
+        map.flyTo({ center: state.currentPosition, duration: 800 })
         return
       }
 

@@ -25,7 +25,8 @@ function MapSectionContent() {
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
   const replayStatus = useReplayStore(s => s.status)
-  const startReplay = useReplayStore(s => s.startReplay)
+  const prepareReplay = useReplayStore(s => s.prepareReplay)
+  const confirmConfig = useReplayStore(s => s.confirmConfig)
   const exitReplay = useReplayStore(s => s.exitReplay)
 
   const {
@@ -63,11 +64,13 @@ function MapSectionContent() {
   }, [markers])
 
   const handleRoutesClick = useCallback(() => {
-    // Always start paused — ReplayIntroOverlay handles the transition to playing
-    startReplay(markers, true)
-    // Start recording immediately (draws logo intro on canvas for the same duration)
+    prepareReplay(markers)
+  }, [prepareReplay, markers])
+
+  const handleStartReplay = useCallback(() => {
+    confirmConfig()
     startAutoRecord()
-  }, [startReplay, markers, startAutoRecord])
+  }, [confirmConfig, startAutoRecord])
 
   const handleExitReplay = useCallback(() => {
     exitReplay()
@@ -120,7 +123,7 @@ function MapSectionContent() {
         <LoginButton onClick={() => setLoginDrawerOpen(true)} />
       )}
 
-      {isReplayMode && <TrajectoryOverlay />}
+      {isReplayMode && <TrajectoryOverlay onStartReplay={handleStartReplay} />}
 
       {/* Announcement dialog — shown once per version */}
       <AnimatePresence>

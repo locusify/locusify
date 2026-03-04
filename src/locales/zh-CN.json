@@ -86,6 +86,9 @@
   "workspace.replay.noData": "无可用的轨迹数据",
   "workspace.replay.noDataMessage": "至少需要2张带有有效GPS坐标的照片。请返回上传更多照片。",
 
+  "workspace.config.title": "配置路线",
+  "workspace.config.start": "开始回放",
+
   "workspace.controls.play": "播放",
   "workspace.controls.pause": "暂停",
   "workspace.controls.reset": "重置",
@@ -223,6 +226,21 @@
   "settings.about.version": "版本",
   "settings.about.github": "GitHub",
   "settings.about.appName": "Locusify",
+
+  "settings.section.replay": "回放",
+  "settings.avatar": "头像",
+  "settings.avatarProfile": "头像照片",
+  "settings.avatarNone": "默认",
+  "settings.avatar.preset.traveler": "旅行者",
+  "settings.avatar.preset.photographer": "摄影师",
+  "settings.avatar.preset.explorer": "探险家",
+  "settings.avatar.preset.backpacker": "背包客",
+  "settings.avatar.preset.cyclist": "骑行者",
+  "settings.transport.walking": "步行",
+  "settings.transport.cycling": "骑行",
+  "settings.transport.driving": "驾车",
+  "settings.transport.train": "火车",
+  "settings.transport.flying": "飞行",
 
   "map.announcement.title": "最新公告",
   "map.announcement.body": "欢迎使用 Locusify！上传带有GPS信息的照片，即可自动生成可视化路线图和电影级旅行视频。",

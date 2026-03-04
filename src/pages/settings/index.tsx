@@ -10,6 +10,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { cn, glassPanel } from '@/lib/utils'
 import { AboutSection } from './components/AboutSection'
+import { AvatarSetting } from './components/AvatarSetting'
 import { LanguageSetting } from './components/LanguageSetting'
 import { PrivacySection } from './components/PrivacySection'
 import { SettingsSection } from './components/SettingsSection'
@@ -37,6 +38,9 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange }) 
               <ThemeSetting />
               <Separator />
               <LanguageSetting />
+            </SettingsSection>
+            <SettingsSection label={t('settings.section.replay')}>
+              <AvatarSetting />
             </SettingsSection>
             <SettingsSection label={t('settings.section.privacy')}>
               <PrivacySection />
