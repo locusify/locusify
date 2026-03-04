@@ -9,6 +9,7 @@ export interface LazyImageProps {
   thumbHash?: string | null
   className?: string
   style?: React.CSSProperties
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none'
   onLoad?: () => void
   onError?: () => void
   // Intersection observer options
@@ -22,6 +23,7 @@ export function LazyImage({
   thumbHash,
   className,
   style,
+  objectFit = 'cover',
   onLoad,
   onError,
   rootMargin = '50px',
@@ -68,7 +70,7 @@ export function LazyImage({
           src={src}
           alt={alt}
           className={cn(
-            'size-full object-cover transition-opacity duration-300',
+            `size-full object-${objectFit} transition-opacity duration-300`,
             isLoaded ? 'opacity-100' : 'opacity-0',
           )}
           onLoad={handleLoad}

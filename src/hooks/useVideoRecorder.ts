@@ -20,10 +20,14 @@ import {
   BADGE_ICON_COLOR,
   BADGE_ICON_SIZE_PX,
   BADGE_SIZE_PX,
+  CONNECTOR_COLOR,
+  CONNECTOR_DASH,
+  CONNECTOR_STROKE_WIDTH,
   DEFAULT_DOT_COLOR,
   DEFAULT_DOT_GLOW_BLUR,
   DEFAULT_DOT_GLOW_COLOR,
   DEFAULT_DOT_SIZE_PX,
+  PHOTO_CARD_OFFSET,
   PRESET_ICON_SIZE_RATIO,
   PROFILE_FALLBACK_BG,
   PROFILE_FALLBACK_FONT_RATIO,
@@ -262,40 +266,95 @@ function drawPhotoCard(ctx: CanvasRenderingContext2D, W: number, H: number): voi
   if (photo.thumbnailUrl)
     loadImage(photo.thumbnailUrl)
 
-  const MARGIN = Math.max(12, Math.round(W * 0.020))
-  // Portrait-aware card width: take the smaller of 38% of width or 45% of height,
-  // so the card is proportionally large on both portrait mobile and landscape desktop.
-  const CARD_W = Math.min(Math.round(W * 0.38), Math.round(H * 0.45))
-  const PHOTO_H = Math.round(CARD_W * 0.68)
-  // Font sizes relative to card width so they scale with the card on all aspect ratios.
-  const FONT_TITLE = Math.max(13, Math.round(CARD_W * 0.062))
-  const FONT_META = Math.max(10, Math.round(CARD_W * 0.048))
-  const LINE_H = Math.round(FONT_TITLE * 1.6)
-  const PAD = Math.round(FONT_TITLE * 0.7)
-  const INFO_H = PAD * 2 + LINE_H + Math.round(FONT_META * 1.6)
-  const CARD_H = PHOTO_H + INFO_H
-  const RADIUS = Math.max(8, Math.round(CARD_W * 0.045))
+  // Project waypoint position to canvas pixel coordinates
+  const mapInstance = useMapStore.getState().mapInstance
+  if (!mapInstance)
+    return
+  const container = mapInstance.getContainer()
+  const point = mapInstance.project(waypoint.position as [number, number])
+  const anchorX = point.x * (W / container.clientWidth)
+  const anchorY = point.y * (H / container.clientHeight)
 
-  const cx = W - CARD_W - MARGIN
-  const cy = MARGIN
+  // Compute offset (scaled from CSS px to canvas px)
+  const scale = W / REFERENCE_WIDTH
+  const nextWp = waypoints[currentWaypointIndex + 1]
+  let dx: number, dy: number
 
+  if (nextWp) {
+    const dLng = nextWp.position[0] - waypoint.position[0]
+    const dLat = nextWp.position[1] - waypoint.position[1]
+    const bearing = Math.atan2(dLng, dLat)
+    const perpAngle = bearing + Math.PI / 2
+    const dist = Math.sqrt(PHOTO_CARD_OFFSET.dx ** 2 + PHOTO_CARD_OFFSET.dy ** 2) * scale
+    dx = Math.round(Math.sin(perpAngle) * dist)
+    dy = Math.round(-Math.cos(perpAngle) * dist)
+  }
+  else {
+    dx = Math.round(PHOTO_CARD_OFFSET.dx * scale)
+    dy = Math.round(PHOTO_CARD_OFFSET.dy * scale)
+  }
+
+  // Card dimensions
+  const CARD_W = Math.min(Math.round(W * 0.30), Math.round(H * 0.38))
+  const PHOTO_H = Math.round(CARD_W * 0.58)
+  const FONT_DESC = Math.max(10, Math.round(CARD_W * 0.052))
+  const FONT_META = Math.max(9, Math.round(CARD_W * 0.042))
+  const PAD = Math.round(FONT_DESC * 0.8)
+
+  // Calculate info section height dynamically
+  let infoH = PAD * 2
+  if (photo.description)
+    infoH += Math.round(FONT_DESC * 1.5)
+  infoH += Math.round(FONT_META * 1.4) // coordinates
+  if (marker.altitude !== undefined)
+    infoH += Math.round(FONT_META * 1.4)
+
+  const CARD_H = PHOTO_H + infoH
+  const RADIUS = Math.max(6, Math.round(CARD_W * 0.04))
+
+  // Card top-left corner — clamp to canvas bounds
+  let cx = anchorX + dx - CARD_W / 2
+  let cy = anchorY + dy - CARD_H / 2
+  const MARGIN = Math.max(8, Math.round(W * 0.012))
+  cx = Math.max(MARGIN, Math.min(cx, W - CARD_W - MARGIN))
+  cy = Math.max(MARGIN, Math.min(cy, H - CARD_H - MARGIN))
+
+  // Actual card center (after clamping) for connector endpoint
+  const cardCenterX = cx + CARD_W / 2
+  const cardCenterY = cy + CARD_H / 2
+
+  // Draw dashed connector from waypoint to card center
+  ctx.save()
+  ctx.strokeStyle = CONNECTOR_COLOR
+  ctx.lineWidth = Math.max(1, CONNECTOR_STROKE_WIDTH * scale)
+  ctx.setLineDash(CONNECTOR_DASH.map(v => v * scale))
+  ctx.beginPath()
+  ctx.moveTo(anchorX, anchorY)
+  ctx.lineTo(cardCenterX, cardCenterY)
+  ctx.stroke()
+  ctx.restore()
+
+  // Draw card background with glassmorphism
   ctx.save()
   ctx.beginPath()
   ctx.roundRect(cx, cy, CARD_W, CARD_H, RADIUS)
   ctx.clip()
-  ctx.fillStyle = 'rgba(0,0,0,0.85)'
+  ctx.fillStyle = 'rgba(0,0,0,0.65)'
   ctx.fillRect(cx, cy, CARD_W, CARD_H)
 
+  // Photo
   const img = photo.thumbnailUrl ? imageCache.get(photo.thumbnailUrl) : undefined
   if (img)
     drawImageCover(ctx, img, cx, cy, CARD_W, PHOTO_H)
 
+  // Bottom gradient on photo
   const grad = ctx.createLinearGradient(cx, cy + PHOTO_H * 0.4, cx, cy + PHOTO_H)
   grad.addColorStop(0, 'rgba(0,0,0,0)')
   grad.addColorStop(1, 'rgba(0,0,0,0.5)')
   ctx.fillStyle = grad
   ctx.fillRect(cx, cy, CARD_W, PHOTO_H)
 
+  // Date overlay on photo
   if (photo.dateTaken) {
     const dateStr = formatDate(new Date(photo.dateTaken), {
       month: 'short',
@@ -303,36 +362,57 @@ function drawPhotoCard(ctx: CanvasRenderingContext2D, W: number, H: number): voi
       hour: '2-digit',
       minute: '2-digit',
     })
-    ctx.font = `${FONT_META}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
+    ctx.font = `${Math.max(9, Math.round(FONT_META * 0.9))}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
     ctx.fillStyle = 'rgba(255,255,255,0.8)'
     ctx.textBaseline = 'bottom'
-    ctx.fillText(dateStr, cx + PAD, cy + PHOTO_H - PAD)
+    ctx.fillText(dateStr, cx + PAD, cy + PHOTO_H - PAD * 0.6)
   }
 
-  ctx.font = `600 ${FONT_TITLE}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
-  ctx.fillStyle = 'rgba(255,255,255,0.95)'
-  ctx.textBaseline = 'top'
-  ctx.fillText(
-    truncateText(ctx, photo.title || marker.id, CARD_W - PAD * 2),
-    cx + PAD,
-    cy + PHOTO_H + PAD,
-  )
+  // Info section
+  let textY = cy + PHOTO_H + PAD
 
+  // Description (italic, diary feel)
+  if (photo.description) {
+    ctx.font = `italic ${FONT_DESC}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
+    ctx.fillStyle = 'rgba(255,255,255,0.70)'
+    ctx.textBaseline = 'top'
+    ctx.fillText(
+      truncateText(ctx, photo.description, CARD_W - PAD * 2),
+      cx + PAD,
+      textY,
+    )
+    textY += Math.round(FONT_DESC * 1.5)
+  }
+
+  // Coordinates (small, auxiliary)
   const coordStr = formatCoordinates(marker.latitude, marker.longitude, marker.latitudeRef, marker.longitudeRef)
   ctx.font = `${FONT_META}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
-  ctx.fillStyle = 'rgba(255,255,255,0.45)'
+  ctx.fillStyle = 'rgba(255,255,255,0.35)'
+  ctx.textBaseline = 'top'
   ctx.fillText(
     truncateText(ctx, coordStr, CARD_W - PAD * 2),
     cx + PAD,
-    cy + PHOTO_H + PAD + LINE_H,
+    textY,
   )
+  textY += Math.round(FONT_META * 1.4)
+
+  // Altitude (small, auxiliary)
+  if (marker.altitude !== undefined) {
+    const altStr = `${marker.altitudeRef === 'Below Sea Level' ? '-' : ''}${Math.abs(marker.altitude).toFixed(1)}m`
+    ctx.fillText(
+      truncateText(ctx, altStr, CARD_W - PAD * 2),
+      cx + PAD,
+      textY,
+    )
+  }
 
   ctx.restore()
 
+  // Card border
   ctx.save()
   ctx.beginPath()
   ctx.roundRect(cx, cy, CARD_W, CARD_H, RADIUS)
-  ctx.strokeStyle = 'rgba(255,255,255,0.1)'
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)'
   ctx.lineWidth = 1
   ctx.stroke()
   ctx.restore()

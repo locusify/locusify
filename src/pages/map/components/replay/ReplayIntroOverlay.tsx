@@ -1,38 +1,37 @@
 import { AnimatePresence, m } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import locusifyLogo from '@/assets/locusify-fit.png'
-import { useReplayStore } from '@/stores/replayStore'
 
 // Must match INTRO_MS in useVideoRecorder.ts
 const FADE_IN_S = 0.7
 const HOLD_MS = 1400
 const FADE_OUT_S = 0.7
 
-export function ReplayIntroOverlay() {
-  const status = useReplayStore(s => s.status)
-  const [visible, setVisible] = useState(() => status !== 'configuring')
-  const togglePlayPause = useReplayStore(s => s.togglePlayPause)
+interface ReplayIntroOverlayProps {
+  visible: boolean
+  onExitComplete: () => void
+}
 
-  // When transitioning from configuring → paused, show the intro
-  const prevStatusRef = useRef(status)
-  useEffect(() => {
-    if (prevStatusRef.current === 'configuring' && status === 'paused') {
-      setVisible(true)
-    }
-    prevStatusRef.current = status
-  }, [status])
+export function ReplayIntroOverlay({ visible, onExitComplete }: ReplayIntroOverlayProps) {
+  const [show, setShow] = useState(false)
 
+  // When the parent requests the intro, start showing
   useEffect(() => {
-    if (!visible)
-      return
-    // Start exit animation after fade-in + hold
-    const t = setTimeout(() => setVisible(false), FADE_IN_S * 1000 + HOLD_MS)
-    return () => clearTimeout(t)
+    if (visible)
+      setShow(true)
   }, [visible])
 
+  // Auto-dismiss after fade-in + hold
+  useEffect(() => {
+    if (!show)
+      return
+    const t = setTimeout(() => setShow(false), FADE_IN_S * 1000 + HOLD_MS)
+    return () => clearTimeout(t)
+  }, [show])
+
   return (
-    <AnimatePresence onExitComplete={togglePlayPause}>
-      {visible && (
+    <AnimatePresence onExitComplete={onExitComplete}>
+      {show && (
         <m.div
           className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-neutral-950"
           initial={{ opacity: 0 }}

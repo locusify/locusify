@@ -24,7 +24,7 @@ export function WaypointDot() {
   const showBadge = currentSegmentMode !== 'unknown'
 
   return (
-    <Marker longitude={currentPosition[0]} latitude={currentPosition[1]} anchor="center">
+    <Marker longitude={currentPosition[0]} latitude={currentPosition[1]} anchor="center" style={{ zIndex: 40 }}>
       <m.div
         className="relative flex items-center justify-center"
         initial={false}

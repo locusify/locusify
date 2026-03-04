@@ -38,6 +38,19 @@ export const BADGE_ICON_SIZE_PX = 10 // matches size-2.5
 export const BADGE_BG_COLOR = 'rgba(40,40,40,0.72)' // approximates bg-material-thick (dark)
 export const BADGE_ICON_COLOR = 'rgba(255,255,255,0.85)' // approximates text-text (dark)
 
+// ─── Photo card (replay floating card) ──────────────────────────────────────
+
+/** Default pixel offset from waypoint to card anchor (CSS px) */
+export const PHOTO_CARD_OFFSET = { dx: 140, dy: -120 } as const
+/** Smaller offset for mobile / narrow viewports */
+export const PHOTO_CARD_OFFSET_SM = { dx: 90, dy: -75 } as const
+/** Dashed connector stroke color */
+export const CONNECTOR_COLOR = 'rgba(56,189,248,0.35)'
+/** Dashed connector dash pattern [dash, gap] */
+export const CONNECTOR_DASH = [4, 3] as const
+/** Dashed connector stroke width */
+export const CONNECTOR_STROKE_WIDTH = 1
+
 // ─── Canvas scaling ───────────────────────────────────────────────────────────
 
 /** Reference width for canvas scale factor: scale = canvasWidth / REFERENCE_WIDTH */

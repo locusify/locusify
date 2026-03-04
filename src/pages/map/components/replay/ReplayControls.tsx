@@ -13,10 +13,10 @@ const SPEED_OPTIONS = [0.5, 1, 1.5, 2, 4]
 const TRANSPORT_MODES: TransportMode[] = ['walking', 'cycling', 'driving', 'train', 'flying']
 
 interface ReplayControlsProps {
-  onStartReplay?: () => void
+  onPlayClick?: () => void
 }
 
-export function ReplayControls({ onStartReplay }: ReplayControlsProps) {
+export function ReplayControls({ onPlayClick }: ReplayControlsProps) {
   const { t } = useTranslation()
 
   const status = useReplayStore(s => s.status)
@@ -228,7 +228,7 @@ export function ReplayControls({ onStartReplay }: ReplayControlsProps) {
 
             <button
               type="button"
-              onClick={status === 'configuring' && onStartReplay ? onStartReplay : togglePlayPause}
+              onClick={status === 'playing' ? togglePlayPause : onPlayClick}
               className="flex size-7 items-center justify-center rounded-full bg-sky-400 text-white shadow-lg transition-transform hover:scale-105 active:scale-95 sm:size-8"
               title={status === 'playing' ? t('workspace.controls.pause') : t('workspace.controls.play')}
             >

@@ -11,6 +11,7 @@ import { useReplayStore } from '@/stores/replayStore'
 import { GeoJsonLayer } from './components/GeoJsonLayer'
 import { MapControls } from './components/MapControls'
 import { PhotoMarkerPin } from './components/PhotoMarkerPin'
+import { ReplayPhotoCard } from './components/replay/ReplayPhotoCard'
 import { TrajectoryController } from './components/TrajectoryController'
 import { TrajectoryLineLayer } from './components/TrajectoryLineLayer'
 import { WaypointDot } from './components/WaypointDot'
@@ -425,6 +426,7 @@ export function Maplibre({
         {isReplayMode && (
           <>
             <TrajectoryLineLayer />
+            <ReplayPhotoCard />
             <WaypointDot />
             <TrajectoryController />
           </>
