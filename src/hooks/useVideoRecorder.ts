@@ -312,12 +312,11 @@ function drawPhotoCard(ctx: CanvasRenderingContext2D, W: number, H: number): voi
   const CARD_H = PHOTO_H + infoH
   const RADIUS = Math.max(6, Math.round(CARD_W * 0.04))
 
-  // Card top-left corner — clamp to canvas bounds
-  let cx = anchorX + dx - CARD_W / 2
-  let cy = anchorY + dy - CARD_H / 2
-  const MARGIN = Math.max(8, Math.round(W * 0.012))
-  cx = Math.max(MARGIN, Math.min(cx, W - CARD_W - MARGIN))
-  cy = Math.max(MARGIN, Math.min(cy, H - CARD_H - MARGIN))
+  // Card top-left corner — skip drawing if entirely off-canvas
+  const cx = anchorX + dx - CARD_W / 2
+  const cy = anchorY + dy - CARD_H / 2
+  if (cx + CARD_W < 0 || cx > W || cy + CARD_H < 0 || cy > H)
+    return
 
   // Actual card center (after clamping) for connector endpoint
   const cardCenterX = cx + CARD_W / 2
