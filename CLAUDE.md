@@ -32,8 +32,10 @@ Locusify/
 ├── src/                     # Source code
 │   ├── assets/             # Asset files
 │   ├── components/         # UI components
+│   │   ├── auth/          # Authentication components
 │   │   ├── ui/            # Base UI components (shadcn/ui)
 │   │   └── upload/        # Upload-related components
+│   ├── contexts/           # React Context providers
 │   ├── data/               # Static data
 │   ├── hooks/              # Custom React hooks
 │   ├── layout/             # Layout components
@@ -42,20 +44,14 @@ Locusify/
 │   ├── pages/              # Page components
 │   │   ├── error/         # Error pages
 │   │   ├── explore/       # Explore page
-│   │   ├── map/           # Map page
+│   │   ├── map/           # Map page + trajectory replay
+│   │   ├── settings/      # Settings page
 │   │   └── splashScreen/  # Splash screen
 │   ├── routers/            # Route definitions
+│   ├── stores/             # Zustand state stores
 │   └── types/              # TypeScript type definitions
 └── test/                    # Test files
 ```
-
-## Claude Code Configuration
-
-### Specialized Agent System
-
-The project leverages Claude Code's multi-agent architecture for domain-specific expertise:
-
-## Development Workflow
 
 ## Development Standards
 
