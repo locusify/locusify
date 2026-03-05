@@ -240,5 +240,7 @@
   "share.appText": "Transform your travel photos into visual route maps and cinematic vlogs",
   "share.videoTitle": "My Locusify Journey",
   "share.videoText": "Check out my travel trajectory replay!",
-  "share.error": "Failed to share"
+  "share.error": "Failed to share",
+
+  "map.contextMenu.addPhotos": "Add Photos"
 }

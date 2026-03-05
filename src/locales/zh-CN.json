@@ -240,5 +240,7 @@
   "share.appText": "将旅行照片转换为可视化路线图和电影级视频",
   "share.videoTitle": "我的 Locusify 旅程",
   "share.videoText": "来看看我的旅行轨迹回放！",
-  "share.error": "分享失败"
+  "share.error": "分享失败",
+
+  "map.contextMenu.addPhotos": "添加照片"
 }

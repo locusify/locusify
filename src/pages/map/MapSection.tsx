@@ -1,5 +1,6 @@
-import type { MapRef } from 'react-map-gl/maplibre'
+import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre'
 import type { PhotoMarker } from '@/types/map'
+import type { Photo } from '@/types/photo'
 import pkg from '@pkg'
 import { AnimatePresence, m } from 'motion/react'
 import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -7,11 +8,14 @@ import locusifyLogo from '@/assets/locusify-fit.png'
 import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { useVideoRecorder } from '@/hooks/useVideoRecorder'
+import { extractExifData } from '@/lib/exif'
 import { SettingsDrawer } from '@/pages/settings'
 import { usePhotoStore } from '@/stores/photoStore'
 import { useReplayStore } from '@/stores/replayStore'
+import { GPSDirection } from '@/types/map'
 import { AnnouncementDialog } from './components/AnnouncementDialog'
 import { GalleryDrawer } from './components/GalleryDrawer'
+import { MapContextMenu } from './components/MapContextMenu'
 import { MapMenuButton } from './components/MapMenuButton'
 import { SaveVideoDialog } from './components/SaveVideoDialog'
 import { TrajectoryOverlay } from './components/TrajectoryOverlay'
@@ -54,6 +58,11 @@ function MapSectionContent() {
   const [announcementOpen, setAnnouncementOpen] = useState(
     () => localStorage.getItem(ANNOUNCEMENT_STORAGE_KEY) !== ANNOUNCEMENT_VERSION,
   )
+
+  // Context menu state
+  const pendingLngLat = useRef<{ lng: number, lat: number } | null>(null)
+  const contextMenuFileInputRef = useRef<HTMLInputElement>(null)
+  const [contextMenuPos, setContextMenuPos] = useState<{ x: number, y: number } | null>(null)
 
   // Show dialog 2 seconds after replay completes (regardless of whether video is ready)
   useEffect(() => {
@@ -100,6 +109,79 @@ function MapSectionContent() {
   const handleDismissAnnouncement = useCallback(() => {
     localStorage.setItem(ANNOUNCEMENT_STORAGE_KEY, ANNOUNCEMENT_VERSION)
     setAnnouncementOpen(false)
+  }, [])
+
+  const handleMapContextMenu = useCallback((e: MapLayerMouseEvent) => {
+    pendingLngLat.current = { lng: e.lngLat.lng, lat: e.lngLat.lat }
+    setContextMenuPos({ x: e.originalEvent.clientX, y: e.originalEvent.clientY })
+  }, [])
+
+  const handleContextMenuAddPhotos = useCallback(() => {
+    contextMenuFileInputRef.current?.click()
+  }, [])
+
+  const handleContextMenuClose = useCallback(() => {
+    setContextMenuPos(null)
+  }, [])
+
+  const handleContextMenuFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files
+    if (!fileList || fileList.length === 0 || !pendingLngLat.current)
+      return
+
+    const { lng, lat } = pendingLngLat.current
+    const photos: Photo[] = []
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i]
+      if (!file.type.startsWith('image/'))
+        continue
+
+      const preview = URL.createObjectURL(file)
+      const exif = await extractExifData(file)
+
+      let dateTaken: string | undefined
+      let camera: { make?: string, model?: string } | undefined
+
+      if (exif) {
+        const dateTimeOriginal = exif.DateTimeOriginal
+        const createDate = exif.CreateDate
+        if (dateTimeOriginal) {
+          dateTaken = dateTimeOriginal instanceof Date ? dateTimeOriginal.toISOString() : dateTimeOriginal
+        }
+        else if (createDate) {
+          dateTaken = createDate instanceof Date ? createDate.toISOString() : createDate
+        }
+        if (exif.Make || exif.Model) {
+          camera = { make: exif.Make, model: exif.Model }
+        }
+      }
+
+      photos.push({
+        id: `${file.name}-${file.lastModified}`,
+        file,
+        preview,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+        gpsInfo: {
+          latitude: lat,
+          longitude: lng,
+          latitudeRef: lat >= 0 ? GPSDirection.North : GPSDirection.South,
+          longitudeRef: lng >= 0 ? GPSDirection.East : GPSDirection.West,
+        },
+        exif: exif ?? undefined,
+        dateTaken,
+        camera,
+      })
+    }
+
+    if (photos.length > 0) {
+      usePhotoStore.getState().addPhotos(photos)
+    }
+
+    e.target.value = ''
   }, [])
 
   const hasEnoughPhotos = markers.length >= 2
@@ -167,6 +249,14 @@ function MapSectionContent() {
         )}
       </AnimatePresence>
 
+      {!isReplayMode && (
+        <MapContextMenu
+          position={contextMenuPos}
+          onAddPhotos={handleContextMenuAddPhotos}
+          onClose={handleContextMenuClose}
+        />
+      )}
+
       <m.div
         initial={{ opacity: 0, scale: 1.02 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -179,10 +269,20 @@ function MapSectionContent() {
           autoFitBounds={displayMarkers.length > 0}
           selectedMarkerId={isReplayMode ? null : selectedMarkerId}
           onMarkerClick={handleMarkerClick}
+          onContextMenu={isReplayMode ? undefined : handleMapContextMenu}
           className="size-full"
           mapRef={mapRef}
         />
       </m.div>
+
+      <input
+        ref={contextMenuFileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleContextMenuFileChange}
+        className="hidden"
+      />
     </div>
   )
 }

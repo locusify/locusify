@@ -53,6 +53,7 @@ export interface PureMaplibreProps {
   className?: string
   style?: CSSProperties
   mapRef?: RefObject<MapRef | null>
+  onContextMenu?: (e: MapLayerMouseEvent) => void
   autoFitBounds?: boolean
 }
 
@@ -161,6 +162,7 @@ export function Maplibre({
   onMarkerClick,
   onGeoJsonClick,
   onGeolocate,
+  onContextMenu,
   className = 'size-full',
   style = { width: '100%', height: '100%' },
   mapRef,
@@ -374,6 +376,7 @@ export function Maplibre({
         canvasContextAttributes={{ preserveDrawingBuffer: true }}
         interactiveLayerIds={geoJsonData ? ['data'] : undefined}
         onClick={onGeoJsonClick}
+        onContextMenu={onContextMenu}
         onLoad={handleMapLoad}
         onMove={(evt) => {
           setCurrentZoom(evt.viewState.zoom)
