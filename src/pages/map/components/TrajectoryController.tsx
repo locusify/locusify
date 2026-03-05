@@ -26,10 +26,14 @@ export function TrajectoryController() {
         let maxLat = -Infinity
         for (const wp of waypoints) {
           const [lng, lat] = wp.position
-          if (lng < minLng) minLng = lng
-          if (lng > maxLng) maxLng = lng
-          if (lat < minLat) minLat = lat
-          if (lat > maxLat) maxLat = lat
+          if (lng < minLng)
+            minLng = lng
+          if (lng > maxLng)
+            maxLng = lng
+          if (lat < minLat)
+            minLat = lat
+          if (lat > maxLat)
+            maxLat = lat
         }
         map!.fitBounds(
           [[minLng, minLat], [maxLng, maxLat]],
@@ -50,7 +54,8 @@ export function TrajectoryController() {
 
       // Skip camera movement during configuring phase —
       // let the user browse the map freely before playback starts.
-      if (state.status === 'configuring') return
+      if (state.status === 'configuring')
+        return
 
       if (!initialised) {
         initialised = true

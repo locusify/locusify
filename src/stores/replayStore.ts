@@ -81,6 +81,7 @@ interface ReplayState {
   currentPosition: [number, number] | null
   segments: SegmentMeta[]
   currentSegmentMode: TransportMode
+  recordingActive: boolean
 
   startReplay: (markers: PhotoMarker[], startPaused?: boolean) => void
   prepareReplay: (markers: PhotoMarker[]) => void
@@ -91,6 +92,7 @@ interface ReplayState {
   setSpeedMultiplier: (speed: number) => void
   seekToWaypoint: (index: number) => void
   setSegmentMode: (segmentIndex: number, mode: TransportMode) => void
+  setRecordingActive: (active: boolean) => void
   /** Internal: advance animation by delta ms */
   _tick: (delta: number) => void
 }
@@ -106,6 +108,9 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   currentPosition: null,
   segments: [],
   currentSegmentMode: 'walking',
+  recordingActive: false,
+
+  setRecordingActive: active => set({ recordingActive: active }),
 
   startReplay: (markers, startPaused = false) => {
     const waypoints = markersToWaypoints(markers)
@@ -195,6 +200,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       currentPosition: null,
       segments: [],
       currentSegmentMode: 'walking',
+      recordingActive: false,
     })
   },
 

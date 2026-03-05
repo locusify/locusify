@@ -4,7 +4,7 @@ import { ReplayControls } from './replay/ReplayControls'
 import { ReplayIntroOverlay } from './replay/ReplayIntroOverlay'
 
 interface TrajectoryOverlayProps {
-  onStartReplay?: () => void
+  onStartReplay?: () => Promise<boolean>
 }
 
 /**
@@ -15,12 +15,15 @@ interface TrajectoryOverlayProps {
 export function TrajectoryOverlay({ onStartReplay }: TrajectoryOverlayProps) {
   const status = useReplayStore(s => s.status)
   const togglePlayPause = useReplayStore(s => s.togglePlayPause)
+  const recordingActive = useReplayStore(s => s.recordingActive)
   const [introVisible, setIntroVisible] = useState(false)
 
   // Every play click (initial start, resume, restart) goes through the intro.
-  const handlePlayClick = useCallback(() => {
+  const handlePlayClick = useCallback(async () => {
     if (status === 'configuring') {
-      onStartReplay?.()
+      const started = await onStartReplay?.()
+      if (!started)
+        return // user denied permission, don't start
     }
     setIntroVisible(true)
   }, [status, onStartReplay])
@@ -37,13 +40,15 @@ export function TrajectoryOverlay({ onStartReplay }: TrajectoryOverlayProps) {
         <ReplayIntroOverlay visible={introVisible} onExitComplete={handleIntroComplete} />
       </div>
 
-      {/* Bottom gradient for cinematic feel */}
-      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
-
-      {/* Controls bar */}
-      <div className="pointer-events-auto relative mx-2 pb-2 sm:pb-4">
-        <ReplayControls onPlayClick={handlePlayClick} />
-      </div>
+      {/* Bottom gradient + controls — hidden during recording */}
+      {!recordingActive && (
+        <>
+          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="pointer-events-auto relative mx-2 pb-2 sm:pb-4">
+            <ReplayControls onPlayClick={handlePlayClick} />
+          </div>
+        </>
+      )}
     </div>
   )
 }

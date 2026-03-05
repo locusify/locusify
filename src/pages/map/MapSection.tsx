@@ -2,6 +2,7 @@ import type { PhotoMarker } from '@/types/map'
 import pkg from '@pkg'
 import { AnimatePresence, m } from 'motion/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import locusifyLogo from '@/assets/locusify-fit.png'
 import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { PhotoProvider, usePhotos } from '@/contexts'
@@ -28,9 +29,10 @@ function MapSectionContent() {
   const prepareReplay = useReplayStore(s => s.prepareReplay)
   const confirmConfig = useReplayStore(s => s.confirmConfig)
   const exitReplay = useReplayStore(s => s.exitReplay)
+  const recordingActive = useReplayStore(s => s.recordingActive)
 
   const {
-    startAutoRecord,
+    startRecording,
     pendingVideo,
     saveVideo,
     discardVideo,
@@ -67,10 +69,11 @@ function MapSectionContent() {
     prepareReplay(markers)
   }, [prepareReplay, markers])
 
-  const handleStartReplay = useCallback(() => {
+  const handleStartReplay = useCallback(async (): Promise<boolean> => {
     confirmConfig()
-    startAutoRecord()
-  }, [confirmConfig, startAutoRecord])
+    const started = await startRecording()
+    return started
+  }, [confirmConfig, startRecording])
 
   const handleExitReplay = useCallback(() => {
     exitReplay()
@@ -98,17 +101,20 @@ function MapSectionContent() {
 
   return (
     <div className="absolute size-full">
-      <MapMenuButton
-        onUploadClick={() => setUploadDrawerOpen(true)}
-        onRoutesClick={handleRoutesClick}
-        onSettingsClick={() => setSettingsOpen(true)}
-        onGalleryClick={() => setGalleryOpen(true)}
-        routesDisabled={!hasEnoughPhotos}
-        isReplayMode={isReplayMode}
-        onExitReplay={handleExitReplay}
-        isRecording={isRecording}
-        isProcessing={isProcessing}
-      />
+      {/* Hide menu button during active recording (intro + playback) */}
+      {!recordingActive && (
+        <MapMenuButton
+          onUploadClick={() => setUploadDrawerOpen(true)}
+          onRoutesClick={handleRoutesClick}
+          onSettingsClick={() => setSettingsOpen(true)}
+          onGalleryClick={() => setGalleryOpen(true)}
+          routesDisabled={!hasEnoughPhotos}
+          isReplayMode={isReplayMode}
+          onExitReplay={handleExitReplay}
+          isRecording={isRecording}
+          isProcessing={isProcessing}
+        />
+      )}
 
       <SelectPhotosDrawer
         open={uploadDrawerOpen}
@@ -124,6 +130,14 @@ function MapSectionContent() {
       )}
 
       {isReplayMode && <TrajectoryOverlay onStartReplay={handleStartReplay} />}
+
+      {/* DOM watermark — visible during recording, captured by screen capture */}
+      {isRecording && (
+        <div className="pointer-events-none absolute bottom-4 right-4 z-40 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5">
+          <img src={locusifyLogo} alt="" className="size-5 rounded" />
+          <span className="text-xs text-white">Powered by Locusify</span>
+        </div>
+      )}
 
       {/* Announcement dialog — shown once per version */}
       <AnimatePresence>
