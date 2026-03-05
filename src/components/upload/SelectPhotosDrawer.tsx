@@ -9,8 +9,8 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import { usePhotos } from '@/contexts'
 import { cn, glassPanel } from '@/lib/utils'
+import { usePhotoStore } from '@/stores/photoStore'
 import { GPSInfoPanel } from './GPSInfoPanel'
 import { PhotoSelector } from './PhotoSelector'
 
@@ -29,7 +29,7 @@ export const SelectPhotosDrawer: FC<SelectPhotosDrawerProps> = ({
   onOpenChange,
 }) => {
   const { t } = useTranslation()
-  const { addPhotos } = usePhotos()
+  const addPhotos = usePhotoStore(s => s.addPhotos)
   const [currentStep, setCurrentStep] = useState<DrawerStep>(DrawerStep.SELECT)
   const [selectedFiles, setSelectedFiles] = useState<Photo[]>([])
 

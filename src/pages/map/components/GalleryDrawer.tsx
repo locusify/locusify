@@ -15,9 +15,9 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { LazyImage } from '@/components/ui/lazy-image'
-import { usePhotos } from '@/contexts'
 import { formatCoordinates } from '@/lib/formatters'
 import { cn, glassPanel } from '@/lib/utils'
+import { usePhotoStore } from '@/stores/photoStore'
 
 interface GalleryDrawerProps {
   open: boolean
@@ -26,7 +26,9 @@ interface GalleryDrawerProps {
 
 export const GalleryDrawer: FC<GalleryDrawerProps> = ({ open, onOpenChange }) => {
   const { t } = useTranslation()
-  const { photos, removePhoto, setSelectedMarkerId } = usePhotos()
+  const photos = usePhotoStore(s => s.photos)
+  const removePhoto = usePhotoStore(s => s.removePhoto)
+  const setSelectedMarkerId = usePhotoStore(s => s.setSelectedMarkerId)
 
   const handlePhotoClick = (photoId: string) => {
     setSelectedMarkerId(photoId)

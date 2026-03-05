@@ -1,7 +1,5 @@
 import type { Tags } from 'exiftool-vendored'
 
-export * from './provider'
-
 /**
  * GPS Cardinal directions enum
  */

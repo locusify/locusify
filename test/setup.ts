@@ -1,5 +1,11 @@
 import { chai } from 'vitest'
 
+// Polyfill requestAnimationFrame / cancelAnimationFrame for Node
+if (typeof globalThis.requestAnimationFrame === 'undefined') {
+  globalThis.requestAnimationFrame = (cb: FrameRequestCallback) => setTimeout(() => cb(performance.now()), 0) as unknown as number
+  globalThis.cancelAnimationFrame = (id: number) => clearTimeout(id)
+}
+
 /**
  * 配置 Chai 断言库的截断阈值
  * 当测试断言失败时，Chai 会显示预期值和实际值的差异

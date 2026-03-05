@@ -1,7 +1,7 @@
 import type { AvatarSource } from '@/types/replay'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { useI18nStore } from '@/i18n'
+import { i18n } from '@/i18n'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -23,7 +23,7 @@ export const useSettingsStore = create<SettingsState>()(
       setTheme: theme => set({ theme }),
       setLanguage: (lang) => {
         set({ language: lang })
-        useI18nStore.getState().changeLanguage(lang)
+        i18n.changeLanguage(lang)
       },
       setAvatarSource: avatarSource => set({ avatarSource }),
     }),
@@ -31,7 +31,7 @@ export const useSettingsStore = create<SettingsState>()(
       name: 'locusify-settings',
       onRehydrateStorage: () => (state) => {
         if (state?.language) {
-          useI18nStore.getState().changeLanguage(state.language)
+          i18n.changeLanguage(state.language)
         }
       },
     },

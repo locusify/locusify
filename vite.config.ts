@@ -10,4 +10,15 @@ export default defineConfig({
     port: 1046,
     host: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          map: ['maplibre-gl', 'react-map-gl/maplibre'],
+          motion: ['motion'],
+          vendor: ['react', 'react-dom', 'react-router'],
+        },
+      },
+    },
+  },
 })

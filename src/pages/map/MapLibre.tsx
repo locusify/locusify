@@ -17,7 +17,7 @@ import { TrajectoryLineLayer } from './components/TrajectoryLineLayer'
 import { WaypointDot } from './components/WaypointDot'
 import MapStyleDark from './MapLibreStyleDark.json'
 import MapStyleLight from './MapLibreStyleLight.json'
-import { calculateMapBounds } from './utils'
+import { calculateMapBounds, calculateZoomFromBounds } from './utils'
 // Styles
 import 'maplibre-gl/dist/maplibre-gl.css'
 
@@ -54,6 +54,98 @@ export interface PureMaplibreProps {
   style?: CSSProperties
   mapRef?: RefObject<MapRef | null>
   autoFitBounds?: boolean
+}
+
+/**
+ * Simple clustering algorithm for small datasets
+ * @param markers Array of photo markers to cluster
+ * @param zoom Current zoom level
+ * @returns Array of cluster points
+ */
+function clusterMarkers(
+  markers: PhotoMarker[],
+  zoom: number,
+): ClusterPoint[] {
+  if (markers.length === 0)
+    return []
+
+  // At high zoom levels, don't cluster
+  if (zoom >= 15) {
+    return markers.map(marker => ({
+      type: 'Feature' as const,
+      properties: { marker },
+      geometry: {
+        type: 'Point' as const,
+        coordinates: [marker.longitude, marker.latitude],
+      },
+    }))
+  }
+
+  const clusters: ClusterPoint[] = []
+  const processed = new Set<string>()
+
+  // Simple distance-based clustering
+  const threshold = Math.max(0.001, 0.01 / 2 ** (zoom - 10)) // Adjust threshold based on zoom
+
+  for (const marker of markers) {
+    if (processed.has(marker.id))
+      continue
+
+    const nearby = [marker]
+    processed.add(marker.id)
+
+    // Find nearby markers
+    for (const other of markers) {
+      if (processed.has(other.id))
+        continue
+
+      const distance = Math.sqrt(
+        (marker.longitude - other.longitude) ** 2
+        + (marker.latitude - other.latitude) ** 2,
+      )
+
+      if (distance < threshold) {
+        nearby.push(other)
+        processed.add(other.id)
+      }
+    }
+
+    if (nearby.length === 1) {
+      // Single marker
+      clusters.push({
+        type: 'Feature',
+        properties: { marker },
+        geometry: {
+          type: 'Point',
+          coordinates: [marker.longitude, marker.latitude],
+        },
+      })
+    }
+    else {
+      // Cluster
+      const centerLng
+        = nearby.reduce((sum, m) => sum + m.longitude, 0) / nearby.length
+      const centerLat
+        = nearby.reduce((sum, m) => sum + m.latitude, 0) / nearby.length
+
+      clusters.push({
+        type: 'Feature',
+        properties: {
+          cluster: true,
+          point_count: nearby.length,
+          point_count_abbreviated: nearby.length.toString(),
+          marker: nearby[0], // Representative marker for the cluster
+          clusteredPhotos: nearby, // All photos in the cluster
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [centerLng, centerLat],
+        },
+      })
+    }
+  }
+
+  return clusters
 }
 
 export function Maplibre({
@@ -133,120 +225,11 @@ export function Maplibre({
     }
   }, [selectedMarkerId, onMarkerClick, markers])
 
-  /**
-   * Simple clustering algorithm for small datasets
-   * @param markers Array of photo markers to cluster
-   * @param zoom Current zoom level
-   * @returns Array of cluster points
-   */
-  function clusterMarkers(
-    markers: PhotoMarker[],
-    zoom: number,
-  ): ClusterPoint[] {
-    if (markers.length === 0)
-      return []
-
-    // At high zoom levels, don't cluster
-    if (zoom >= 15) {
-      return markers.map(marker => ({
-        type: 'Feature' as const,
-        properties: { marker },
-        geometry: {
-          type: 'Point' as const,
-          coordinates: [marker.longitude, marker.latitude],
-        },
-      }))
-    }
-
-    const clusters: ClusterPoint[] = []
-    const processed = new Set<string>()
-
-    // Simple distance-based clustering
-    const threshold = Math.max(0.001, 0.01 / 2 ** (zoom - 10)) // Adjust threshold based on zoom
-
-    for (const marker of markers) {
-      if (processed.has(marker.id))
-        continue
-
-      const nearby = [marker]
-      processed.add(marker.id)
-
-      // Find nearby markers
-      for (const other of markers) {
-        if (processed.has(other.id))
-          continue
-
-        const distance = Math.sqrt(
-          (marker.longitude - other.longitude) ** 2
-          + (marker.latitude - other.latitude) ** 2,
-        )
-
-        if (distance < threshold) {
-          nearby.push(other)
-          processed.add(other.id)
-        }
-      }
-
-      if (nearby.length === 1) {
-        // Single marker
-        clusters.push({
-          type: 'Feature',
-          properties: { marker },
-          geometry: {
-            type: 'Point',
-            coordinates: [marker.longitude, marker.latitude],
-          },
-        })
-      }
-      else {
-        // Cluster
-        const centerLng
-          = nearby.reduce((sum, m) => sum + m.longitude, 0) / nearby.length
-        const centerLat
-          = nearby.reduce((sum, m) => sum + m.latitude, 0) / nearby.length
-
-        clusters.push({
-          type: 'Feature',
-          properties: {
-            cluster: true,
-            point_count: nearby.length,
-            point_count_abbreviated: nearby.length.toString(),
-            marker: nearby[0], // Representative marker for the cluster
-            clusteredPhotos: nearby, // All photos in the cluster
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [centerLng, centerLat],
-          },
-        })
-      }
-    }
-
-    return clusters
-  }
-
   // Clustered markers
   const clusteredMarkers = useMemo(
     () => clusterMarkers(markers, currentZoom),
     [markers, currentZoom],
   )
-
-  // 计算合适的缩放级别
-  const calculateZoomLevel = useCallback((latDiff: number, lngDiff: number) => {
-    const maxDiff = Math.max(latDiff, lngDiff)
-
-    if (maxDiff < 0.001)
-      return 16 // 非常接近的点
-    if (maxDiff < 0.01)
-      return 14 // 很接近的点
-    if (maxDiff < 0.1)
-      return 11 // 附近的点
-    if (maxDiff < 1)
-      return 8 // 同一城市
-    if (maxDiff < 10)
-      return 5 // 同一国家/地区
-    return 2 // 跨洲
-  }, [])
 
   // 自动适配到包含所有照片的区域 - 只在初次加载时执行
   const fitMapToBounds = useCallback(() => {
@@ -331,7 +314,7 @@ export function Maplibre({
       const latDiff = bounds.maxLat - bounds.minLat
       const lngDiff = bounds.maxLng - bounds.minLng
       // 为备用方案也增加一些缓冲，降低一级缩放
-      const zoom = Math.max(calculateZoomLevel(latDiff, lngDiff) - 1, 2)
+      const zoom = Math.max(calculateZoomFromBounds(latDiff, lngDiff) - 1, 2)
 
       const newViewState = {
         longitude: bounds.centerLng,
@@ -347,7 +330,6 @@ export function Maplibre({
     autoFitBounds,
     isMapLoaded,
     mapRef,
-    calculateZoomLevel,
     hasInitialFitCompleted,
   ])
 

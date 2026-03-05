@@ -1,28 +1,34 @@
+import type { MapRef } from 'react-map-gl/maplibre'
 import type { PhotoMarker } from '@/types/map'
 import pkg from '@pkg'
 import { AnimatePresence, m } from 'motion/react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import locusifyLogo from '@/assets/locusify-fit.png'
 import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
-import { PhotoProvider, usePhotos } from '@/contexts'
 import { useVideoRecorder } from '@/hooks/useVideoRecorder'
 import { SettingsDrawer } from '@/pages/settings'
+import { usePhotoStore } from '@/stores/photoStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { AnnouncementDialog } from './components/AnnouncementDialog'
 import { GalleryDrawer } from './components/GalleryDrawer'
-import { GenericMap } from './components/GenericMap'
 import { MapMenuButton } from './components/MapMenuButton'
 import { SaveVideoDialog } from './components/SaveVideoDialog'
 import { TrajectoryOverlay } from './components/TrajectoryOverlay'
-import { MapProvider } from './MapProvider'
 import { getInitialViewStateForMarkers } from './utils'
+
+const Maplibre = lazy(() =>
+  import('./MapLibre').then(m => ({ default: m.Maplibre })),
+)
 
 const ANNOUNCEMENT_VERSION = pkg.version
 const ANNOUNCEMENT_STORAGE_KEY = 'locusify:version'
 
 function MapSectionContent() {
-  const { markers, selectedMarkerId, setSelectedMarkerId } = usePhotos()
+  const markers = usePhotoStore(s => s.markers)
+  const selectedMarkerId = usePhotoStore(s => s.selectedMarkerId)
+  const setSelectedMarkerId = usePhotoStore(s => s.setSelectedMarkerId)
+  const mapRef = useRef<MapRef>(null)
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
   const replayStatus = useReplayStore(s => s.status)
@@ -167,13 +173,14 @@ function MapSectionContent() {
         transition={{ duration: 0.6, delay: 0.1 }}
         className="size-full isolate"
       >
-        <GenericMap
+        <Maplibre
           markers={displayMarkers}
           initialViewState={initialViewState}
           autoFitBounds={displayMarkers.length > 0}
           selectedMarkerId={isReplayMode ? null : selectedMarkerId}
           onMarkerClick={handleMarkerClick}
           className="size-full"
+          mapRef={mapRef}
         />
       </m.div>
     </div>
@@ -181,11 +188,5 @@ function MapSectionContent() {
 }
 
 export function MapSection() {
-  return (
-    <PhotoProvider>
-      <MapProvider>
-        <MapSectionContent />
-      </MapProvider>
-    </PhotoProvider>
-  )
+  return <MapSectionContent />
 }

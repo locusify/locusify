@@ -232,6 +232,25 @@ export function calculateMapBounds(markers: PhotoMarker[]): MapBounds | null {
 }
 
 /**
+ * Calculate appropriate zoom level based on coordinate differences
+ */
+export function calculateZoomFromBounds(latDiff: number, lngDiff: number): number {
+  const maxDiff = Math.max(latDiff, lngDiff)
+
+  if (maxDiff < 0.001)
+    return 16
+  if (maxDiff < 0.01)
+    return 14
+  if (maxDiff < 0.1)
+    return 11
+  if (maxDiff < 1)
+    return 8
+  if (maxDiff < 10)
+    return 5
+  return 2
+}
+
+/**
  * Get initial view state that fits all markers
  */
 export function getInitialViewStateForMarkers(
@@ -251,18 +270,7 @@ export function getInitialViewStateForMarkers(
   // Calculate zoom level based on bounds
   const latDiff = bounds.maxLat - bounds.minLat
   const lngDiff = bounds.maxLng - bounds.minLng
-  const maxDiff = Math.max(latDiff, lngDiff)
-
-  let zoom = 10
-  if (maxDiff < 0.01)
-    zoom = 15
-  else if (maxDiff < 0.1)
-    zoom = 12
-  else if (maxDiff < 1)
-    zoom = 8
-  else if (maxDiff < 10)
-    zoom = 5
-  else zoom = 2
+  const zoom = calculateZoomFromBounds(latDiff, lngDiff)
 
   return {
     longitude: bounds.centerLng,

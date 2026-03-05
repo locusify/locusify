@@ -3,13 +3,6 @@
   "error.404.description": "找不到所请求的页面",
   "error.404.back": "返回",
 
-  "explore.title": "探索",
-  "explore.editorsChoice": "编辑推荐",
-  "explore.collections": "精选合集",
-  "explore.searchPlaceholder": "搜索用户和地点",
-  "explore.nowTraveling": "正在旅行",
-  "explore.viewDetails": "查看",
-
   "workspace.title": "轨迹回放",
   "workspace.subtitle": "以流畅的动画重播您的旅程",
 
@@ -147,9 +140,6 @@
   "gallery.empty.description": "上传含GPS的照片后即可在此查看",
   "gallery.photo.count": "{{count}} 张照片",
   "gallery.remove": "移除照片",
-
-  "navbar.home": "首页",
-  "navbar.profile": "我的",
 
   "splash.brand.name": "Locusify",
   "splash.hero.subtitle": "将旅行照片转换为可视化路线图和电影级视频",

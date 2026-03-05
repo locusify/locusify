@@ -1,5 +1,4 @@
 import type { FC } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { Camera, Map, Video } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -7,35 +6,14 @@ import { useNavigate } from 'react-router'
 
 const logoUrl = 'https://raw.githubusercontent.com/caterpi11ar/assets/main/logo/locusify.png'
 
-/**
- * Load splash screen resources (ads, config, etc.)
- * You can add your advertisement loading logic here
- */
-async function loadSplashResources() {
-  // TODO: Implement advertisement loading
-  // Example:
-  // const ads = await fetchSplashAd()
-  // return ads
-
-  // Placeholder: simulate 2 seconds resource loading
-  await new Promise(resolve => setTimeout(resolve, 2000))
-  return true
-}
-
 const SplashScreen: FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const { isSuccess } = useQuery({
-    queryKey: ['splash-resources'],
-    queryFn: loadSplashResources,
-  })
-
   useEffect(() => {
-    if (isSuccess) {
-      navigate('/map', { replace: true })
-    }
-  }, [isSuccess])
+    const timer = setTimeout(() => navigate('/map', { replace: true }), 2000)
+    return () => clearTimeout(timer)
+  }, [navigate])
 
   return (
     <div className="relative flex flex-col items-center min-h-dvh bg-white dark:bg-gray-950">

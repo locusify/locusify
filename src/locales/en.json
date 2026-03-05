@@ -3,12 +3,6 @@
   "error.404.description": "The requested page could not be found.",
   "error.404.back": "Go back",
 
-  "explore.title": "Explore",
-  "explore.editorsChoice": "EDITORS' CHOICE",
-  "explore.collections": "Collections",
-  "explore.searchPlaceholder": "Search people & places",
-  "explore.nowTraveling": "Now traveling",
-  "explore.viewDetails": "View",
   "workspace.title": "Track Playback",
   "workspace.subtitle": "Replay your journey with smooth animation",
 
@@ -146,9 +140,6 @@
   "gallery.empty.description": "Upload photos with GPS to see them here",
   "gallery.photo.count": "{{count}} photos",
   "gallery.remove": "Remove photo",
-
-  "navbar.home": "Home",
-  "navbar.profile": "My",
 
   "splash.brand.name": "Locusify",
   "splash.hero.subtitle": "Transform your travel photos into visual route maps and cinematic vlogs",
