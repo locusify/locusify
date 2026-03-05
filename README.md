@@ -55,7 +55,7 @@ Locusify is fully optimized for mobile browsers. Scan the QR code to try it on y
 1. **Upload** your GPS-tagged travel photos (JPG, PNG, HEIC, WebP, AVIF)
 2. **Extract** — Locusify reads GPS coordinates from each photo's EXIF data, right in your browser
 3. **Visualize** — an interactive map plots your route with photo markers, clusters, and an animated trajectory line
-4. **Replay** — watch your journey play back in chronological order, then export and share it as an MP4 video
+4. **Replay** — watch your journey play back in chronological order, then export and share it as a video
 
 ---
 
@@ -63,7 +63,7 @@ Locusify is fully optimized for mobile browsers. Scan the QR code to try it on y
 
 - **GPS Photo Mapping** — Automatically extracts location data from EXIF metadata and plots photos on an interactive map
 - **Trajectory Replay** — Timeline-based animated route playback with smooth camera follow and adjustable speed
-- **Video Export & Share** — Record your journey replay as an MP4 video, then download or share it directly
+- **Video Export & Share** — Record your journey replay as a video, then download or share it directly
 - **Photo Clusters** — Automatically groups nearby photos at higher zoom levels to keep the map clean
 - **100% Local Processing** — All photo parsing and map rendering happens in your browser; nothing is uploaded
 - **Drag-and-Drop Upload** — Upload multiple photos at once with automatic GPS validation
@@ -102,7 +102,7 @@ Your photos never leave your device. Close the browser tab and they're gone.
 | Platform | Browser (no install) | Mobile App | Mobile App + Web |
 | Pricing | 100% Free | Free + PRO | Free + Paid Books |
 | Route Source | Photo EXIF (auto) | Manual / GPX / Google Maps | Real-time GPS tracking |
-| Video Export | MP4 replay | 4K animated route video | None |
+| Video Export | Video replay | 4K animated route video | None |
 | Privacy | 100% local processing | Cloud-based | Cloud-based |
 | AI Features | Planned (transitions, vlog) | None | None |
 | Map Styles | MapLibre GL | 30+ styles, flat + globe | Built-in |
@@ -132,7 +132,7 @@ You need at least 2 photos with GPS coordinates to generate a route. There's no 
 Yes. Locusify is completely free with no accounts, no subscriptions, and no feature paywalls.
 
 **Can I export my journey as a video?**
-Yes. After viewing the trajectory replay, you can record the playback and download or share it as an MP4 video.
+Yes. After viewing the trajectory replay, you can record the playback and download or share it as a video.
 
 **What if some of my photos don't have GPS data?**
 Locusify validates GPS data during upload and clearly marks which photos have location data and which don't. Photos without GPS are excluded from the trajectory but you can still see them listed.
@@ -143,7 +143,7 @@ Locusify validates GPS data during upload and clearly marks which photos have lo
 
 - [x] GPS photo mapping and interactive map view
 - [x] Trajectory replay with animation controls
-- [x] Video export (MP4)
+- [x] Video export
 - [x] Photo clustering
 - [x] Dark mode + multi-language
 - [ ] Trip history — save and revisit past journeys
