@@ -87,7 +87,8 @@
       "WebFetch(domain:www.travelanimator.com)",
       "WebFetch(domain:www.polarsteps.com)",
       "mcp__context7__resolve-library-id",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(npx vitest:*)"
     ],
     "deny": [],
     "ask": [],
