@@ -26,7 +26,7 @@ const styleClasses: Record<string, string> = {
 }
 
 const positionClasses: Record<string, string> = {
-  'top-left': 'top-16 left-4',
+  'top-left': 'top-20 left-4',
   'top-right': 'top-4 right-4 text-right',
   'bottom-left': 'bottom-4 left-4',
   'bottom-right': 'bottom-4 right-4 text-right',
