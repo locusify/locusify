@@ -38,7 +38,6 @@ function MapSectionContent() {
   const isReplayMode = useReplayStore(s => s.isReplayMode)
   const replayStatus = useReplayStore(s => s.status)
   const prepareReplay = useReplayStore(s => s.prepareReplay)
-  const confirmConfig = useReplayStore(s => s.confirmConfig)
   const exitReplay = useReplayStore(s => s.exitReplay)
   const recordingActive = useReplayStore(s => s.recordingActive)
 
@@ -65,13 +64,15 @@ function MapSectionContent() {
   const contextMenuFileInputRef = useRef<HTMLInputElement>(null)
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number, y: number } | null>(null)
 
-  // Show dialog 2 seconds after replay completes (regardless of whether video is ready)
+  // Show dialog 2 seconds after replay completes (only if recording happened)
   useEffect(() => {
     if (replayStatus !== 'completed')
       return
+    if (!isRecording && !pendingVideo)
+      return
     const t = setTimeout(() => setVideoDialogOpen(true), 2000)
     return () => clearTimeout(t)
-  }, [replayStatus])
+  }, [replayStatus, isRecording, pendingVideo])
 
   const handleMarkerClick = useCallback((marker: PhotoMarker) => {
     setSelectedMarkerId(selectedMarkerId === marker.id ? null : marker.id)
@@ -85,11 +86,10 @@ function MapSectionContent() {
     prepareReplay(markers)
   }, [prepareReplay, markers])
 
-  const handleStartReplay = useCallback(async (): Promise<boolean> => {
-    confirmConfig()
-    const started = await startRecording()
-    return started
-  }, [confirmConfig, startRecording])
+  const handleStartReplay = useCallback(async (): Promise<void> => {
+    discardVideo()
+    await startRecording()
+  }, [startRecording, discardVideo])
 
   const handleExitReplay = useCallback(() => {
     exitReplay()

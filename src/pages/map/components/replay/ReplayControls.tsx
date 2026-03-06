@@ -254,9 +254,17 @@ export function ReplayControls({ onPlayClick, onTemplateClick, onCustomizeClick 
               type="button"
               onClick={status === 'playing' ? togglePlayPause : onPlayClick}
               className="flex size-7 items-center justify-center rounded-full bg-sky-400 text-white shadow-lg transition-transform hover:scale-105 active:scale-95 sm:size-8"
-              title={status === 'playing' ? t('workspace.controls.pause') : t('workspace.controls.play')}
+              title={status === 'playing' ? t('workspace.controls.pause') : status === 'completed' ? t('workspace.controls.replay') : t('workspace.controls.play')}
             >
-              <i className={cn('text-base', status === 'playing' ? 'i-mingcute-pause-fill' : 'i-mingcute-play-fill')} />
+              <i className={cn(
+                'text-base',
+                status === 'playing'
+                  ? 'i-mingcute-pause-fill'
+                  : status === 'completed'
+                    ? 'i-mingcute-refresh-2-line'
+                    : 'i-mingcute-play-fill',
+              )}
+              />
             </button>
 
             <button

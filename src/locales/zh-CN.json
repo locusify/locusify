@@ -84,6 +84,7 @@
 
   "workspace.controls.play": "播放",
   "workspace.controls.pause": "暂停",
+  "workspace.controls.replay": "重新播放",
   "workspace.controls.reset": "重置",
   "workspace.controls.progress": "进度: {{current}} / {{total}}",
   "workspace.controls.next": "下一步",

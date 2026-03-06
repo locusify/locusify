@@ -84,6 +84,7 @@
 
   "workspace.controls.play": "Play",
   "workspace.controls.pause": "Pause",
+  "workspace.controls.replay": "Replay",
   "workspace.controls.reset": "Reset",
   "workspace.controls.progress": "Progress: {{current}} / {{total}}",
   "workspace.controls.next": "Next",

@@ -7,13 +7,11 @@ import { cn } from '@/lib/utils'
 import { useReplayStore } from '@/stores/replayStore'
 import { ReplayControls } from './replay/ReplayControls'
 import { ReplayIntroOverlay } from './replay/ReplayIntroOverlay'
-import { ReplayStatsCard } from './replay/ReplayStatsCard'
-import { ReplayTextOverlay } from './replay/ReplayTextOverlay'
 import { TemplateCustomizer } from './replay/TemplateCustomizer'
 import { TemplateSelector } from './replay/TemplateSelector'
 
 interface TrajectoryOverlayProps {
-  onStartReplay?: () => Promise<boolean>
+  onStartReplay?: () => Promise<void>
   onUpgradeClick?: () => void
 }
 
@@ -30,11 +28,10 @@ export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryO
   const recordingActive = useReplayStore(s => s.recordingActive)
   const templateId = useReplayStore(s => s.templateId)
   const templateConfig = useReplayStore(s => s.templateConfig)
-  const captions = useReplayStore(s => s.captions)
-  const currentWaypointIndex = useReplayStore(s => s.currentWaypointIndex)
   const setTemplate = useReplayStore(s => s.setTemplate)
   const setCustomOverrides = useReplayStore(s => s.setCustomOverrides)
   const confirmConfig = useReplayStore(s => s.confirmConfig)
+  const restartReplay = useReplayStore(s => s.restartReplay)
 
   const [introVisible, setIntroVisible] = useState(false)
   const [showTemplatePanel, setShowTemplatePanel] = useState(false)
@@ -44,12 +41,16 @@ export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryO
   const handlePlayClick = useCallback(async () => {
     if (status === 'configuring') {
       confirmConfig()
-      const started = await onStartReplay?.()
-      if (!started)
-        return
+      await onStartReplay?.()
+      setIntroVisible(true)
     }
-    setIntroVisible(true)
-  }, [status, onStartReplay, confirmConfig])
+    else if (status === 'completed') {
+      restartReplay()
+    }
+    else {
+      setIntroVisible(true)
+    }
+  }, [status, onStartReplay, confirmConfig, restartReplay])
 
   const handleIntroComplete = useCallback(() => {
     setIntroVisible(false)
@@ -80,8 +81,6 @@ export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryO
   }, [onUpgradeClick])
 
   const isConfiguring = status === 'configuring'
-  const isActive = status === 'playing' || status === 'paused' || status === 'completed'
-  const currentCaption = captions[currentWaypointIndex] || ''
 
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-end">
@@ -93,17 +92,6 @@ export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryO
           introStyle={templateConfig.intro.style}
         />
       </div>
-
-      {/* Text overlay during replay */}
-      {isActive && (
-        <ReplayTextOverlay
-          config={templateConfig.textOverlay}
-          caption={currentCaption}
-        />
-      )}
-
-      {/* Stats card on completion */}
-      {status === 'completed' && !recordingActive && <ReplayStatsCard />}
 
       {/* Template selection panel (configuring phase) */}
       {isConfiguring && !showCustomizePanel && (

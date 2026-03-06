@@ -102,6 +102,7 @@ interface ReplayState {
   prepareReplay: (markers: PhotoMarker[]) => void
   confirmConfig: () => void
   togglePlayPause: () => void
+  restartReplay: () => void
   resetReplay: () => void
   exitReplay: () => void
   setSpeedMultiplier: (speed: number) => void
@@ -201,23 +202,28 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   },
 
   togglePlayPause: () => {
-    const { status, speedMultiplier, waypoints } = get()
+    const { status } = get()
     if (status === 'playing') {
       set({ status: 'paused' })
     }
     else if (status === 'paused') {
       set({ status: 'playing' })
     }
-    else if (status === 'completed') {
-      set({
-        status: 'playing',
-        currentWaypointIndex: 0,
-        segmentProgress: 0,
-        totalProgress: 0,
-        speedMultiplier,
-        currentPosition: waypoints[0]?.position ?? null,
-      })
-    }
+  },
+
+  restartReplay: () => {
+    const { waypoints } = get()
+    if (waypoints.length < 2)
+      return
+    AudioManager.getInstance().stop()
+    set({
+      status: 'configuring',
+      currentWaypointIndex: 0,
+      segmentProgress: 0,
+      totalProgress: 0,
+      currentPosition: waypoints[0]?.position ?? null,
+      recordingActive: false,
+    })
   },
 
   resetReplay: () => {
