@@ -1,7 +1,5 @@
 const ALLOWED_ORIGINS = [
-  'https://locusify.app',
-  'https://www.locusify.app',
-  'http://localhost:5173',
+  'https://locusify.caterpi11ar.com',
   'http://localhost:4173',
 ]
 
