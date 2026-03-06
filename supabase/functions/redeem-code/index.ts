@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       .from('redemption_codes')
       .select('*')
       .eq('code', normalizedCode)
-      .single()
+      .maybeSingle()
 
     if (lookupError || !codeRow) {
       return new Response(JSON.stringify({ error: 'invalid_code' }), {
@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       .select('id')
       .eq('user_id', user.id)
       .eq('code_id', codeRow.id)
-      .single()
+      .maybeSingle()
 
     if (existing) {
       return new Response(JSON.stringify({ error: 'already_redeemed' }), {

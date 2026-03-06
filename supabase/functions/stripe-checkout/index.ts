@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       .from('subscriptions')
       .select('id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (!subscription) {
       return new Response(JSON.stringify({ error: 'No subscription record' }), {
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       .select('external_customer_id')
       .eq('subscription_id', subscription.id)
       .eq('provider', 'stripe')
-      .single()
+      .maybeSingle()
 
     const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')!
     let customerId = provider?.external_customer_id

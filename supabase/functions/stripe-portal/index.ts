@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
       .from('subscriptions')
       .select('id')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (!subscription) {
       return new Response(JSON.stringify({ error: 'No subscription record' }), {
@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       .select('external_customer_id')
       .eq('subscription_id', subscription.id)
       .eq('provider', 'stripe')
-      .single()
+      .maybeSingle()
 
     if (!provider?.external_customer_id) {
       return new Response(JSON.stringify({ error: 'No Stripe subscription found' }), {

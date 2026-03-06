@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       .from('subscriptions')
       .select('plan, status')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (!subscription?.plan?.startsWith('pro') || subscription.status !== 'active') {
       return new Response(JSON.stringify({ error: 'Pro subscription required' }), {

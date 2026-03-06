@@ -46,7 +46,7 @@ async function findSubscriptionByCustomer(supabase: ReturnType<typeof createClie
     .select('subscription_id, subscriptions(user_id)')
     .eq('provider', 'stripe')
     .eq('external_customer_id', customerId)
-    .single()
+    .maybeSingle()
   return data
 }
 
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
         .from('subscriptions')
         .select('id')
         .eq('user_id', userId)
-        .single()
+        .maybeSingle()
 
       if (!subscription)
         break

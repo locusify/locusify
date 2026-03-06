@@ -36,7 +36,7 @@ export const useSubscriptionStore = create<SubscriptionState>(set => ({
         .from('subscriptions')
         .select('plan, status, current_period_end, cancel_at_period_end')
         .eq('user_id', userId)
-        .single()
+        .maybeSingle()
 
       if (error || !data) {
         set({ subscription: defaultSubscription, isPro: env.VITE_DEBUG_PRO, loading: false })

@@ -59,7 +59,7 @@ export const RedeemCodeSection: FC = () => {
           onKeyDown={e => e.key === 'Enter' && !loading && handleRedeem()}
           placeholder={t('redeem.placeholder')}
           disabled={loading}
-          className="h-8 flex-1 text-sm"
+          className="h-8 flex-1 text-sm text-text placeholder:text-text/40"
         />
         <button
           type="button"

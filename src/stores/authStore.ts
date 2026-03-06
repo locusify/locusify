@@ -61,7 +61,7 @@ async function fetchProfileAndSubscription(userId: string) {
     .from('profiles')
     .select('id, display_name, avatar_url, provider')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
 
   if (profile) {
     useAuthStore.getState().setProfile({
