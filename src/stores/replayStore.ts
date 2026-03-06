@@ -1,7 +1,10 @@
 import type { PhotoMarker } from '@/types/map'
 import type { SegmentMeta, TransportMode } from '@/types/replay'
+import type { ReplayTemplateConfig } from '@/types/template'
 import type { PlaybackState } from '@/types/workspace'
 import { create } from 'zustand'
+import { templates } from '@/data/templates'
+import AudioManager from '@/lib/audio/AudioManager'
 import { haversineDistance } from '@/lib/geo'
 
 /** Duration per segment in ms at 1x speed */
@@ -70,6 +73,14 @@ function computeSegments(waypoints: ReplayWaypoint[]): SegmentMeta[] {
   return segments
 }
 
+/** Default template ID */
+const DEFAULT_TEMPLATE_ID = 'minimal'
+
+/** Get default template config */
+function getDefaultTemplateConfig(): ReplayTemplateConfig {
+  return templates.find(t => t.id === DEFAULT_TEMPLATE_ID)!.config
+}
+
 interface ReplayState {
   isReplayMode: boolean
   waypoints: ReplayWaypoint[]
@@ -82,6 +93,10 @@ interface ReplayState {
   segments: SegmentMeta[]
   currentSegmentMode: TransportMode
   recordingActive: boolean
+  templateId: string
+  templateConfig: ReplayTemplateConfig
+  customOverrides: Partial<ReplayTemplateConfig>
+  captions: string[]
 
   startReplay: (markers: PhotoMarker[], startPaused?: boolean) => void
   prepareReplay: (markers: PhotoMarker[]) => void
@@ -93,6 +108,9 @@ interface ReplayState {
   seekToWaypoint: (index: number) => void
   setSegmentMode: (segmentIndex: number, mode: TransportMode) => void
   setRecordingActive: (active: boolean) => void
+  setTemplate: (templateId: string, config: ReplayTemplateConfig) => void
+  setCustomOverrides: (overrides: Partial<ReplayTemplateConfig>) => void
+  setCaptions: (captions: string[]) => void
   /** Internal: advance animation by delta ms */
   _tick: (delta: number) => void
 }
@@ -109,8 +127,24 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   segments: [],
   currentSegmentMode: 'walking',
   recordingActive: false,
+  templateId: DEFAULT_TEMPLATE_ID,
+  templateConfig: getDefaultTemplateConfig(),
+  customOverrides: {},
+  captions: [],
 
   setRecordingActive: active => set({ recordingActive: active }),
+
+  setTemplate: (templateId, config) => set({ templateId, templateConfig: config, customOverrides: {} }),
+
+  setCustomOverrides: (overrides) => {
+    const { templateConfig } = get()
+    set({
+      customOverrides: overrides,
+      templateConfig: { ...templateConfig, ...overrides } as ReplayTemplateConfig,
+    })
+  },
+
+  setCaptions: captions => set({ captions }),
 
   startReplay: (markers, startPaused = false) => {
     const waypoints = markersToWaypoints(markers)
@@ -145,15 +179,24 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       currentWaypointIndex: 0,
       segmentProgress: 0,
       totalProgress: 0,
-      speedMultiplier: get().speedMultiplier,
+      speedMultiplier: get().templateConfig.defaultSpeed || get().speedMultiplier,
       currentPosition: waypoints[0].position,
     })
   },
 
   confirmConfig: () => {
-    const { status } = get()
+    const { status, templateConfig } = get()
     if (status === 'configuring') {
-      set({ status: 'paused' })
+      // Preload audio for the selected template
+      const audio = AudioManager.getInstance()
+      audio.configure(templateConfig.music.volume, templateConfig.music.fadeIn, templateConfig.music.fadeOut)
+      audio.loadTrack(templateConfig.music.trackId).then(() => {
+        // Only transition if still in configuring/paused state (user hasn't exited)
+        const current = get().status
+        if (current === 'configuring' || current === 'paused') {
+          set({ status: 'paused', speedMultiplier: templateConfig.defaultSpeed || 1 })
+        }
+      })
     }
   },
 
@@ -190,6 +233,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   },
 
   exitReplay: () => {
+    AudioManager.getInstance().stop()
     set({
       isReplayMode: false,
       waypoints: [],
@@ -201,6 +245,10 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       segments: [],
       currentSegmentMode: 'walking',
       recordingActive: false,
+      templateId: DEFAULT_TEMPLATE_ID,
+      templateConfig: getDefaultTemplateConfig(),
+      customOverrides: {},
+      captions: [],
     })
   },
 
@@ -257,7 +305,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
 
     // Cap delta to prevent large jumps (e.g. after tab switch)
     const cappedDelta = Math.min(delta, 200)
-    const segmentDuration = BASE_SEGMENT_DURATION / state.speedMultiplier
+    const segmentDuration = (state.templateConfig.segmentDuration || BASE_SEGMENT_DURATION) / state.speedMultiplier
     const progressIncrement = cappedDelta / segmentDuration
 
     let segProg = state.segmentProgress + progressIncrement
@@ -324,11 +372,17 @@ function stopLoop() {
 }
 
 // Auto-start/stop the rAF loop when status changes
+// Also sync AudioManager with replay status
 useReplayStore.subscribe((state, prevState) => {
   if (state.status === 'playing' && prevState.status !== 'playing') {
     startLoop()
   }
   else if (state.status !== 'playing' && prevState.status === 'playing') {
     stopLoop()
+  }
+
+  // Sync audio with replay status changes
+  if (state.status !== prevState.status) {
+    AudioManager.getInstance().syncWithReplayStatus(state.status)
   }
 })

@@ -42,17 +42,14 @@ class ScreenRecordingSession {
           displaySurface: 'browser',
           suppressLocalAudioPlayback: true,
         },
-        audio: false,
+        audio: true,
         preferCurrentTab: true,
         selfBrowserSurface: 'include',
         surfaceSwitching: 'exclude',
       } as DisplayMediaStreamOptions)
 
-      // Remove any audio tracks that might have been included
-      for (const track of stream.getAudioTracks()) {
-        track.stop()
-        stream.removeTrack(track)
-      }
+      // Keep audio tracks if present (for capturing background music during replay)
+      // Audio tracks are now captured via getDisplayMedia({ audio: true })
 
       return new ScreenRecordingSession(stream, callbacks)
     }
@@ -168,13 +165,20 @@ export function useVideoRecorder() {
 
   // Auto-stop recording when replay completes
   useEffect(() => {
-    return useReplayStore.subscribe((state) => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    const unsubscribe = useReplayStore.subscribe((state) => {
       if (state.status === 'completed' && sessionRef.current) {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           sessionRef.current?.stop()
+          timeoutId = null
         }, WAIT_MS)
       }
     })
+    return () => {
+      unsubscribe()
+      if (timeoutId)
+        clearTimeout(timeoutId)
+    }
   }, [])
 
   const saveVideo = useCallback(() => {

@@ -10,6 +10,8 @@ import {
   PHOTO_CARD_OFFSET_SM,
 } from '@/data/waypointStyle'
 import { formatCoordinates, formatDate } from '@/lib/formatters'
+import { getFilterStyle } from '@/lib/replay/filters'
+import { getTransitionVariants } from '@/lib/replay/transitions'
 import { useReplayStore } from '@/stores/replayStore'
 
 // ─── Dashed connector SVG ────────────────────────────────────────────────────
@@ -88,6 +90,7 @@ function useCardOffset(waypointIndex: number) {
 
 function PhotoCard({ waypointIndex, zIndex }: { waypointIndex: number, zIndex: number }) {
   const waypoint = useReplayStore(s => s.waypoints[waypointIndex])
+  const templateConfig = useReplayStore(s => s.templateConfig)
   const offset = useCardOffset(waypointIndex)
 
   if (!waypoint)
@@ -96,6 +99,9 @@ function PhotoCard({ waypointIndex, zIndex }: { waypointIndex: number, zIndex: n
   const { marker } = waypoint
   const { photo } = marker
   const [lng, lat] = waypoint.position
+
+  const filterStyle = getFilterStyle(templateConfig.filter.type, templateConfig.filter.intensity)
+  const transition = getTransitionVariants(templateConfig.transitions.type, templateConfig.transitions.duration)
 
   return (
     <Marker longitude={lng} latitude={lat} anchor="center" style={{ zIndex }}>
@@ -106,13 +112,16 @@ function PhotoCard({ waypointIndex, zIndex }: { waypointIndex: number, zIndex: n
         {/* Photo card with offset transform */}
         <div style={{ transform: `translate(${offset.dx}px, ${offset.dy}px)` }}>
           <m.div
-            initial={{ opacity: 0, scale: 0.85, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            initial={transition.initial}
+            animate={transition.animate}
+            transition={transition.transition}
             className="w-48 overflow-hidden rounded-xl border border-white/20 bg-white/75 shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-[80px] sm:w-56 dark:border-white/10 dark:bg-black/65"
           >
             {/* Photo */}
-            <div className="relative aspect-[4/3] overflow-hidden bg-black/30 dark:bg-black/50">
+            <div
+              className="relative aspect-[4/3] overflow-hidden bg-black/30 dark:bg-black/50"
+              style={filterStyle ? { filter: filterStyle } : undefined}
+            >
               {photo.thumbnailUrl && (
                 <LazyImage
                   src={photo.thumbnailUrl}

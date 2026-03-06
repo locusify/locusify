@@ -1,3 +1,4 @@
+import type { ReplayTemplateConfig } from '@/types/template'
 import { AnimatePresence, m } from 'motion/react'
 import { useEffect, useState } from 'react'
 import locusifyLogo from '@/assets/locusify-fit.png'
@@ -10,9 +11,10 @@ const FADE_OUT_S = 0.7
 interface ReplayIntroOverlayProps {
   visible: boolean
   onExitComplete: () => void
+  introStyle?: ReplayTemplateConfig['intro']['style']
 }
 
-export function ReplayIntroOverlay({ visible, onExitComplete }: ReplayIntroOverlayProps) {
+export function ReplayIntroOverlay({ visible, onExitComplete, introStyle = 'logo-fade' }: ReplayIntroOverlayProps) {
   const [show, setShow] = useState(false)
 
   // When the parent requests the intro, start showing
@@ -29,6 +31,15 @@ export function ReplayIntroOverlay({ visible, onExitComplete }: ReplayIntroOverl
     return () => clearTimeout(t)
   }, [show])
 
+  // Skip intro entirely — fire callback in an effect to avoid side effects during render
+  useEffect(() => {
+    if (introStyle === 'none' && visible)
+      onExitComplete()
+  }, [introStyle, visible, onExitComplete])
+
+  if (introStyle === 'none')
+    return null
+
   return (
     <AnimatePresence onExitComplete={onExitComplete}>
       {show && (
@@ -39,30 +50,60 @@ export function ReplayIntroOverlay({ visible, onExitComplete }: ReplayIntroOverl
           exit={{ opacity: 0 }}
           transition={{ duration: FADE_IN_S, ease: 'easeInOut' }}
         >
-          <m.div
-            className="flex flex-col items-center gap-5"
-            initial={{ scale: 0.88, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.96, opacity: 0 }}
-            transition={{ duration: FADE_OUT_S, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {/* Logo image */}
-            <img
-              src={locusifyLogo}
-              alt="Locusify"
-              className="size-20 rounded-2xl sm:size-24"
-            />
+          {introStyle === 'logo-fade' && (
+            <m.div
+              className="flex flex-col items-center gap-5"
+              initial={{ scale: 0.88, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: FADE_OUT_S, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <img
+                src={locusifyLogo}
+                alt="Locusify"
+                className="size-20 rounded-2xl sm:size-24"
+              />
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                  Locusify
+                </span>
+                <span className="text-sm text-white/40 sm:text-base">
+                  Your Journey, Mapped
+                </span>
+              </div>
+            </m.div>
+          )}
 
-            {/* Brand */}
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          {introStyle === 'title-card' && (
+            <m.div
+              className="flex flex-col items-center gap-3"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ duration: FADE_OUT_S, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="h-px w-20 bg-white/30" />
+              <span className="text-2xl font-light tracking-[0.2em] uppercase text-white sm:text-3xl">
+                My Journey
+              </span>
+              <div className="h-px w-20 bg-white/30" />
+            </m.div>
+          )}
+
+          {introStyle === 'map-zoom' && (
+            <m.div
+              className="flex flex-col items-center gap-4"
+              initial={{ scale: 2, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: FADE_OUT_S * 1.5, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <i className="i-mingcute-map-line text-5xl text-white/60" />
+              <span className="text-lg font-medium text-white/80 sm:text-xl">
                 Locusify
               </span>
-              <span className="text-sm text-white/40 sm:text-base">
-                Your Journey, Mapped
-              </span>
-            </div>
-          </m.div>
+            </m.div>
+          )}
         </m.div>
       )}
     </AnimatePresence>

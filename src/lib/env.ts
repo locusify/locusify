@@ -8,6 +8,14 @@ const envSchema = z.object({
   VITE_SUPABASE_URL: z.string().default(''),
   /** Supabase anonymous key */
   VITE_SUPABASE_ANON_KEY: z.string().default(''),
+  /** Stripe publishable key */
+  VITE_STRIPE_PUBLISHABLE_KEY: z.string().default(''),
+  /** Stripe monthly price ID */
+  VITE_STRIPE_MONTHLY_PRICE_ID: z.string().default(''),
+  /** Stripe yearly price ID */
+  VITE_STRIPE_YEARLY_PRICE_ID: z.string().default(''),
+  /** Debug: force Pro subscription status */
+  VITE_DEBUG_PRO: z.coerce.boolean().default(false),
 })
 
 export type Env = z.infer<typeof envSchema>
@@ -19,6 +27,10 @@ function validateEnv(): Env {
       NODE_ENV: import.meta.env.MODE,
       VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
       VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+      VITE_STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
+      VITE_STRIPE_MONTHLY_PRICE_ID: import.meta.env.VITE_STRIPE_MONTHLY_PRICE_ID,
+      VITE_STRIPE_YEARLY_PRICE_ID: import.meta.env.VITE_STRIPE_YEARLY_PRICE_ID,
+      VITE_DEBUG_PRO: import.meta.env.DEV && import.meta.env.VITE_DEBUG_PRO,
     })
 
     console.log('loaded env successfully')

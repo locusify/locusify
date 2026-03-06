@@ -8,5 +8,8 @@ dist/
 .env.production
 .env.test
 
+# Supabase local state
+supabase/.temp/
+
 # claude
 .claude/settings.local.json

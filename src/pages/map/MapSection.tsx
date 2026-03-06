@@ -233,7 +233,12 @@ function MapSectionContent() {
         <LoginButton onClick={() => setLoginDrawerOpen(true)} />
       )}
 
-      {isReplayMode && <TrajectoryOverlay onStartReplay={handleStartReplay} />}
+      {isReplayMode && (
+        <TrajectoryOverlay
+          onStartReplay={handleStartReplay}
+          onUpgradeClick={() => setSettingsOpen(true)}
+        />
+      )}
 
       {/* DOM watermark — visible during recording, captured by screen capture */}
       {isRecording && (

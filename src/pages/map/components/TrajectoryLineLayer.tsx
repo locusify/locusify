@@ -5,7 +5,7 @@ import { useReplayStore } from '@/stores/replayStore'
 /**
  * Renders a progressively-drawn trajectory line (no full-route preview).
  * Two layers on the same source:
- * 1. Glow layer (wide, blurred, low opacity)
+ * 1. Glow layer (wide, blurred, low opacity) - conditional on template config
  * 2. Main progress line (narrow, opaque)
  */
 export function TrajectoryLineLayer() {
@@ -13,6 +13,7 @@ export function TrajectoryLineLayer() {
   const currentWaypointIndex = useReplayStore(s => s.currentWaypointIndex)
   const segmentProgress = useReplayStore(s => s.segmentProgress)
   const currentPosition = useReplayStore(s => s.currentPosition)
+  const lineStyle = useReplayStore(s => s.templateConfig.lineStyle)
 
   // Progress route GeoJSON — only the traveled portion
   const progressGeoJson = useMemo<GeoJSON.FeatureCollection>(() => {
@@ -52,26 +53,28 @@ export function TrajectoryLineLayer() {
 
   return (
     <Source id="trajectory-progress" type="geojson" data={progressGeoJson}>
-      <Layer
-        id="trajectory-glow-line"
-        type="line"
-        paint={{
-          'line-color': '#38bdf8',
-          'line-width': 10,
-          'line-opacity': 0.15,
-          'line-blur': 6,
-        }}
-        layout={{
-          'line-join': 'round',
-          'line-cap': 'round',
-        }}
-      />
+      {lineStyle.glow && (
+        <Layer
+          id="trajectory-glow-line"
+          type="line"
+          paint={{
+            'line-color': lineStyle.color,
+            'line-width': lineStyle.width * 3.3,
+            'line-opacity': 0.15,
+            'line-blur': 6,
+          }}
+          layout={{
+            'line-join': 'round',
+            'line-cap': 'round',
+          }}
+        />
+      )}
       <Layer
         id="trajectory-progress-line"
         type="line"
         paint={{
-          'line-color': '#38bdf8',
-          'line-width': 3,
+          'line-color': lineStyle.color,
+          'line-width': lineStyle.width,
           'line-opacity': 0.9,
         }}
         layout={{
