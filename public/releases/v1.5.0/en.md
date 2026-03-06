@@ -4,9 +4,9 @@
 
 ## Features
 
-### Map Right-Click Context Menu
-- Right-click anywhere on the map to add photos at that specific location
-- Photos are placed at the right-click coordinates regardless of their EXIF GPS data
+### Map Context Menu — Right-Click & Long-Press
+- Right-click (desktop) or long-press (mobile) anywhere on the map to add photos at that specific location
+- Photos are placed at the selected coordinates regardless of their EXIF GPS data
 - Camera info and date are still extracted from EXIF metadata when available
 - Context menu uses the same glass-panel design as other map floating UI elements
 - Automatically disabled during replay mode

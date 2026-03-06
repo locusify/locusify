@@ -68,7 +68,7 @@ Locusify is fully optimized for mobile browsers. Scan the QR code to try it on y
 - **100% Local Processing** — All photo parsing and map rendering happens in your browser; nothing is uploaded
 - **Drag-and-Drop Upload** — Upload multiple photos at once with automatic GPS validation
 - **Multi-language** — Available in English and Chinese (中文)
-- **Right-Click to Add Photos** — Right-click anywhere on the map to add photos at that exact location, even without GPS data in the original files
+- **Right-Click / Long-Press to Add Photos** — Right-click (desktop) or long-press (mobile) anywhere on the map to add photos at that exact location, even without GPS data in the original files
 - **Dark / Light Mode** — Respects your system preference, or switch manually
 
 ---
@@ -136,7 +136,7 @@ Yes. Locusify is completely free with no accounts, no subscriptions, and no feat
 Yes. After viewing the trajectory replay, you can record the playback and download or share it as a video.
 
 **What if some of my photos don't have GPS data?**
-Locusify validates GPS data during upload and clearly marks which photos have location data and which don't. Photos without GPS are excluded from the trajectory but you can still see them listed. Alternatively, you can right-click anywhere on the map and select "Add Photos" to place photos at a specific location manually — no GPS data required.
+Locusify validates GPS data during upload and clearly marks which photos have location data and which don't. Photos without GPS are excluded from the trajectory but you can still see them listed. Alternatively, you can right-click (desktop) or long-press (mobile) anywhere on the map and select "Add Photos" to place photos at a specific location manually — no GPS data required.
 
 ---
 

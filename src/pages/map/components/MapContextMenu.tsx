@@ -23,51 +23,45 @@ export function MapContextMenu({ position, onAddPhotos, onClose }: MapContextMen
   const { t } = useTranslation()
   const menuRef = useRef<HTMLDivElement>(null)
 
+  // Focus the menu when it appears for keyboard accessibility
   useEffect(() => {
-    if (!position)
-      return
-
-    const handlePointerDown = (e: PointerEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose()
-      }
+    if (position) {
+      menuRef.current?.focus()
     }
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape')
-        onClose()
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [position, onClose])
+  }, [position])
 
   if (!position)
     return null
 
   return createPortal(
-    <div
-      ref={menuRef}
-      role="menu"
-      className={`fixed z-50 overflow-hidden p-1 animate-in fade-in-0 zoom-in-95 ${glassPanel}`}
-      style={{ left: position.x, top: position.y }}
-    >
-      <button
-        type="button"
-        role="menuitem"
-        className="text-text relative flex w-full cursor-default items-center gap-2 rounded-xl px-3 py-2 text-sm outline-hidden select-none transition-colors hover:bg-fill-secondary active:bg-fill-tertiary [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-text-secondary"
-        onClick={() => {
-          onAddPhotos()
-          onClose()
-        }}
+    <>
+      {/* Invisible backdrop — captures outside taps/clicks to dismiss */}
+      <div
+        className="fixed inset-0 z-50"
+        onPointerDown={onClose}
+      />
+      <div
+        ref={menuRef}
+        role="menu"
+        tabIndex={-1}
+        onKeyDown={e => e.key === 'Escape' && onClose()}
+        className={`fixed z-50 overflow-hidden p-1 outline-hidden animate-in fade-in-0 zoom-in-95 ${glassPanel}`}
+        style={{ left: position.x, top: position.y }}
       >
-        <ImagePlus />
-        {t('map.contextMenu.addPhotos')}
-      </button>
-    </div>,
+        <button
+          type="button"
+          role="menuitem"
+          className="text-text relative flex w-full cursor-default items-center gap-2 rounded-xl px-3 py-2 text-sm outline-hidden select-none transition-colors hover:bg-fill-secondary active:bg-fill-tertiary [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-text-secondary"
+          onClick={() => {
+            onAddPhotos()
+            onClose()
+          }}
+        >
+          <ImagePlus />
+          {t('map.contextMenu.addPhotos')}
+        </button>
+      </div>
+    </>,
     document.body,
   )
 }

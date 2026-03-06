@@ -7,6 +7,7 @@ import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import locusifyLogo from '@/assets/locusify-fit.png'
 import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
+import { useLongPress } from '@/hooks/useLongPress'
 import { useVideoRecorder } from '@/hooks/useVideoRecorder'
 import { extractExifData } from '@/lib/exif'
 import { SettingsDrawer } from '@/pages/settings'
@@ -112,9 +113,24 @@ function MapSectionContent() {
   }, [])
 
   const handleMapContextMenu = useCallback((e: MapLayerMouseEvent) => {
+    if (contextMenuPos)
+      return // Already shown (e.g. from long-press)
     pendingLngLat.current = { lng: e.lngLat.lng, lat: e.lngLat.lat }
     setContextMenuPos({ x: e.originalEvent.clientX, y: e.originalEvent.clientY })
-  }, [])
+  }, [contextMenuPos])
+
+  // Long-press on mobile → open the same context menu
+  const longPressHandlers = useLongPress(
+    useCallback(({ clientX, clientY }: { clientX: number, clientY: number }) => {
+      const map = mapRef.current
+      if (!map)
+        return
+      const rect = map.getContainer().getBoundingClientRect()
+      const lngLat = map.unproject([clientX - rect.left, clientY - rect.top])
+      pendingLngLat.current = { lng: lngLat.lng, lat: lngLat.lat }
+      setContextMenuPos({ x: clientX, y: clientY })
+    }, []),
+  )
 
   const handleContextMenuAddPhotos = useCallback(() => {
     contextMenuFileInputRef.current?.click()
@@ -262,6 +278,7 @@ function MapSectionContent() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
         className="size-full isolate"
+        {...(!isReplayMode ? longPressHandlers : {})}
       >
         <Maplibre
           markers={displayMarkers}
