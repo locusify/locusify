@@ -1,39 +1,26 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getCorsHeaders } from '../_shared/cors.ts'
+import { getUserFromJWT } from '../_shared/auth.ts'
 
 Deno.serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req)
-
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
-
   try {
-    const supabase = createClient(
+    const { id: userId } = getUserFromJWT(req)
+
+    const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } },
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
     // Check Pro subscription
-    const { data: subscription } = await supabase
+    const { data: subscription } = await adminClient
       .from('subscriptions')
       .select('plan, status')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle()
 
     if (!subscription?.plan?.startsWith('pro') || subscription.status !== 'active') {
       return new Response(JSON.stringify({ error: 'Pro subscription required' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -82,31 +69,31 @@ Respond in JSON format:
       const errBody = await openaiRes.text()
       return new Response(JSON.stringify({ error: `OpenAI error: ${openaiRes.status}`, detail: errBody }), {
         status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
     const openaiData = await openaiRes.json()
     if (!openaiData.choices?.[0]?.message?.content) {
       return new Response(JSON.stringify({ error: 'Invalid OpenAI response' }), {
         status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
     const recommendation = JSON.parse(openaiData.choices[0].message.content)
 
     // Track usage
-    await supabase
+    await adminClient
       .from('usage_tracking')
-      .insert({ user_id: user.id, feature: 'ai_recommend' })
+      .insert({ user_id: userId, feature: 'ai_recommend' })
 
     return new Response(JSON.stringify(recommendation), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
   catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
 })

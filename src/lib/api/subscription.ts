@@ -6,10 +6,11 @@ async function invokeFunction<T>(name: string, body?: Record<string, unknown>): 
   if (!session)
     throw new Error('Not authenticated')
 
-  const res = await fetch(`${env.VITE_SUPABASE_URL}/functions/v1/${name}`, {
+  const res = await fetch(`/api/functions/${name}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${session.access_token}`,
+      'apikey': env.VITE_SUPABASE_ANON_KEY,
       'Content-Type': 'application/json',
     },
     body: body ? JSON.stringify(body) : undefined,

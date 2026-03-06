@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getCorsHeaders } from '../_shared/cors.ts'
 
 function generateCode(prefix: string): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // no 0/O/1/I to avoid confusion
@@ -13,12 +12,6 @@ function generateCode(prefix: string): string {
 }
 
 Deno.serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req)
-
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
-
   try {
     // Verify admin secret
     const adminSecret = Deno.env.get('ADMIN_SECRET')
@@ -26,7 +19,7 @@ Deno.serve(async (req) => {
     if (!adminSecret || providedSecret !== adminSecret) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -42,28 +35,28 @@ Deno.serve(async (req) => {
     if (count < 1 || count > 100) {
       return new Response(JSON.stringify({ error: 'count must be 1-100' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
     if (!['pro_monthly', 'pro_yearly'].includes(plan)) {
       return new Response(JSON.stringify({ error: 'plan must be pro_monthly or pro_yearly' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
     if (typeof duration_days !== 'number' || duration_days < 1 || duration_days > 3650) {
       return new Response(JSON.stringify({ error: 'duration_days must be 1-3650' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
     if (typeof max_uses !== 'number' || max_uses < 1 || max_uses > 10000) {
       return new Response(JSON.stringify({ error: 'max_uses must be 1-10000' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -93,18 +86,18 @@ Deno.serve(async (req) => {
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
     return new Response(JSON.stringify({ codes: data }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
   catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
 })

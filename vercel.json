@@ -1,9 +1,12 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "/[^.]+",
-      "dest": "/",
-      "status": 200
+      "source": "/api/functions/:path*",
+      "destination": "https://dnpxwowhdgwlzhjoxtkx.supabase.co/functions/v1/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
     }
   ]
 }

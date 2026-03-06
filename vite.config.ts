@@ -9,6 +9,14 @@ export default defineConfig({
   server: {
     port: 1046,
     host: true,
+    proxy: {
+      '/api/functions': {
+        target: 'https://dnpxwowhdgwlzhjoxtkx.supabase.co/functions/v1',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/functions/, ''),
+        secure: true,
+      },
+    },
   },
   build: {
     rollupOptions: {

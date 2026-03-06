@@ -1,27 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getCorsHeaders } from '../_shared/cors.ts'
+import { getUserFromJWT } from '../_shared/auth.ts'
 
 Deno.serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req)
-
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
-
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } },
-    )
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    const { id: userId } = getUserFromJWT(req)
 
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -32,13 +14,13 @@ Deno.serve(async (req) => {
     const { data: subscription } = await adminClient
       .from('subscriptions')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle()
 
     if (!subscription) {
       return new Response(JSON.stringify({ error: 'No subscription record' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -52,7 +34,7 @@ Deno.serve(async (req) => {
     if (!provider?.external_customer_id) {
       return new Response(JSON.stringify({ error: 'No Stripe subscription found' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -73,13 +55,13 @@ Deno.serve(async (req) => {
     const portal = await portalRes.json()
 
     return new Response(JSON.stringify({ url: portal.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
   catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
 })

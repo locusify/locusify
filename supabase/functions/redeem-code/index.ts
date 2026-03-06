@@ -1,40 +1,20 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { getCorsHeaders } from '../_shared/cors.ts'
+import { getUserFromJWT } from '../_shared/auth.ts'
 
 Deno.serve(async (req) => {
-  const corsHeaders = getCorsHeaders(req)
-
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
-
   try {
-    // User-scoped client for auth
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } },
-    )
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    const { id: userId } = getUserFromJWT(req)
 
     const { code } = await req.json()
     if (!code || typeof code !== 'string') {
       return new Response(JSON.stringify({ error: 'invalid_code' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
     const normalizedCode = code.trim().toUpperCase()
 
-    // Service-role client for DB operations (bypasses RLS)
     const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -50,7 +30,7 @@ Deno.serve(async (req) => {
     if (lookupError || !codeRow) {
       return new Response(JSON.stringify({ error: 'invalid_code' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -58,21 +38,21 @@ Deno.serve(async (req) => {
     if (!codeRow.is_active) {
       return new Response(JSON.stringify({ error: 'code_inactive' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
     if (codeRow.expires_at && new Date(codeRow.expires_at) < new Date()) {
       return new Response(JSON.stringify({ error: 'code_expired' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
     if (codeRow.current_uses >= codeRow.max_uses) {
       return new Response(JSON.stringify({ error: 'code_fully_used' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -80,14 +60,14 @@ Deno.serve(async (req) => {
     const { data: existing } = await adminClient
       .from('redemptions')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('code_id', codeRow.id)
       .maybeSingle()
 
     if (existing) {
       return new Response(JSON.stringify({ error: 'already_redeemed' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -101,7 +81,7 @@ Deno.serve(async (req) => {
     if (incrementError || !incremented) {
       return new Response(JSON.stringify({ error: 'code_fully_used' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
       })
     }
 
@@ -119,14 +99,14 @@ Deno.serve(async (req) => {
         current_period_end: periodEnd.toISOString(),
         cancel_at_period_end: false,
       })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
 
     // Record the redemption
     await adminClient
       .from('redemptions')
       .insert({
         code_id: codeRow.id,
-        user_id: user.id,
+        user_id: userId,
         plan: codeRow.plan,
         duration_days: codeRow.duration_days,
       })
@@ -137,13 +117,13 @@ Deno.serve(async (req) => {
       duration_days: codeRow.duration_days,
       period_end: periodEnd.toISOString(),
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
   catch (error) {
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   }
 })
