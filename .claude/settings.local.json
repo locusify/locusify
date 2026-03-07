@@ -99,7 +99,8 @@
       "Bash(security find-generic-password:*)",
       "Bash(security dump-keychain:*)",
       "Bash(curl:*)",
-      "Bash(docker pull:*)"
+      "Bash(docker pull:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": [],
