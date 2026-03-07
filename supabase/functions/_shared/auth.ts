@@ -2,7 +2,7 @@
  * Decode user identity from JWT payload.
  * The gateway has already verified the token — this only extracts claims.
  */
-export function getUserFromJWT(req: Request): { id: string; email: string } {
+export function getUserFromJWT(req: Request): { id: string, email: string } {
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
     throw new Error('Missing Authorization header')

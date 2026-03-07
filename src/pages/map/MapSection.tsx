@@ -8,6 +8,7 @@ import locusifyLogo from '@/assets/locusify-fit.png'
 import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { useLongPress } from '@/hooks/useLongPress'
+import { useRegionPhotoMapping } from '@/hooks/useRegionPhotoMapping'
 import { useVideoRecorder } from '@/hooks/useVideoRecorder'
 import { extractExifData } from '@/lib/exif'
 import { SettingsDrawer } from '@/pages/settings'
@@ -15,10 +16,10 @@ import { usePhotoStore } from '@/stores/photoStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { GPSDirection } from '@/types/map'
 import { AnnouncementDialog } from './components/AnnouncementDialog'
-import { OnboardingGuide } from './components/OnboardingGuide'
 import { GalleryDrawer } from './components/GalleryDrawer'
 import { MapContextMenu } from './components/MapContextMenu'
 import { MapMenuButton } from './components/MapMenuButton'
+import { OnboardingGuide } from './components/OnboardingGuide'
 import { SaveVideoDialog } from './components/SaveVideoDialog'
 import { TrajectoryOverlay } from './components/TrajectoryOverlay'
 import { getInitialViewStateForMarkers } from './utils'
@@ -36,6 +37,9 @@ function MapSectionContent() {
   const selectedMarkerId = usePhotoStore(s => s.selectedMarkerId)
   const setSelectedMarkerId = usePhotoStore(s => s.setSelectedMarkerId)
   const mapRef = useRef<MapRef>(null)
+
+  // Region photo mapping — auto GPS→country matching
+  useRegionPhotoMapping()
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
   const replayStatus = useReplayStore(s => s.status)
@@ -218,7 +222,10 @@ function MapSectionContent() {
       {/* Hide menu button during active recording (intro + playback) */}
       {!recordingActive && (
         <MapMenuButton
-          onUploadClick={() => { setUploadDrawerOpen(true); handleDismissGuide() }}
+          onUploadClick={() => {
+            setUploadDrawerOpen(true)
+            handleDismissGuide()
+          }}
           onRoutesClick={handleRoutesClick}
           onSettingsClick={() => setSettingsOpen(true)}
           onGalleryClick={() => setGalleryOpen(true)}
@@ -308,7 +315,7 @@ function MapSectionContent() {
         <Maplibre
           markers={displayMarkers}
           initialViewState={initialViewState}
-          autoFitBounds={displayMarkers.length > 0}
+          autoFitBounds={false}
           selectedMarkerId={isReplayMode ? null : selectedMarkerId}
           onMarkerClick={handleMarkerClick}
           onContextMenu={isReplayMode ? undefined : handleMapContextMenu}

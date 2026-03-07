@@ -19,7 +19,9 @@ export function OnboardingGuide({ open, onDismiss }: OnboardingGuideProps) {
     if (isTransitioning.current)
       return
     isTransitioning.current = true
-    setTimeout(() => { isTransitioning.current = false }, 300)
+    setTimeout(() => {
+      isTransitioning.current = false
+    }, 300)
 
     if (step < 2) {
       setStep(step + 1)
