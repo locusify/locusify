@@ -16,13 +16,15 @@ export function OnboardingGuide({ open, onDismiss }: OnboardingGuideProps) {
   const isTransitioning = useRef(false)
 
   const handleClick = useCallback(() => {
-    if (isTransitioning.current) return
+    if (isTransitioning.current)
+      return
     isTransitioning.current = true
     setTimeout(() => { isTransitioning.current = false }, 300)
 
-    if (step === 0) {
-      setStep(1)
-    } else {
+    if (step < 2) {
+      setStep(step + 1)
+    }
+    else {
       onDismiss()
     }
   }, [step, onDismiss])
@@ -105,7 +107,7 @@ export function OnboardingGuide({ open, onDismiss }: OnboardingGuideProps) {
               <div className="bg-fill-tertiary mx-4 h-px" />
 
               <div className="flex items-center justify-between p-4">
-                <StepIndicator current={0} total={2} />
+                <StepIndicator current={0} total={3} />
                 <span className="text-text-tertiary text-xs">
                   {t('guide.tapToContinue')}
                 </span>
@@ -155,7 +157,88 @@ export function OnboardingGuide({ open, onDismiss }: OnboardingGuideProps) {
               <div className="bg-fill-tertiary mx-4 h-px" />
 
               <div className="flex items-center justify-between p-4">
-                <StepIndicator current={1} total={2} />
+                <StepIndicator current={1} total={3} />
+                <span className="text-text-tertiary text-xs">
+                  {t('guide.tapToContinue')}
+                </span>
+              </div>
+            </m.div>
+          </m.div>
+        )}
+
+        {step === 2 && (
+          <m.div
+            key="step-2-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Spotlight — mirror MapControls layout: bottom-left, fragment mode is last button */}
+            <div className="pointer-events-none fixed bottom-4 left-2 flex flex-col gap-2 sm:left-4 sm:gap-3">
+              {/* Spacers for zoom group (2 buttons + divider) */}
+              <div className="flex flex-col overflow-hidden">
+                <div className="size-10 sm:size-12" />
+                <div className="size-10 sm:size-12" />
+              </div>
+              {/* Compass spacer */}
+              <div className="size-10 sm:size-12" />
+              {/* Geolocate spacer */}
+              <div className="size-10 sm:size-12" />
+              {/* Fragment mode button position */}
+              <div className="relative size-10 sm:size-12">
+                {/* Shadow overlay */}
+                <m.div
+                  className="absolute -inset-1.5 rounded-2xl"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)' }}
+                />
+                {/* Pulse ring */}
+                <m.div
+                  className="absolute -inset-1.5 rounded-2xl ring-2 ring-violet-400/80"
+                  animate={{
+                    boxShadow: [
+                      '0 0 0 0px rgba(167,139,250,0.4)',
+                      '0 0 0 8px rgba(167,139,250,0)',
+                    ],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'easeOut',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Step 3 card */}
+            <m.div
+              className={cn(glassPanel, 'fixed left-4 bottom-24 z-20 w-72 overflow-hidden sm:left-6 sm:bottom-28 sm:w-80')}
+              initial={{ scale: 0.92, y: 12, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.92, y: 12, opacity: 0 }}
+              transition={{ duration: 0.25, type: 'spring', stiffness: 400, damping: 28 }}
+            >
+              <div className="px-5 pt-5 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/15">
+                    <i className="i-mingcute-earth-line text-xl text-violet-400" />
+                  </div>
+                  <p className="text-text text-sm font-semibold leading-tight">
+                    {t('guide.step3.title')}
+                  </p>
+                </div>
+                <p className="text-text-secondary mt-3 text-sm leading-relaxed">
+                  {t('guide.step3.description')}
+                </p>
+              </div>
+
+              <div className="bg-fill-tertiary mx-4 h-px" />
+
+              <div className="flex items-center justify-between p-4">
+                <StepIndicator current={2} total={3} />
                 <span className="text-text-tertiary text-xs">
                   {t('guide.tapToContinue')}
                 </span>

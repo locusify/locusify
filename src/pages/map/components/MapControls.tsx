@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useMap } from 'react-map-gl/maplibre'
 import { cn, glassPanel } from '@/lib/utils'
+import { useRegionStore } from '@/stores/regionStore'
 
 interface MapControlsProps {
   onGeolocate?: (longitude: number, latitude: number) => void
@@ -11,6 +12,8 @@ interface MapControlsProps {
 export function MapControls({ onGeolocate }: MapControlsProps) {
   const { current: map } = useMap()
   const { t } = useTranslation()
+  const isFragmentMode = useRegionStore(s => s.isFragmentMode)
+  const toggleFragmentMode = useRegionStore(s => s.toggleFragmentMode)
 
   const handleZoomIn = () => {
     if (map) {
@@ -40,7 +43,7 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
           if (map) {
             map.flyTo({
               center: [longitude, latitude],
-              zoom: 14,
+              zoom: isFragmentMode ? 3 : 14,
               duration: 1000,
             })
           }
@@ -112,6 +115,28 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
           title={t('explory.controls.locate')}
         >
           <i className="i-mingcute-location-fill text-text size-5 transition-transform group-hover:scale-110 group-active:scale-95" />
+        </button>
+      </div>
+
+      {/* Fragment Mode Toggle */}
+      <div className={cn(glassPanel, 'overflow-hidden')}>
+        <button
+          type="button"
+          onClick={toggleFragmentMode}
+          className={cn(
+            'group flex size-10 items-center justify-center transition-colors sm:size-12',
+            isFragmentMode
+              ? 'bg-primary text-primary-foreground'
+              : 'hover:bg-fill-secondary active:bg-fill-tertiary',
+          )}
+          title={t('explory.controls.fragmentMode')}
+        >
+          <i
+            className={cn(
+              'size-5 transition-transform group-hover:scale-110 group-active:scale-95',
+              isFragmentMode ? 'i-mingcute-earth-fill' : 'i-mingcute-earth-line',
+            )}
+          />
         </button>
       </div>
     </m.div>

@@ -3,14 +3,16 @@ import type { MapLayerMouseEvent, MapRef, StyleSpecification } from 'react-map-g
 
 import type { PhotoMarker } from '@/types/map'
 import { useTheme } from 'next-themes'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
 import { useMapStore } from '@/stores/mapStore'
+import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 
 import { GeoJsonLayer } from './components/GeoJsonLayer'
 import { MapControls } from './components/MapControls'
 import { PhotoMarkerPin } from './components/PhotoMarkerPin'
+import { RegionFillLayer } from './components/RegionFillLayer'
 import { ReplayPhotoCard } from './components/replay/ReplayPhotoCard'
 import { TrajectoryController } from './components/TrajectoryController'
 import { TrajectoryLineLayer } from './components/TrajectoryLineLayer'
@@ -172,6 +174,8 @@ export function Maplibre({
   const mapStyle = (resolvedTheme === 'light' ? MapStyleLight : MapStyleDark) as StyleSpecification
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
+  const isFragmentMode = useRegionStore(s => s.isFragmentMode)
+  const setPreviousViewState = useRegionStore(s => s.setPreviousViewState)
   const registerMap = useMapStore(s => s.registerMap)
   const unregisterMap = useMapStore(s => s.unregisterMap)
   const [currentZoom, setCurrentZoom] = useState(initialViewState.zoom)
@@ -364,6 +368,32 @@ export function Maplibre({
     return () => clearTimeout(timer)
   }, [fitMapToBounds])
 
+  // Fragment mode: fly to global view on enter, restore previous view on exit
+  const prevFragmentMode = useRef(isFragmentMode)
+  const viewStateRef = useRef(viewState)
+  viewStateRef.current = viewState
+  useEffect(() => {
+    if (isFragmentMode === prevFragmentMode.current)
+      return
+    prevFragmentMode.current = isFragmentMode
+
+    if (isFragmentMode) {
+      // Save current view before flying out
+      setPreviousViewState({ ...viewStateRef.current })
+      const globalView = { longitude: 0, latitude: 20, zoom: 2.5 }
+      setViewState(globalView)
+      setCurrentZoom(globalView.zoom)
+    }
+    else {
+      const saved = useRegionStore.getState().previousViewState
+      if (saved) {
+        setViewState(saved)
+        setCurrentZoom(saved.zoom)
+        setPreviousViewState(null)
+      }
+    }
+  }, [isFragmentMode, setPreviousViewState])
+
   return (
     <div className={className} style={style}>
       <Map
@@ -382,12 +412,16 @@ export function Maplibre({
           setCurrentZoom(evt.viewState.zoom)
           setViewState(evt.viewState)
         }}
+        {...(isFragmentMode ? { minZoom: 2, maxZoom: 5 } : {})}
       >
         {/* Map Controls — hidden during replay (camera follows automatically) */}
         {!isReplayMode && <MapControls onGeolocate={onGeolocate} />}
 
-        {/* Photo Markers */}
-        {clusteredMarkers.map((clusterPoint) => {
+        {/* Region Fill Layer — country photo fills (below markers) */}
+        <RegionFillLayer />
+
+        {/* Photo Markers — hidden in fragment mode */}
+        {!isFragmentMode && clusteredMarkers.map((clusterPoint) => {
           const { marker, clusteredPhotos } = clusterPoint.properties
           if (!marker)
             return null
