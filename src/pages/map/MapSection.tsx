@@ -15,6 +15,7 @@ import { usePhotoStore } from '@/stores/photoStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { GPSDirection } from '@/types/map'
 import { AnnouncementDialog } from './components/AnnouncementDialog'
+import { OnboardingGuide } from './components/OnboardingGuide'
 import { GalleryDrawer } from './components/GalleryDrawer'
 import { MapContextMenu } from './components/MapContextMenu'
 import { MapMenuButton } from './components/MapMenuButton'
@@ -28,6 +29,7 @@ const Maplibre = lazy(() =>
 
 const ANNOUNCEMENT_VERSION = pkg.version
 const ANNOUNCEMENT_STORAGE_KEY = 'locusify:version'
+const GUIDE_STORAGE_KEY = 'locusify:onboarding-guide-dismissed'
 
 function MapSectionContent() {
   const markers = usePhotoStore(s => s.markers)
@@ -57,6 +59,9 @@ function MapSectionContent() {
   const [loginDrawerOpen, setLoginDrawerOpen] = useState(false)
   const [announcementOpen, setAnnouncementOpen] = useState(
     () => localStorage.getItem(ANNOUNCEMENT_STORAGE_KEY) !== ANNOUNCEMENT_VERSION,
+  )
+  const [guideOpen, setGuideOpen] = useState(
+    () => localStorage.getItem(GUIDE_STORAGE_KEY) !== 'true',
   )
 
   // Context menu state
@@ -110,6 +115,11 @@ function MapSectionContent() {
   const handleDismissAnnouncement = useCallback(() => {
     localStorage.setItem(ANNOUNCEMENT_STORAGE_KEY, ANNOUNCEMENT_VERSION)
     setAnnouncementOpen(false)
+  }, [])
+
+  const handleDismissGuide = useCallback(() => {
+    localStorage.setItem(GUIDE_STORAGE_KEY, 'true')
+    setGuideOpen(false)
   }, [])
 
   const handleMapContextMenu = useCallback((e: MapLayerMouseEvent) => {
@@ -208,7 +218,7 @@ function MapSectionContent() {
       {/* Hide menu button during active recording (intro + playback) */}
       {!recordingActive && (
         <MapMenuButton
-          onUploadClick={() => setUploadDrawerOpen(true)}
+          onUploadClick={() => { setUploadDrawerOpen(true); handleDismissGuide() }}
           onRoutesClick={handleRoutesClick}
           onSettingsClick={() => setSettingsOpen(true)}
           onGalleryClick={() => setGalleryOpen(true)}
@@ -254,6 +264,16 @@ function MapSectionContent() {
           <AnnouncementDialog
             open={announcementOpen}
             onClose={handleDismissAnnouncement}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Onboarding guide — shown once for new users */}
+      <AnimatePresence>
+        {guideOpen && markers.length === 0 && !announcementOpen && !isReplayMode && (
+          <OnboardingGuide
+            open
+            onDismiss={handleDismissGuide}
           />
         )}
       </AnimatePresence>

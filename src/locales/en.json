@@ -245,6 +245,14 @@
 
   "map.contextMenu.addPhotos": "Add Photos",
 
+  "guide.step1.title": "Upload Photos",
+  "guide.step1.description": "Tap the + button in the bottom-right corner to add GPS-tagged photos to the map",
+  "guide.step2.title": "Quick Add Photos",
+  "guide.step2.description.desktop": "You can also right-click anywhere on the map to quickly add photos to that spot",
+  "guide.step2.description.mobile": "You can also long-press anywhere on the map to quickly add photos to that spot",
+  "guide.dismiss": "Got it",
+  "guide.tapToContinue": "Tap anywhere to continue",
+
   "settings.section.subscription": "Subscription",
   "settings.subscription.currentPlan": "Current Plan",
   "settings.subscription.free": "Free",

@@ -167,7 +167,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
           )}
         </AnimatePresence>
 
-        <div className={cn(glassPanel, 'border-red/30 overflow-hidden')}>
+        <div data-onboarding="upload" className={cn(glassPanel, 'border-red/30 overflow-hidden')}>
           <button
             type="button"
             onClick={() => {

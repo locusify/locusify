@@ -245,6 +245,14 @@
 
   "map.contextMenu.addPhotos": "添加照片",
 
+  "guide.step1.title": "上传照片",
+  "guide.step1.description": "点击右下角 + 按钮，选择带有 GPS 信息的照片添加到地图",
+  "guide.step2.title": "快捷添加照片",
+  "guide.step2.description.desktop": "你也可以在地图上右键点击任意位置，快速添加照片到该地点",
+  "guide.step2.description.mobile": "你也可以在地图上长按任意位置，快速添加照片到该地点",
+  "guide.dismiss": "我知道了",
+  "guide.tapToContinue": "点击任意位置继续",
+
   "settings.section.subscription": "订阅",
   "settings.subscription.currentPlan": "当前套餐",
   "settings.subscription.free": "免费版",
