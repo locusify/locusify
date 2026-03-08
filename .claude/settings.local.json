@@ -100,7 +100,10 @@
       "Bash(security dump-keychain:*)",
       "Bash(curl:*)",
       "Bash(docker pull:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "WebFetch(domain:maplibre.org)",
+      "Bash(gh issue:*)",
+      "Bash(pnpm eslint:*)"
     ],
     "deny": [],
     "ask": [],
