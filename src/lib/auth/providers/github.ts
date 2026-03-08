@@ -3,7 +3,8 @@ import { GitHubIcon } from '@/components/ui/github-icon'
 import { env } from '@/lib/env'
 
 async function login(): Promise<void> {
-  window.location.href = `${env.VITE_API_BASE_URL}/api/v1/auth/oauth/github`
+  const redirectUri = `${window.location.origin}/auth/callback`
+  window.location.href = `${env.VITE_API_BASE_URL}/api/v1/auth/oauth/github?redirect_uri=${encodeURIComponent(redirectUri)}`
 }
 
 export const githubProvider: AuthProvider = {
