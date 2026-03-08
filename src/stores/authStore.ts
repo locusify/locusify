@@ -96,15 +96,17 @@ function buildUserProfile(profile: ProfileResponse): UserProfile {
 export async function handleOAuthCallback(accessToken: string, refreshToken: string) {
   setTokens(accessToken, refreshToken)
 
-  const me = await apiClient.get<AuthMeResponse>('/auth/me')
-  const profile = await fetchProfileSafe()
+  const [me, profile] = await Promise.all([
+    apiClient.get<AuthMeResponse>('/auth/me'),
+    fetchProfileSafe(),
+  ])
 
   useAuthStore.getState().setUser(buildAuthUser(me, profile))
   if (profile) {
     useAuthStore.getState().setProfile(buildUserProfile(profile))
   }
 
-  await useSubscriptionStore.getState().fetchSubscription()
+  useSubscriptionStore.getState().fetchSubscription().catch(console.error)
 }
 
 export async function logout() {

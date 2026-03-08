@@ -18,7 +18,7 @@ export const routes: RouteObject[] = [
   {
     path: '/auth/callback',
     element: (
-      <Suspense fallback={null}>
+      <Suspense fallback={<div className="flex min-h-dvh items-center justify-center"><p className="text-sm text-text/50">Signing in...</p></div>}>
         <AuthCallback />
       </Suspense>
     ),
