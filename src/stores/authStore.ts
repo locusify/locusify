@@ -1,8 +1,9 @@
-import type { User } from '@supabase/supabase-js'
 import type { AuthUser } from '@/lib/auth/types'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { supabase } from '@/lib/supabase'
+import defaultAvatar from '@/assets/locusify-fit.png'
+import { apiClient, ApiError } from '@/lib/api/client'
+import { clearTokens, getTokens, setTokens } from '@/lib/auth/token-storage'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 
 export interface UserProfile {
@@ -20,18 +21,6 @@ interface AuthState {
   setProfile: (profile: UserProfile | null) => void
   clearUser: () => void
   setLoggingIn: (v: boolean) => void
-}
-
-function mapSupabaseUser(user: User): AuthUser {
-  const rawProvider = user.app_metadata.provider
-  const provider: AuthUser['provider'] = rawProvider === 'github' ? 'github' : 'google'
-  return {
-    id: user.id,
-    name: user.user_metadata.full_name || user.user_metadata.name || user.user_metadata.user_name || 'User',
-    avatarUrl: user.user_metadata.avatar_url || '',
-    email: user.email,
-    provider,
-  }
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -55,46 +44,105 @@ export const useAuthStore = create<AuthState>()(
   ),
 )
 
-async function fetchProfileAndSubscription(userId: string) {
-  // Fetch profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, display_name, avatar_url, provider')
-    .eq('id', userId)
-    .maybeSingle()
+interface AuthMeResponse {
+  id: string
+  email: string
+  created_at: string
+  last_sign_in_at: string
+}
 
+interface ProfileResponse {
+  id: string
+  display_name: string | null
+  avatar_url: string | null
+  provider: string | null
+}
+
+/** Fetch profile, returning null if not found (404) */
+async function fetchProfileSafe(): Promise<ProfileResponse | null> {
+  try {
+    return await apiClient.get<ProfileResponse>('/profile')
+  }
+  catch (err) {
+    if (err instanceof ApiError && err.code === 'NOT_FOUND')
+      return null
+    throw err
+  }
+}
+
+/** Build AuthUser from /auth/me + optional profile */
+function buildAuthUser(me: AuthMeResponse, profile: ProfileResponse | null): AuthUser {
+  const p = profile?.provider
+  const provider: AuthUser['provider'] = p === 'github' ? 'github' : p === 'email' ? 'email' : 'google'
+  return {
+    id: me.id,
+    name: profile?.display_name ?? me.email ?? 'User',
+    avatarUrl: profile?.avatar_url || defaultAvatar,
+    email: me.email,
+    provider,
+  }
+}
+
+/** Build UserProfile from profile response */
+function buildUserProfile(profile: ProfileResponse): UserProfile {
+  return {
+    id: profile.id,
+    displayName: profile.display_name ?? '',
+    avatarUrl: profile.avatar_url ?? '',
+    provider: profile.provider ?? '',
+  }
+}
+
+export async function handleOAuthCallback(accessToken: string, refreshToken: string) {
+  setTokens(accessToken, refreshToken)
+
+  const me = await apiClient.get<AuthMeResponse>('/auth/me')
+  const profile = await fetchProfileSafe()
+
+  useAuthStore.getState().setUser(buildAuthUser(me, profile))
   if (profile) {
-    useAuthStore.getState().setProfile({
-      id: profile.id,
-      displayName: profile.display_name,
-      avatarUrl: profile.avatar_url,
-      provider: profile.provider,
-    })
+    useAuthStore.getState().setProfile(buildUserProfile(profile))
   }
 
-  // Fetch subscription
-  await useSubscriptionStore.getState().fetchSubscription(userId)
+  await useSubscriptionStore.getState().fetchSubscription()
+}
+
+export async function logout() {
+  try {
+    await apiClient.post('/auth/logout')
+  }
+  catch {
+    // Logout API failure is non-critical
+  }
+  clearTokens()
+  useAuthStore.getState().clearUser()
 }
 
 export async function initializeAuth() {
-  // Hydrate from existing session
-  const { data: { session } } = await supabase.auth.getSession()
-  if (session?.user) {
-    useAuthStore.getState().setUser(mapSupabaseUser(session.user))
-    fetchProfileAndSubscription(session.user.id).catch(console.error)
-  }
-  else {
+  const { accessToken } = getTokens()
+  if (!accessToken) {
     useAuthStore.getState().clearUser()
+    return
   }
 
-  // Listen for auth state changes (login, logout, token refresh)
-  supabase.auth.onAuthStateChange((_event, session) => {
-    if (session?.user) {
-      useAuthStore.getState().setUser(mapSupabaseUser(session.user))
-      fetchProfileAndSubscription(session.user.id).catch(console.error)
+  try {
+    const me = await apiClient.get<AuthMeResponse>('/auth/me')
+    const profile = await fetchProfileSafe()
+
+    useAuthStore.getState().setUser(buildAuthUser(me, profile))
+    if (profile) {
+      useAuthStore.getState().setProfile(buildUserProfile(profile))
     }
-    else {
+
+    useSubscriptionStore.getState().fetchSubscription().catch(console.error)
+  }
+  catch (err) {
+    if (err instanceof ApiError && err.code === 'UNAUTHORIZED') {
+      clearTokens()
       useAuthStore.getState().clearUser()
     }
-  })
+    else {
+      console.error('Failed to validate auth session:', err)
+    }
+  }
 }

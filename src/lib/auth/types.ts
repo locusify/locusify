@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 
-export type AuthProviderType = 'google' | 'github'
+export type AuthProviderType = 'google' | 'github' | 'email'
 
 export interface AuthUser {
   id: string

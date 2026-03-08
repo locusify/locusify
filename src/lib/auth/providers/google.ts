@@ -1,14 +1,9 @@
 import type { AuthProvider } from '../types'
 import { GoogleIcon } from '@/components/ui/google-icon'
-import { supabase } from '@/lib/supabase'
+import { env } from '@/lib/env'
 
 async function login(): Promise<void> {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: `${window.location.origin}/map` },
-  })
-  if (error)
-    throw error
+  window.location.href = `${env.VITE_API_BASE_URL}/api/v1/auth/oauth/google`
 }
 
 export const googleProvider: AuthProvider = {

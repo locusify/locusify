@@ -1,14 +1,9 @@
 import type { AuthProvider } from '../types'
 import { GitHubIcon } from '@/components/ui/github-icon'
-import { supabase } from '@/lib/supabase'
+import { env } from '@/lib/env'
 
 async function login(): Promise<void> {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'github',
-    options: { redirectTo: `${window.location.origin}/map` },
-  })
-  if (error)
-    throw error
+  window.location.href = `${env.VITE_API_BASE_URL}/api/v1/auth/oauth/github`
 }
 
 export const githubProvider: AuthProvider = {

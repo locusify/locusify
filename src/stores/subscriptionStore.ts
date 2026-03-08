@@ -1,9 +1,11 @@
 import { create } from 'zustand'
+import { apiClient } from '@/lib/api/client'
 import { env } from '@/lib/env'
-import { supabase } from '@/lib/supabase'
+
+export type Plan = 'free' | 'pro' | 'max'
 
 interface Subscription {
-  plan: string
+  plan: Plan
   status: string
   currentPeriodEnd: string | null
   cancelAtPeriodEnd: boolean
@@ -13,7 +15,7 @@ interface SubscriptionState {
   subscription: Subscription
   loading: boolean
   isPro: boolean
-  fetchSubscription: (userId: string) => Promise<void>
+  fetchSubscription: () => Promise<void>
   clear: () => void
 }
 
@@ -24,24 +26,24 @@ const defaultSubscription: Subscription = {
   cancelAtPeriodEnd: false,
 }
 
+interface SubscriptionResponse {
+  plan: Plan
+  status: string
+  current_period_end: string | null
+  cancel_at_period_end: boolean
+}
+
+const PAID_PLANS: Plan[] = ['pro', 'max']
+
 export const useSubscriptionStore = create<SubscriptionState>(set => ({
   subscription: defaultSubscription,
   loading: false,
   isPro: env.VITE_DEBUG_PRO,
 
-  fetchSubscription: async (userId: string) => {
+  fetchSubscription: async () => {
     set({ loading: true })
     try {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('plan, status, current_period_end, cancel_at_period_end')
-        .eq('user_id', userId)
-        .maybeSingle()
-
-      if (error || !data) {
-        set({ subscription: defaultSubscription, isPro: env.VITE_DEBUG_PRO, loading: false })
-        return
-      }
+      const data = await apiClient.get<SubscriptionResponse>('/subscriptions')
 
       const subscription: Subscription = {
         plan: data.plan,
@@ -52,7 +54,7 @@ export const useSubscriptionStore = create<SubscriptionState>(set => ({
 
       set({
         subscription,
-        isPro: env.VITE_DEBUG_PRO || (data.plan.startsWith('pro')
+        isPro: env.VITE_DEBUG_PRO || (PAID_PLANS.includes(data.plan)
           && data.status === 'active'
           && (!data.current_period_end || new Date(data.current_period_end) > new Date())),
         loading: false,

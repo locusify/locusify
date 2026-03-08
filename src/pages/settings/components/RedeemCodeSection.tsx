@@ -4,21 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
-import { redeemCode } from '@/lib/api/subscription'
+import { ApiError } from '@/lib/api/client'
+import { redeemCode } from '@/lib/api/redemption'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 
-const ERROR_CODES = [
-  'invalid_code',
-  'code_inactive',
-  'code_expired',
-  'code_fully_used',
-  'already_redeemed',
-] as const
-
 export const RedeemCodeSection: FC = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const user = useAuthStore(s => s.user)
   const fetchSubscription = useSubscriptionStore(s => s.fetchSubscription)
   const [code, setCode] = useState('')
@@ -31,18 +24,17 @@ export const RedeemCodeSection: FC = () => {
 
     setLoading(true)
     try {
-      const result = await redeemCode(trimmed)
-      await fetchSubscription(user.id)
+      await redeemCode(trimmed)
+      await fetchSubscription()
       setCode('')
-      toast.success(t('redeem.success', {
-        plan: result.plan,
-        date: new Date(result.period_end).toLocaleDateString(),
-      }))
+      toast.success(t('redeem.success'))
     }
     catch (err) {
-      const message = err instanceof Error ? err.message : ''
-      const errorCode = ERROR_CODES.find(c => message.includes(c))
-      toast.error(errorCode ? t(`redeem.error.${errorCode}`) : t('redeem.error.generic'))
+      const lang = i18n.language.startsWith('zh') ? 'zh' : 'en'
+      const message = err instanceof ApiError
+        ? err.getLocalizedMessage(lang)
+        : t('redeem.error.generic')
+      toast.error(message)
     }
     finally {
       setLoading(false)

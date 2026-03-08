@@ -1,8 +1,9 @@
 import type { FC } from 'react'
+import type { Plan } from '@/stores/subscriptionStore'
 import { m } from 'motion/react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { useNavigate } from 'react-router'
 import {
   Drawer,
   DrawerContent,
@@ -10,8 +11,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
-import { createCheckoutSession, createPortalSession } from '@/lib/api/subscription'
-import { env } from '@/lib/env'
 import { formatDate } from '@/lib/formatters'
 import { cn, glassPanel } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
@@ -22,7 +21,7 @@ interface PricingDrawerProps {
   onOpenChange: (open: boolean) => void
 }
 
-type BillingCycle = 'monthly' | 'yearly'
+const PLAN_ORDER: Record<Plan, number> = { free: 0, pro: 1, max: 2 }
 
 const freeFeatures = [
   'pricing.feature.basicTemplates',
@@ -32,66 +31,29 @@ const freeFeatures = [
 
 const proFeatures = [
   'pricing.feature.allTemplates',
-  'pricing.feature.aiRecommend',
-  'pricing.feature.aiCaptions',
   'pricing.feature.customization',
-  'pricing.feature.prioritySupport',
 ]
 
-const proPrice = {
-  monthly: { price: '$8.99', period: '/mo', originalPrice: '$9.99', discount: '11%' },
-  yearly: { price: '$79.99', period: '/yr', originalPrice: '$119.88', discount: '33%' },
-} as const
+const maxFeatures = [
+  'pricing.feature.allInPro',
+  'pricing.feature.prioritySupport',
+  'pricing.feature.earlyAccess',
+]
 
 export const PricingDrawer: FC<PricingDrawerProps> = ({ open, onOpenChange }) => {
   const { t } = useTranslation()
   const user = useAuthStore(s => s.user)
   const { isPro, subscription } = useSubscriptionStore()
-  const [loading, setLoading] = useState<string | null>(null)
-  const [billing, setBilling] = useState<BillingCycle>('yearly')
+  const navigate = useNavigate()
+  const [showDetails, setShowDetails] = useState(false)
 
-  const currentProPrice = proPrice[billing]
+  const currentPlan = subscription.plan
+  const currentOrder = PLAN_ORDER[currentPlan]
 
-  const handleSubscribe = async () => {
-    if (!user || isPro)
-      return
-
-    setLoading('pro')
-    try {
-      const priceId = billing === 'monthly'
-        ? env.VITE_STRIPE_MONTHLY_PRICE_ID
-        : env.VITE_STRIPE_YEARLY_PRICE_ID
-      if (!priceId) {
-        toast.error(t('pricing.error.noPriceId'))
-        return
-      }
-      const url = await createCheckoutSession(priceId)
-      window.location.href = url
-    }
-    catch (err) {
-      console.error('Subscription error:', err)
-    }
-    finally {
-      setLoading(null)
-    }
-  }
-
-  const [showManagePanel, setShowManagePanel] = useState(false)
-  const [portalUrl, setPortalUrl] = useState<string | null>(null)
-
-  const handleManage = async () => {
-    setShowManagePanel(prev => !prev)
-    // Always fetch a fresh portal URL — sessions expire within minutes
-    setLoading('manage')
-    try {
-      const url = await createPortalSession()
-      setPortalUrl(url)
-    }
-    catch (err) {
-      console.error('Portal session error:', err)
-    }
-    finally {
-      setLoading(null)
+  const handleUpgrade = () => {
+    onOpenChange(false)
+    if (user) {
+      navigate('/map')
     }
   }
 
@@ -104,81 +66,47 @@ export const PricingDrawer: FC<PricingDrawerProps> = ({ open, onOpenChange }) =>
         </DrawerHeader>
         <div className={cn(glassPanel, 'flex flex-col overflow-hidden rounded-t-2xl')}>
           <div className="flex-1 overflow-y-auto p-4 pb-safe">
-            {/* Header + billing toggle */}
-            <div className="mb-5 flex items-start justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-text">{t('pricing.title')}</h2>
-                <p className="mt-1 text-xs text-text/50">{t('pricing.description')}</p>
-              </div>
-
-              {/* Billing cycle toggle — hidden when already Pro */}
-              {!isPro && (
-                <div className="flex shrink-0 items-center gap-0.5 rounded-lg border border-fill-tertiary bg-material-thick p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setBilling('monthly')}
-                    className={cn(
-                      'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors',
-                      billing === 'monthly'
-                        ? 'bg-text/10 text-text'
-                        : 'text-text/40 hover:text-text/60',
-                    )}
-                  >
-                    {t('pricing.monthly')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBilling('yearly')}
-                    className={cn(
-                      'rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors',
-                      billing === 'yearly'
-                        ? 'bg-text/10 text-text'
-                        : 'text-text/40 hover:text-text/60',
-                    )}
-                  >
-                    {t('pricing.yearly')}
-                  </button>
-                </div>
-              )}
+            {/* Header */}
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold text-text">{t('pricing.title')}</h2>
+              <p className="mt-1 text-xs text-text/50">{t('pricing.description')}</p>
             </div>
 
-            {/* Two-column: Free | Pro */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* Free card */}
-              <m.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35 }}
-                className="relative overflow-hidden rounded-xl border border-fill-tertiary bg-material-thick p-4"
-              >
-                <h3 className="text-sm font-semibold text-text">
-                  {t('pricing.plan.free')}
-                </h3>
-                <div className="mt-2 flex items-baseline gap-0.5">
-                  <span className="text-3xl font-extrabold tracking-tighter text-text">
+            {/* Free card - compact */}
+            <m.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+              className="rounded-xl border border-fill-tertiary bg-material-thick p-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-baseline gap-2">
+                  <h3 className="text-sm font-semibold text-text">{t('pricing.plan.free')}</h3>
+                  <span className="text-lg font-extrabold tracking-tighter text-text">
                     {t('pricing.plan.free.price')}
                   </span>
                 </div>
-
-                <ul className="mt-3 space-y-1.5">
-                  {freeFeatures.map(feat => (
-                    <li key={feat} className="flex items-start gap-1.5 text-[11px] text-text/60">
-                      <i className="i-mingcute-check-line mt-0.5 shrink-0 text-text/30" />
-                      <span>{t(feat)}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div
+                <span
                   className={cn(
-                    'mt-4 w-full rounded-lg py-2 text-center text-xs font-medium',
-                    'bg-text/5 text-text/40',
+                    'rounded-lg px-2 py-1 text-[10px] font-medium',
+                    currentPlan === 'free' ? 'bg-text/10 text-text' : 'bg-text/5 text-text/40',
                   )}
                 >
-                  {isPro ? t('pricing.included') : t('pricing.currentPlan')}
-                </div>
-              </m.div>
+                  {currentPlan === 'free' ? t('pricing.currentPlan') : t('pricing.included')}
+                </span>
+              </div>
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                {freeFeatures.map(feat => (
+                  <li key={feat} className="flex items-center gap-1 text-[10px] text-text/50">
+                    <i className="i-mingcute-check-line shrink-0 text-text/30" />
+                    <span>{t(feat)}</span>
+                  </li>
+                ))}
+              </ul>
+            </m.div>
 
+            {/* Pro + Max grid */}
+            <div className="mt-3 grid grid-cols-2 gap-3">
               {/* Pro card */}
               <m.div
                 initial={{ opacity: 0, y: 20 }}
@@ -186,7 +114,6 @@ export const PricingDrawer: FC<PricingDrawerProps> = ({ open, onOpenChange }) =>
                 transition={{ delay: 0.1, duration: 0.35 }}
                 className="relative overflow-hidden rounded-xl border border-sky-400/50 bg-sky-400/5 p-4"
               >
-                {/* Animated border glow */}
                 <div
                   className="pointer-events-none absolute inset-0 rounded-xl"
                   style={{
@@ -196,55 +123,14 @@ export const PricingDrawer: FC<PricingDrawerProps> = ({ open, onOpenChange }) =>
                   }}
                 />
 
-                {isPro
-                  ? (
-                      <>
-                        {/* Plan name + plan badge */}
-                        <div className="relative flex items-center gap-2">
-                          <h3 className="text-sm font-semibold text-text">Pro</h3>
-                          <span className="rounded-full bg-sky-400/15 px-1.5 py-0.5 text-[9px] font-bold text-sky-400">
-                            {subscription.plan === 'pro_yearly' ? t('pricing.yearly') : t('pricing.monthly')}
-                          </span>
-                        </div>
-
-                        <div className="relative mt-2 text-[11px] text-text/40">
-                          {t('pricing.currentPlan')}
-                        </div>
-                      </>
-                    )
-                  : (
-                      <>
-                        {/* Plan name + discount badge */}
-                        <div className="relative flex items-center gap-2">
-                          <h3 className="text-sm font-semibold text-text">Pro</h3>
-                          <span className="rounded-full bg-sky-400/15 px-1.5 py-0.5 text-[9px] font-bold text-sky-400">
-                            -
-                            {currentProPrice.discount}
-                          </span>
-                        </div>
-
-                        {/* Strikethrough original price */}
-                        <p className="relative mt-1 text-[11px] text-text/40 line-through">
-                          {currentProPrice.originalPrice}
-                        </p>
-
-                        {/* Large price with animation */}
-                        <m.div
-                          key={billing}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="relative mt-1 flex items-baseline gap-0.5"
-                        >
-                          <span className="text-3xl font-extrabold tracking-tighter text-text">
-                            {currentProPrice.price}
-                          </span>
-                          <span className="text-xs text-text/50">
-                            {currentProPrice.period}
-                          </span>
-                        </m.div>
-                      </>
-                    )}
+                <div className="relative flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-text">{t('pricing.plan.pro')}</h3>
+                  {currentPlan === 'pro' && (
+                    <span className="rounded-full bg-sky-400/15 px-1.5 py-0.5 text-[9px] font-bold text-sky-400">
+                      {t('pricing.currentPlan')}
+                    </span>
+                  )}
+                </div>
 
                 <ul className="relative mt-3 space-y-1.5">
                   {proFeatures.map(feat => (
@@ -255,73 +141,123 @@ export const PricingDrawer: FC<PricingDrawerProps> = ({ open, onOpenChange }) =>
                   ))}
                 </ul>
 
-                {isPro
+                {currentPlan === 'pro'
                   ? (
-                      <>
+                      <button
+                        type="button"
+                        onClick={() => setShowDetails(prev => !prev)}
+                        className={cn(
+                          'relative mt-4 w-full rounded-lg py-2 text-xs font-medium transition-colors',
+                          'bg-sky-400 text-white hover:bg-sky-500',
+                        )}
+                      >
+                        {t('pricing.manage')}
+                      </button>
+                    )
+                  : currentOrder > PLAN_ORDER.pro
+                    ? (
+                        <div className="relative mt-4 w-full rounded-lg bg-text/5 py-2 text-center text-xs font-medium text-text/40">
+                          {t('pricing.included')}
+                        </div>
+                      )
+                    : (
                         <button
                           type="button"
-                          disabled={loading === 'manage'}
-                          onClick={handleManage}
+                          onClick={handleUpgrade}
                           className={cn(
                             'relative mt-4 w-full rounded-lg py-2 text-xs font-medium transition-colors',
                             'bg-sky-400 text-white hover:bg-sky-500',
-                            loading === 'manage' && 'animate-pulse',
                           )}
                         >
-                          {loading === 'manage' ? t('pricing.processing') : t('pricing.manage')}
+                          {t('pricing.useRedeemCode')}
                         </button>
+                      )}
+              </m.div>
 
-                        {showManagePanel && (
-                          <m.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="relative mt-3 overflow-hidden rounded-lg border border-fill-tertiary bg-material-thick p-3"
-                          >
-                            <div className="space-y-1.5 text-[11px] text-text/60">
-                              {subscription.currentPeriodEnd
-                                ? (
-                                    <>
-                                      <p>{t('pricing.sub.expires', { date: formatDate(new Date(subscription.currentPeriodEnd), { year: 'numeric', month: 'short', day: 'numeric' }) })}</p>
-                                      <p>{t('pricing.sub.daysRemaining', { count: Math.max(0, Math.ceil((new Date(subscription.currentPeriodEnd).getTime() - Date.now()) / 86400000)) })}</p>
-                                    </>
-                                  )
-                                : <p>{t('pricing.sub.noExpiry')}</p>}
-                              {subscription.cancelAtPeriodEnd && (
-                                <p className="text-amber-400">{t('pricing.sub.willNotRenew')}</p>
-                              )}
-                            </div>
+              {/* Max card */}
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.35 }}
+                className="relative overflow-hidden rounded-xl border border-violet-400/50 bg-violet-400/5 p-4"
+              >
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-xl"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent 0%, rgba(167,139,250,0.15) 50%, transparent 100%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'shimmer 3s ease-in-out infinite',
+                  }}
+                />
 
-                            {portalUrl && (
-                              <a
-                                href={portalUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-2.5 flex items-center gap-1 text-[11px] font-medium text-sky-400 hover:text-sky-300"
-                              >
-                                {t('pricing.sub.manageOnStripe')}
-                                <i className="i-mingcute-external-link-line text-xs" />
-                              </a>
-                            )}
-                          </m.div>
+                <div className="relative flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-text">{t('pricing.plan.max')}</h3>
+                  {currentPlan === 'max' && (
+                    <span className="rounded-full bg-violet-400/15 px-1.5 py-0.5 text-[9px] font-bold text-violet-400">
+                      {t('pricing.currentPlan')}
+                    </span>
+                  )}
+                </div>
+
+                <ul className="relative mt-3 space-y-1.5">
+                  {maxFeatures.map(feat => (
+                    <li key={feat} className="flex items-start gap-1.5 text-[11px] text-text/60">
+                      <i className="i-mingcute-check-line mt-0.5 shrink-0 text-violet-400" />
+                      <span>{t(feat)}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {currentPlan === 'max'
+                  ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowDetails(prev => !prev)}
+                        className={cn(
+                          'relative mt-4 w-full rounded-lg py-2 text-xs font-medium transition-colors',
+                          'bg-violet-400 text-white hover:bg-violet-500',
                         )}
-                      </>
+                      >
+                        {t('pricing.manage')}
+                      </button>
                     )
                   : (
                       <button
                         type="button"
-                        disabled={loading !== null}
-                        onClick={handleSubscribe}
+                        onClick={handleUpgrade}
                         className={cn(
                           'relative mt-4 w-full rounded-lg py-2 text-xs font-medium transition-colors',
-                          'bg-sky-400 text-white hover:bg-sky-500',
-                          loading === 'pro' && 'animate-pulse',
+                          'bg-violet-400 text-white hover:bg-violet-500',
                         )}
                       >
-                        {loading === 'pro' ? t('pricing.processing') : t('pricing.upgrade')}
+                        {t('pricing.useRedeemCode')}
                       </button>
                     )}
               </m.div>
             </div>
+
+            {/* Subscription details - shown below grid when manage is clicked */}
+            {isPro && showDetails && (
+              <m.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-3 overflow-hidden rounded-xl border border-fill-tertiary bg-material-thick p-3"
+              >
+                <div className="space-y-1.5 text-[11px] text-text/60">
+                  {subscription.currentPeriodEnd
+                    ? (
+                        <>
+                          <p>{t('pricing.sub.expires', { date: formatDate(new Date(subscription.currentPeriodEnd), { year: 'numeric', month: 'short', day: 'numeric' }) })}</p>
+                          <p>{t('pricing.sub.daysRemaining', { count: Math.max(0, Math.ceil((new Date(subscription.currentPeriodEnd).getTime() - Date.now()) / 86400000)) })}</p>
+                        </>
+                      )
+                    : <p>{t('pricing.sub.noExpiry')}</p>}
+                  {subscription.cancelAtPeriodEnd && (
+                    <p className="text-amber-400">{t('pricing.sub.willNotRenew')}</p>
+                  )}
+                </div>
+              </m.div>
+            )}
           </div>
         </div>
 

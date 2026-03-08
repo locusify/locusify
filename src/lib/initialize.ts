@@ -8,7 +8,7 @@ async function initialize() {
   await import('@/i18n')
   /** Initialize React Scan */
   await initializeReactScan()
-  /** Initialize Supabase Auth listener */
+  /** Initialize Auth */
   await initializeAuth()
 }
 

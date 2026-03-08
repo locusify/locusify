@@ -1,14 +1,16 @@
-export type Feature = 'ai_recommend' | 'ai_captions' | 'premium_templates'
+import type { Plan } from '@/stores/subscriptionStore'
 
-const PRO_PLANS = ['pro_monthly', 'pro_yearly']
-const PRO_FEATURES: Feature[] = ['ai_recommend', 'ai_captions', 'premium_templates']
+export type Feature = 'premium_templates'
 
-export function canUse(feature: Feature, plan: string): boolean {
-  if (PRO_FEATURES.includes(feature))
-    return PRO_PLANS.includes(plan)
+const PAID_PLANS: Plan[] = ['pro', 'max']
+const PAID_FEATURES: Feature[] = ['premium_templates']
+
+export function canUse(feature: Feature, plan: Plan): boolean {
+  if (PAID_FEATURES.includes(feature))
+    return PAID_PLANS.includes(plan)
   return true
 }
 
-export function isPro(plan: string): boolean {
-  return PRO_PLANS.includes(plan)
+export function isPro(plan: Plan): boolean {
+  return PAID_PLANS.includes(plan)
 }

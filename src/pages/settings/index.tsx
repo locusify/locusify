@@ -59,11 +59,7 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange }) 
                         {t('settings.subscription.currentPlan')}
                       </p>
                       <p className="text-xs text-text/50">
-                        {isPro
-                          ? subscription.plan === 'pro_monthly'
-                            ? t('settings.subscription.proMonthly')
-                            : t('settings.subscription.proYearly')
-                          : t('settings.subscription.free')}
+                        {t(`settings.subscription.${subscription.plan}`)}
                       </p>
                     </div>
                     <button

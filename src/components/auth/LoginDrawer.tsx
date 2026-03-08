@@ -3,6 +3,7 @@ import type { AuthProvider, AuthProviderType } from '@/lib/auth/types'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { EmailLoginForm } from '@/components/auth/EmailLoginForm'
 import {
   Drawer,
   DrawerContent,
@@ -13,9 +14,8 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
 import { getAuthProviders } from '@/lib/auth'
-import { supabase } from '@/lib/supabase'
 import { cn, glassPanel } from '@/lib/utils'
-import { useAuthStore } from '@/stores/authStore'
+import { logout, useAuthStore } from '@/stores/authStore'
 
 interface LoginDrawerProps {
   open: boolean
@@ -47,7 +47,7 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
   }, [isLoggingIn, setLoggingIn, t])
 
   const handleLogout = useCallback(async () => {
-    await supabase.auth.signOut()
+    await logout()
     onOpenChange(false)
   }, [onOpenChange])
 
@@ -93,6 +93,14 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
                     </div>
 
                     <Separator className="bg-fill-secondary" />
+
+                    <EmailLoginForm onSuccess={() => onOpenChange(false)} />
+
+                    <div className="flex items-center gap-3">
+                      <Separator className="bg-fill-secondary flex-1" />
+                      <span className="text-text-secondary text-xs">{t('auth.email.separator')}</span>
+                      <Separator className="bg-fill-secondary flex-1" />
+                    </div>
 
                     <div className="flex flex-col gap-3">
                       {providers.map((provider) => {
