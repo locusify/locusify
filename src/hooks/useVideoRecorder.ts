@@ -84,14 +84,11 @@ class ScreenRecordingSession {
   }
 
   start() {
-    // Hide cursor so it doesn't appear in the recording
-    document.documentElement.style.cursor = 'none'
     // Timeslice of 1s ensures periodic data output and avoids green-frame issues
     this.recorder.start(1000)
   }
 
   stop() {
-    document.documentElement.style.cursor = ''
     if (this.recorder.state !== 'inactive') {
       this.callbacks.onStopping()
       try {
@@ -104,7 +101,6 @@ class ScreenRecordingSession {
   }
 
   dispose() {
-    document.documentElement.style.cursor = ''
     if (this.recorder.state !== 'inactive') {
       try {
         this.recorder.stop()
@@ -189,11 +185,16 @@ export function useVideoRecorder() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `locusify-replay-${Date.now()}.${ext}`
+    a.download = `locusify-${Date.now()}.${ext}`
     a.click()
     setTimeout(() => URL.revokeObjectURL(url), 10000)
     setPendingVideo(null)
   }, [pendingVideo])
+
+  /** Stop the active recording session (triggers processing → pendingVideo). */
+  const stopRecording = useCallback(() => {
+    sessionRef.current?.stop()
+  }, [])
 
   const discardVideo = useCallback(() => {
     sessionRef.current?.dispose()
@@ -215,6 +216,7 @@ export function useVideoRecorder() {
     status,
     pendingVideo,
     startRecording,
+    stopRecording,
     saveVideo,
     discardVideo,
     isSupported: status !== 'unsupported',

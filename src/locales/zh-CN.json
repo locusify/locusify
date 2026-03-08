@@ -358,5 +358,13 @@
   "redeem.error.code_expired": "此兑换码已过期",
   "redeem.error.code_fully_used": "此兑换码已被全部使用",
   "redeem.error.already_redeemed": "您已兑换过此兑换码",
-  "redeem.error.generic": "兑换失败，请重试"
+  "redeem.error.generic": "兑换失败，请重试",
+
+  "stats.bar.duration": "历时",
+  "stats.bar.countries": "点亮国家",
+  "stats.bar.cities": "点亮城市",
+  "stats.bar.distance": "总里程",
+  "stats.bar.scanQr": "扫码查看足迹",
+  "stats.bar.durationUnit": "天",
+  "stats.bar.distanceUnit": "公里"
 }

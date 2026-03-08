@@ -134,7 +134,7 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
           <i
             className={cn(
               'size-5 transition-transform group-hover:scale-110 group-active:scale-95',
-              isFragmentMode ? 'i-mingcute-earth-fill' : 'i-mingcute-earth-line',
+              isFragmentMode ? 'i-mingcute-earth-fill' : 'i-mingcute-earth-line text-text',
             )}
           />
         </button>

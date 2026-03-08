@@ -3,23 +3,26 @@ import type { PhotoMarker } from '@/types/map'
 import type { Photo } from '@/types/photo'
 import pkg from '@pkg'
 import { AnimatePresence, m } from 'motion/react'
-import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import locusifyLogo from '@/assets/locusify-fit.png'
+import { lazy, useCallback, useMemo, useRef, useState } from 'react'
 import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { useLongPress } from '@/hooks/useLongPress'
+import { useRecordingFlow } from '@/hooks/useRecordingFlow'
 import { useRegionPhotoMapping } from '@/hooks/useRegionPhotoMapping'
-import { useVideoRecorder } from '@/hooks/useVideoRecorder'
 import { extractExifData } from '@/lib/exif'
 import { SettingsDrawer } from '@/pages/settings'
+import { useGlobeOrbitStore } from '@/stores/globeOrbitStore'
 import { usePhotoStore } from '@/stores/photoStore'
+import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { GPSDirection } from '@/types/map'
 import { AnnouncementDialog } from './components/AnnouncementDialog'
 import { GalleryDrawer } from './components/GalleryDrawer'
+import { GlobeOrbitOverlay } from './components/GlobeOrbitOverlay'
 import { MapContextMenu } from './components/MapContextMenu'
 import { MapMenuButton } from './components/MapMenuButton'
 import { OnboardingGuide } from './components/OnboardingGuide'
+import { ReplayIntroOverlay } from './components/replay/ReplayIntroOverlay'
 import { SaveVideoDialog } from './components/SaveVideoDialog'
 import { TrajectoryOverlay } from './components/TrajectoryOverlay'
 import { getInitialViewStateForMarkers } from './utils'
@@ -41,23 +44,34 @@ function MapSectionContent() {
   // Region photo mapping — auto GPS→country matching
   useRegionPhotoMapping()
 
+  const isFragmentMode = useRegionStore(s => s.isFragmentMode)
+
   const isReplayMode = useReplayStore(s => s.isReplayMode)
-  const replayStatus = useReplayStore(s => s.status)
   const prepareReplay = useReplayStore(s => s.prepareReplay)
   const exitReplay = useReplayStore(s => s.exitReplay)
-  const recordingActive = useReplayStore(s => s.recordingActive)
+
+  const isOrbiting = useGlobeOrbitStore(s => s.isOrbiting)
+  const startOrbit = useGlobeOrbitStore(s => s.startOrbit)
+  const exitOrbit = useGlobeOrbitStore(s => s.exitOrbit)
 
   const {
-    startRecording,
-    pendingVideo,
-    saveVideo,
-    discardVideo,
+    recordingActive,
+    introVisible,
+    videoDialogOpen,
     isRecording,
     isProcessing,
-  } = useVideoRecorder()
+    pendingVideo,
+    beginRecording,
+    showIntro,
+    onIntroComplete,
+    saveVideo,
+    discardVideo,
+    exitRecording,
+  } = useRecordingFlow()
+
+  const templateConfig = useReplayStore(s => s.templateConfig)
 
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
-  const [videoDialogOpen, setVideoDialogOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [galleryOpen, setGalleryOpen] = useState(false)
   const [loginDrawerOpen, setLoginDrawerOpen] = useState(false)
@@ -73,16 +87,6 @@ function MapSectionContent() {
   const contextMenuFileInputRef = useRef<HTMLInputElement>(null)
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number, y: number } | null>(null)
 
-  // Show dialog 2 seconds after replay completes (only if recording happened)
-  useEffect(() => {
-    if (replayStatus !== 'completed')
-      return
-    if (!isRecording && !pendingVideo)
-      return
-    const t = setTimeout(() => setVideoDialogOpen(true), 2000)
-    return () => clearTimeout(t)
-  }, [replayStatus, isRecording, pendingVideo])
-
   const handleMarkerClick = useCallback((marker: PhotoMarker) => {
     setSelectedMarkerId(selectedMarkerId === marker.id ? null : marker.id)
   }, [selectedMarkerId, setSelectedMarkerId])
@@ -92,29 +96,20 @@ function MapSectionContent() {
   }, [markers])
 
   const handleRoutesClick = useCallback(() => {
-    prepareReplay(markers)
-  }, [prepareReplay, markers])
-
-  const handleStartReplay = useCallback(async (): Promise<void> => {
-    discardVideo()
-    await startRecording()
-  }, [startRecording, discardVideo])
+    if (isFragmentMode) {
+      const center = mapRef.current?.getMap()?.getCenter()
+      startOrbit(center?.lng ?? 0, center?.lat ?? 20)
+    }
+    else {
+      prepareReplay(markers)
+    }
+  }, [isFragmentMode, prepareReplay, markers, startOrbit])
 
   const handleExitReplay = useCallback(() => {
     exitReplay()
-    discardVideo()
-    setVideoDialogOpen(false)
-  }, [exitReplay, discardVideo])
-
-  const handleSaveVideo = useCallback(() => {
-    saveVideo()
-    setVideoDialogOpen(false)
-  }, [saveVideo])
-
-  const handleDiscardVideo = useCallback(() => {
-    discardVideo()
-    setVideoDialogOpen(false)
-  }, [discardVideo])
+    exitOrbit()
+    exitRecording()
+  }, [exitReplay, exitOrbit, exitRecording])
 
   const handleDismissAnnouncement = useCallback(() => {
     localStorage.setItem(ANNOUNCEMENT_STORAGE_KEY, ANNOUNCEMENT_VERSION)
@@ -216,11 +211,12 @@ function MapSectionContent() {
 
   const hasEnoughPhotos = markers.length >= 2
   const displayMarkers = isReplayMode ? [] : markers
+  const isInAnyReplay = isReplayMode || isOrbiting
 
   return (
     <div className="absolute size-full">
       {/* Hide menu button during active recording (intro + playback) */}
-      {!recordingActive && (
+      {!recordingActive && !isRecording && (
         <MapMenuButton
           onUploadClick={() => {
             setUploadDrawerOpen(true)
@@ -229,8 +225,8 @@ function MapSectionContent() {
           onRoutesClick={handleRoutesClick}
           onSettingsClick={() => setSettingsOpen(true)}
           onGalleryClick={() => setGalleryOpen(true)}
-          routesDisabled={!hasEnoughPhotos}
-          isReplayMode={isReplayMode}
+          routesDisabled={!hasEnoughPhotos && !isFragmentMode}
+          isReplayMode={isInAnyReplay}
           onExitReplay={handleExitReplay}
           isRecording={isRecording}
           isProcessing={isProcessing}
@@ -246,24 +242,26 @@ function MapSectionContent() {
       <GalleryDrawer open={galleryOpen} onOpenChange={setGalleryOpen} />
       <LoginDrawer open={loginDrawerOpen} onOpenChange={setLoginDrawerOpen} />
 
-      {!isReplayMode && (
+      {!isInAnyReplay && (
         <LoginButton onClick={() => setLoginDrawerOpen(true)} />
       )}
 
       {isReplayMode && (
         <TrajectoryOverlay
-          onStartReplay={handleStartReplay}
+          onBeginRecording={beginRecording}
+          onShowIntro={showIntro}
           onUpgradeClick={() => setSettingsOpen(true)}
         />
       )}
 
-      {/* DOM watermark — visible during recording, captured by screen capture */}
-      {isRecording && (
-        <div className="pointer-events-none absolute bottom-4 right-4 z-40 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5">
-          <img src={locusifyLogo} alt="" className="size-5 rounded" />
-          <span className="text-xs text-white">Powered by Locusify</span>
-        </div>
-      )}
+      {isOrbiting && <GlobeOrbitOverlay onBeginRecording={beginRecording} />}
+
+      {/* Shared intro overlay — controlled by useRecordingFlow */}
+      <ReplayIntroOverlay
+        visible={introVisible}
+        onExitComplete={onIntroComplete}
+        introStyle={isOrbiting ? 'logo-fade' : templateConfig.intro.style}
+      />
 
       {/* Announcement dialog — shown once per version */}
       <AnimatePresence>
@@ -291,13 +289,13 @@ function MapSectionContent() {
           <SaveVideoDialog
             pendingVideo={pendingVideo}
             isProcessing={isProcessing}
-            onSave={handleSaveVideo}
-            onDiscard={handleDiscardVideo}
+            onSave={saveVideo}
+            onDiscard={discardVideo}
           />
         )}
       </AnimatePresence>
 
-      {!isReplayMode && (
+      {!isInAnyReplay && (
         <MapContextMenu
           position={contextMenuPos}
           onAddPhotos={handleContextMenuAddPhotos}
@@ -310,15 +308,15 @@ function MapSectionContent() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
         className="size-full isolate"
-        {...(!isReplayMode ? longPressHandlers : {})}
+        {...(!isInAnyReplay ? longPressHandlers : {})}
       >
         <Maplibre
           markers={displayMarkers}
           initialViewState={initialViewState}
           autoFitBounds={false}
-          selectedMarkerId={isReplayMode ? null : selectedMarkerId}
+          selectedMarkerId={isInAnyReplay ? null : selectedMarkerId}
           onMarkerClick={handleMarkerClick}
-          onContextMenu={isReplayMode ? undefined : handleMapContextMenu}
+          onContextMenu={isInAnyReplay ? undefined : handleMapContextMenu}
           className="size-full"
           mapRef={mapRef}
         />

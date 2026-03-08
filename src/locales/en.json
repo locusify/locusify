@@ -358,5 +358,13 @@
   "redeem.error.code_expired": "This code has expired",
   "redeem.error.code_fully_used": "This code has been fully redeemed",
   "redeem.error.already_redeemed": "You have already redeemed this code",
-  "redeem.error.generic": "Failed to redeem code"
+  "redeem.error.generic": "Failed to redeem code",
+
+  "stats.bar.duration": "Duration",
+  "stats.bar.countries": "Countries",
+  "stats.bar.cities": "Cities",
+  "stats.bar.distance": "Distance",
+  "stats.bar.scanQr": "Scan to explore",
+  "stats.bar.durationUnit": "d",
+  "stats.bar.distanceUnit": "km"
 }

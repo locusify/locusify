@@ -6,21 +6,23 @@ import { getTemplateById } from '@/data/templates'
 import { cn } from '@/lib/utils'
 import { useReplayStore } from '@/stores/replayStore'
 import { ReplayControls } from './replay/ReplayControls'
-import { ReplayIntroOverlay } from './replay/ReplayIntroOverlay'
+import { ReplayStatsBar } from './replay/ReplayStatsBar'
 import { TemplateCustomizer } from './replay/TemplateCustomizer'
 import { TemplateSelector } from './replay/TemplateSelector'
 
 interface TrajectoryOverlayProps {
-  onStartReplay?: () => Promise<void>
+  onBeginRecording?: (onPlaybackStart: () => void) => Promise<void>
+  onShowIntro?: (onComplete: () => void) => void
   onUpgradeClick?: () => void
 }
 
 /**
  * Overlay container for replay mode.
- * Contains the intro animation, template config UI, text overlay, stats, and bottom controls.
+ * Contains the template config UI, text overlay, stats, and bottom controls.
+ * Intro animation is now rendered at the MapSection level (shared with globe orbit).
  * Photo card is now rendered as a map Marker (see MapLibre.tsx).
  */
-export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryOverlayProps) {
+export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClick }: TrajectoryOverlayProps) {
   const { t } = useTranslation()
 
   const status = useReplayStore(s => s.status)
@@ -33,7 +35,6 @@ export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryO
   const confirmConfig = useReplayStore(s => s.confirmConfig)
   const restartReplay = useReplayStore(s => s.restartReplay)
 
-  const [introVisible, setIntroVisible] = useState(false)
   const [showTemplatePanel, setShowTemplatePanel] = useState(false)
   const [showCustomizePanel, setShowCustomizePanel] = useState(false)
 
@@ -41,21 +42,16 @@ export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryO
   const handlePlayClick = useCallback(async () => {
     if (status === 'configuring') {
       confirmConfig()
-      await onStartReplay?.()
-      setIntroVisible(true)
+      await onBeginRecording?.(() => togglePlayPause())
     }
     else if (status === 'completed') {
       restartReplay()
     }
     else {
-      setIntroVisible(true)
+      // Pause-resume — show intro without starting a new recording
+      onShowIntro?.(() => togglePlayPause())
     }
-  }, [status, onStartReplay, confirmConfig, restartReplay])
-
-  const handleIntroComplete = useCallback(() => {
-    setIntroVisible(false)
-    togglePlayPause()
-  }, [togglePlayPause])
+  }, [status, onBeginRecording, onShowIntro, confirmConfig, restartReplay, togglePlayPause])
 
   const handleTemplateSelect = useCallback((template: ReplayTemplate) => {
     setTemplate(template.id, template.config)
@@ -84,15 +80,6 @@ export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryO
 
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-end">
-      {/* Opening logo animation */}
-      <div className="pointer-events-auto">
-        <ReplayIntroOverlay
-          visible={introVisible}
-          onExitComplete={handleIntroComplete}
-          introStyle={templateConfig.intro.style}
-        />
-      </div>
-
       {/* Template selection panel (configuring phase) */}
       {isConfiguring && !showCustomizePanel && (
         <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-40 max-h-[60vh] overflow-y-auto rounded-t-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85">
@@ -199,6 +186,9 @@ export function TrajectoryOverlay({ onStartReplay, onUpgradeClick }: TrajectoryO
           </m.div>
         )}
       </AnimatePresence>
+
+      {/* Stats bar — visible during replay (including recording) */}
+      {!isConfiguring && <ReplayStatsBar />}
 
       {/* Bottom gradient + controls — hidden during recording */}
       {!recordingActive && !isConfiguring && (

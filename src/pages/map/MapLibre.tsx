@@ -5,15 +5,18 @@ import type { PhotoMarker } from '@/types/map'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
+import { useGlobeOrbitStore } from '@/stores/globeOrbitStore'
 import { useMapStore } from '@/stores/mapStore'
 import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 
 import { GeoJsonLayer } from './components/GeoJsonLayer'
+import { GlobeOrbitController } from './components/GlobeOrbitController'
 import { MapControls } from './components/MapControls'
 import { PhotoMarkerPin } from './components/PhotoMarkerPin'
 import { RegionFillLayer } from './components/RegionFillLayer'
 import { ReplayPhotoCard } from './components/replay/ReplayPhotoCard'
+import { StarfieldCanvas } from './components/StarfieldCanvas'
 import { TrajectoryController } from './components/TrajectoryController'
 import { TrajectoryLineLayer } from './components/TrajectoryLineLayer'
 import { WaypointDot } from './components/WaypointDot'
@@ -22,6 +25,8 @@ import MapStyleLight from './MapLibreStyleLight.json'
 import { calculateMapBounds, calculateZoomFromBounds } from './utils'
 // Styles
 import 'maplibre-gl/dist/maplibre-gl.css'
+
+const MAP_STYLE: CSSProperties = { width: '100%', height: '100%', position: 'relative', zIndex: 10 }
 
 export interface ClusterPoint {
   type: 'Feature'
@@ -174,6 +179,7 @@ export function Maplibre({
   const mapStyle = (resolvedTheme === 'light' ? MapStyleLight : MapStyleDark) as StyleSpecification
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
+  const isOrbiting = useGlobeOrbitStore(s => s.isOrbiting)
   const isFragmentMode = useRegionStore(s => s.isFragmentMode)
   const setPreviousViewState = useRegionStore(s => s.setPreviousViewState)
   const registerMap = useMapStore(s => s.registerMap)
@@ -380,7 +386,8 @@ export function Maplibre({
     if (isFragmentMode) {
       // Save current view before flying out
       setPreviousViewState({ ...viewStateRef.current })
-      const globalView = { longitude: 0, latitude: 20, zoom: 2.5 }
+      const prev = viewStateRef.current
+      const globalView = { longitude: prev.longitude, latitude: prev.latitude, zoom: 2.5 }
       setViewState(globalView)
       setCurrentZoom(globalView.zoom)
     }
@@ -394,13 +401,44 @@ export function Maplibre({
     }
   }, [isFragmentMode, setPreviousViewState])
 
+  // Atmosphere + projection for fragment mode.
+  // setStyle (theme switch) resets projection & sky, so re-apply on style.load.
+  useEffect(() => {
+    const map = mapRef?.current?.getMap()
+    if (!map || !isMapLoaded)
+      return
+
+    const apply = () => {
+      const canvas = map.getCanvas()
+      const container = map.getContainer()
+
+      if (isFragmentMode) {
+        map.setProjection({ type: 'globe' })
+        map.setSky({ 'atmosphere-blend': 0 })
+        canvas.style.background = 'transparent'
+        container.style.background = 'transparent'
+      }
+      else {
+        map.setProjection({ type: 'mercator' })
+        map.setSky({ 'atmosphere-blend': 0 })
+        canvas.style.background = ''
+        container.style.background = ''
+      }
+    }
+
+    apply()
+    map.on('style.load', apply)
+    return () => { map.off('style.load', apply) }
+  }, [isFragmentMode, isMapLoaded])
+
   return (
-    <div className={className} style={style}>
+    <div className={`${className} relative`} style={style}>
+      <StarfieldCanvas />
       <Map
         id={id}
         ref={mapRef}
         {...viewState}
-        style={{ width: '100%', height: '100%' }}
+        style={MAP_STYLE}
         mapStyle={mapStyle}
         attributionControl={false}
         canvasContextAttributes={{ preserveDrawingBuffer: true }}
@@ -412,10 +450,11 @@ export function Maplibre({
           setCurrentZoom(evt.viewState.zoom)
           setViewState(evt.viewState)
         }}
-        {...(isFragmentMode ? { minZoom: 2, maxZoom: 5 } : {})}
+        minZoom={isOrbiting ? 0.5 : isFragmentMode ? 2 : 0}
+        maxZoom={isFragmentMode ? 5 : 22}
       >
         {/* Map Controls — hidden during replay (camera follows automatically) */}
-        {!isReplayMode && <MapControls onGeolocate={onGeolocate} />}
+        {!isReplayMode && !isOrbiting && <MapControls onGeolocate={onGeolocate} />}
 
         {/* Region Fill Layer — country photo fills (below markers) */}
         <RegionFillLayer />
@@ -450,6 +489,9 @@ export function Maplibre({
             <TrajectoryController />
           </>
         )}
+
+        {/* Globe Orbit Controller */}
+        {isOrbiting && <GlobeOrbitController />}
       </Map>
     </div>
   )
