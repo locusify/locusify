@@ -16,6 +16,8 @@ export function TrajectoryController() {
       return
 
     let initialised = false
+    /** Set when EarthZoomController finishes — consumed on the next play transition */
+    let earthZoomHandled = false
 
     function fitToWaypoints(state: ReturnType<typeof useReplayStore.getState>) {
       const { waypoints } = state
@@ -46,9 +48,23 @@ export function TrajectoryController() {
     }
 
     return useReplayStore.subscribe((state, prevState) => {
+      const { earthZoomPhase } = state
+
+      // Skip camera control while earth zoom is actively running
+      if (earthZoomPhase !== 'idle' && earthZoomPhase !== 'done')
+        return
+
+      // When earth zoom finishes, mark that it already positioned the camera
+      if (earthZoomPhase === 'done' && prevState.earthZoomPhase !== 'done') {
+        earthZoomHandled = true
+        initialised = true
+        return
+      }
+
       if (state.status === 'idle' || !state.currentPosition) {
         // Reset so the next replay gets a fresh fitBounds entrance.
         initialised = false
+        earthZoomHandled = false
         return
       }
 
@@ -64,7 +80,12 @@ export function TrajectoryController() {
       }
 
       // Every play click re-fits the map, same as the initial entrance.
+      // Skip if EarthZoomController already handled the positioning.
       if (state.status === 'playing' && prevState.status !== 'playing') {
+        if (earthZoomHandled) {
+          earthZoomHandled = false
+          return
+        }
         fitToWaypoints(state)
         return
       }

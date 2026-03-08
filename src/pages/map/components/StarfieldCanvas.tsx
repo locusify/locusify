@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useRegionStore } from '@/stores/regionStore'
+import { useReplayStore } from '@/stores/replayStore'
 
 interface Star {
   orbitRadius: number
@@ -25,10 +26,13 @@ function createStars(): Star[] {
 export function StarfieldCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isFragmentMode = useRegionStore(s => s.isFragmentMode)
+  const earthZoomPhase = useReplayStore(s => s.earthZoomPhase)
+  const showStarfield = isFragmentMode
+    || (earthZoomPhase !== 'idle' && earthZoomPhase !== 'done')
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!isFragmentMode || !canvas)
+    if (!showStarfield || !canvas)
       return
 
     const parent = canvas.parentElement
@@ -88,9 +92,9 @@ export function StarfieldCanvas() {
       cancelAnimationFrame(raf)
       ro.disconnect()
     }
-  }, [isFragmentMode])
+  }, [showStarfield])
 
-  if (!isFragmentMode)
+  if (!showStarfield)
     return null
 
   return (

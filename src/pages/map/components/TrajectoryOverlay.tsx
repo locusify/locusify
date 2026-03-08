@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getTemplateById } from '@/data/templates'
 import { cn } from '@/lib/utils'
+import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { ReplayControls } from './replay/ReplayControls'
 import { ReplayStatsBar } from './replay/ReplayStatsBar'
@@ -34,24 +35,43 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
   const setCustomOverrides = useReplayStore(s => s.setCustomOverrides)
   const confirmConfig = useReplayStore(s => s.confirmConfig)
   const restartReplay = useReplayStore(s => s.restartReplay)
+  const startEarthZoom = useReplayStore(s => s.startEarthZoom)
+  const isFragmentMode = useRegionStore(s => s.isFragmentMode)
 
   const [showTemplatePanel, setShowTemplatePanel] = useState(false)
   const [showCustomizePanel, setShowCustomizePanel] = useState(false)
 
   // Every play click (initial start, resume, restart) goes through the intro.
+  // In non-fragment mode, also trigger the cinematic earth zoom-in effect.
+  // startEarthZoom() must run AFTER the intro overlay is visible so the globe
+  // setup (projection switch + jumpTo space) happens behind the opaque overlay.
   const handlePlayClick = useCallback(async () => {
     if (status === 'configuring') {
       confirmConfig()
-      await onBeginRecording?.(() => togglePlayPause())
+      if (!isFragmentMode) {
+        // Earth zoom timing is managed by EarthZoomController — no callback needed
+        onBeginRecording?.(() => {})
+        startEarthZoom()
+      }
+      else {
+        await onBeginRecording?.(() => togglePlayPause())
+      }
     }
     else if (status === 'completed') {
       restartReplay()
     }
     else {
-      // Pause-resume — show intro without starting a new recording
-      onShowIntro?.(() => togglePlayPause())
+      // Pause-resume
+      if (!isFragmentMode) {
+        // Earth zoom timing is managed by EarthZoomController — no callback needed
+        onShowIntro?.(() => {})
+        startEarthZoom()
+      }
+      else {
+        onShowIntro?.(() => togglePlayPause())
+      }
     }
-  }, [status, onBeginRecording, onShowIntro, confirmConfig, restartReplay, togglePlayPause])
+  }, [status, onBeginRecording, onShowIntro, confirmConfig, restartReplay, togglePlayPause, isFragmentMode, startEarthZoom])
 
   const handleTemplateSelect = useCallback((template: ReplayTemplate) => {
     setTemplate(template.id, template.config)

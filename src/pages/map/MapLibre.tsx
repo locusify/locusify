@@ -10,6 +10,7 @@ import { useMapStore } from '@/stores/mapStore'
 import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 
+import { EarthZoomController } from './components/EarthZoomController'
 import { GeoJsonLayer } from './components/GeoJsonLayer'
 import { GlobeOrbitController } from './components/GlobeOrbitController'
 import { MapControls } from './components/MapControls'
@@ -179,6 +180,7 @@ export function Maplibre({
   const mapStyle = (resolvedTheme === 'light' ? MapStyleLight : MapStyleDark) as StyleSpecification
 
   const isReplayMode = useReplayStore(s => s.isReplayMode)
+  const earthZoomPhase = useReplayStore(s => s.earthZoomPhase)
   const isOrbiting = useGlobeOrbitStore(s => s.isOrbiting)
   const isFragmentMode = useRegionStore(s => s.isFragmentMode)
   const setPreviousViewState = useRegionStore(s => s.setPreviousViewState)
@@ -403,9 +405,15 @@ export function Maplibre({
 
   // Atmosphere + projection for fragment mode.
   // setStyle (theme switch) resets projection & sky, so re-apply on style.load.
+  // Skip when earth zoom is active — EarthZoomController manages projection.
+  const earthZoomActive = earthZoomPhase !== 'idle' && earthZoomPhase !== 'done'
   useEffect(() => {
     const map = mapRef?.current?.getMap()
     if (!map || !isMapLoaded)
+      return
+
+    // Earth zoom controller manages projection during its active phases
+    if (earthZoomActive)
       return
 
     const apply = () => {
@@ -428,8 +436,10 @@ export function Maplibre({
 
     apply()
     map.on('style.load', apply)
-    return () => { map.off('style.load', apply) }
-  }, [isFragmentMode, isMapLoaded])
+    return () => {
+      map.off('style.load', apply)
+    }
+  }, [isFragmentMode, isMapLoaded, earthZoomActive])
 
   return (
     <div className={`${className} relative`} style={style}>
@@ -450,7 +460,7 @@ export function Maplibre({
           setCurrentZoom(evt.viewState.zoom)
           setViewState(evt.viewState)
         }}
-        minZoom={isOrbiting ? 0.5 : isFragmentMode ? 2 : 0}
+        minZoom={isOrbiting ? 0.5 : earthZoomActive ? 0 : isFragmentMode ? 2 : 0}
         maxZoom={isFragmentMode ? 5 : 22}
       >
         {/* Map Controls — hidden during replay (camera follows automatically) */}
@@ -483,10 +493,16 @@ export function Maplibre({
         {/* Trajectory Replay Layers */}
         {isReplayMode && (
           <>
-            <TrajectoryLineLayer />
-            <ReplayPhotoCard />
-            <WaypointDot />
+            {/* Hide visual layers during earth zoom animation */}
+            {!earthZoomActive && (
+              <>
+                <TrajectoryLineLayer />
+                <ReplayPhotoCard />
+                <WaypointDot />
+              </>
+            )}
             <TrajectoryController />
+            <EarthZoomController />
           </>
         )}
 

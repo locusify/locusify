@@ -12,24 +12,27 @@ interface ReplayIntroOverlayProps {
   visible: boolean
   onExitComplete: () => void
   introStyle?: ReplayTemplateConfig['intro']['style']
+  autoHide?: boolean // false → don't auto-dismiss, wait for visible=false from parent
 }
 
-export function ReplayIntroOverlay({ visible, onExitComplete, introStyle = 'logo-fade' }: ReplayIntroOverlayProps) {
+export function ReplayIntroOverlay({ visible, onExitComplete, introStyle = 'logo-fade', autoHide = true }: ReplayIntroOverlayProps) {
   const [show, setShow] = useState(false)
 
-  // When the parent requests the intro, start showing
+  // Sync visible → show (including external close when autoHide=false)
   useEffect(() => {
     if (visible)
       setShow(true)
+    else
+      setShow(false)
   }, [visible])
 
-  // Auto-dismiss after fade-in + hold
+  // Auto-dismiss after fade-in + hold — only when autoHide is enabled
   useEffect(() => {
-    if (!show)
+    if (!show || !autoHide)
       return
     const t = setTimeout(() => setShow(false), FADE_IN_S * 1000 + HOLD_MS)
     return () => clearTimeout(t)
-  }, [show])
+  }, [show, autoHide])
 
   // Skip intro entirely — fire callback in an effect to avoid side effects during render
   useEffect(() => {

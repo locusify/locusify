@@ -81,6 +81,8 @@ function getDefaultTemplateConfig(): ReplayTemplateConfig {
   return templates.find(t => t.id === DEFAULT_TEMPLATE_ID)!.config
 }
 
+export type EarthZoomPhase = 'idle' | 'setup' | 'revealing' | 'flying' | 'done'
+
 interface ReplayState {
   isReplayMode: boolean
   waypoints: ReplayWaypoint[]
@@ -97,6 +99,7 @@ interface ReplayState {
   templateConfig: ReplayTemplateConfig
   customOverrides: Partial<ReplayTemplateConfig>
   captions: string[]
+  earthZoomPhase: EarthZoomPhase
 
   startReplay: (markers: PhotoMarker[], startPaused?: boolean) => void
   prepareReplay: (markers: PhotoMarker[]) => void
@@ -112,6 +115,8 @@ interface ReplayState {
   setTemplate: (templateId: string, config: ReplayTemplateConfig) => void
   setCustomOverrides: (overrides: Partial<ReplayTemplateConfig>) => void
   setCaptions: (captions: string[]) => void
+  startEarthZoom: () => void
+  setEarthZoomPhase: (phase: EarthZoomPhase) => void
   /** Internal: advance animation by delta ms */
   _tick: (delta: number) => void
 }
@@ -132,8 +137,12 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   templateConfig: getDefaultTemplateConfig(),
   customOverrides: {},
   captions: [],
+  earthZoomPhase: 'idle',
 
   setRecordingActive: active => set({ recordingActive: active }),
+
+  startEarthZoom: () => set({ earthZoomPhase: 'setup' }),
+  setEarthZoomPhase: phase => set({ earthZoomPhase: phase }),
 
   setTemplate: (templateId, config) => set({ templateId, templateConfig: config, customOverrides: {} }),
 
@@ -223,6 +232,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       totalProgress: 0,
       currentPosition: waypoints[0]?.position ?? null,
       recordingActive: false,
+      earthZoomPhase: 'idle',
     })
   },
 
@@ -235,6 +245,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       totalProgress: 0,
       speedMultiplier,
       currentPosition: waypoints[0]?.position ?? null,
+      earthZoomPhase: 'idle',
     })
   },
 
@@ -255,6 +266,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       templateConfig: getDefaultTemplateConfig(),
       customOverrides: {},
       captions: [],
+      earthZoomPhase: 'idle',
     })
   },
 

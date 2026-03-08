@@ -69,6 +69,8 @@ function MapSectionContent() {
     exitRecording,
   } = useRecordingFlow()
 
+  const earthZoomPhase = useReplayStore(s => s.earthZoomPhase)
+  const earthZoomActive = earthZoomPhase !== 'idle' && earthZoomPhase !== 'done'
   const templateConfig = useReplayStore(s => s.templateConfig)
 
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
@@ -257,10 +259,12 @@ function MapSectionContent() {
       {isOrbiting && <GlobeOrbitOverlay onBeginRecording={beginRecording} />}
 
       {/* Shared intro overlay — controlled by useRecordingFlow */}
+      {/* Force logo-fade for globe orbit or earth zoom, even if template has intro: 'none' */}
       <ReplayIntroOverlay
         visible={introVisible}
         onExitComplete={onIntroComplete}
-        introStyle={isOrbiting ? 'logo-fade' : templateConfig.intro.style}
+        introStyle={(isOrbiting || earthZoomActive) ? 'logo-fade' : templateConfig.intro.style}
+        autoHide={!earthZoomActive}
       />
 
       {/* Announcement dialog — shown once per version */}

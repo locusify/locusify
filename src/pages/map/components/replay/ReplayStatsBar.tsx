@@ -8,7 +8,7 @@ import { AnimatedNumber } from './AnimatedNumber'
 
 /**
  * Bottom stats bar shown during trajectory replay.
- * Left: logo + brand name. Middle: 4 animated stats. Right: QR code.
+ * Left: logo + brand name. Middle: 2 animated stats. Right: QR code.
  * Visible during playing/paused/completed — including recording.
  */
 export function ReplayStatsBar() {
@@ -24,18 +24,6 @@ export function ReplayStatsBar() {
       precision: 0,
       label: t('stats.bar.duration'),
       unit: t('stats.bar.durationUnit'),
-    },
-    {
-      value: stats.countriesVisited,
-      precision: 0,
-      label: t('stats.bar.countries'),
-      unit: undefined,
-    },
-    {
-      value: stats.citiesVisited,
-      precision: 0,
-      label: t('stats.bar.cities'),
-      unit: undefined,
     },
     {
       value: stats.totalDistanceKm,
@@ -55,15 +43,13 @@ export function ReplayStatsBar() {
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="pointer-events-auto relative mx-2 mb-1 flex items-center gap-4 rounded-xl bg-black/60 px-4 py-3 backdrop-blur-sm"
         >
-          {/* Left: Logo + brand */}
-          <div className="flex items-center gap-2 pr-4">
-            <img src={locusifyLogo} alt="" className="size-6 rounded" />
-            <span className="text-xs font-semibold text-white">Locusify</span>
-            <span className="text-[10px] text-white/40">|</span>
-            <span className="text-[10px] text-white/50">@caterpi11ar</span>
+          {/* Left: Logo + brand — stacked on mobile, inline on desktop */}
+          <div className="flex flex-col items-center gap-1 pr-4 sm:flex-row sm:gap-2">
+            <img src={locusifyLogo} alt="" className="size-12 rounded sm:size-16" />
+            <span className="text-[10px] font-semibold text-white sm:text-sm">Locusify</span>
           </div>
 
-          {/* Middle: 4 stat items */}
+          {/* Middle: 2 stat items */}
           <div className="flex flex-1 justify-around">
             {items.map(item => (
               <div key={item.label} className="flex flex-col items-center">
@@ -85,7 +71,7 @@ export function ReplayStatsBar() {
 
           {/* Right: QR code */}
           <div className="flex flex-col items-center gap-1 border-l border-white/15 pl-4">
-            <img src={qrcodeImg} alt="QR" className="size-12 rounded" />
+            <img src={qrcodeImg} alt="QR" className="size-12 rounded sm:size-16" />
             <span className="text-[9px] text-white/60">{t('stats.bar.scanQr')}</span>
           </div>
         </m.div>

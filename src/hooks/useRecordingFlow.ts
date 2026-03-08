@@ -57,10 +57,13 @@ export function useRecordingFlow() {
    */
   const beginRecording = useCallback(async (onPlaybackStart: () => void) => {
     recorderDiscard()
+    onPlaybackStartRef.current = onPlaybackStart
+    // Show intro FIRST so the opaque overlay is visible before recording starts.
+    // The getDisplayMedia dialog provides a natural delay (1-2s) for the overlay
+    // to fully render and fade in before any frames are captured.
+    setIntroVisible(true)
     // Best-effort: don't gate intro/playback on recording success
     await startRecording()
-    onPlaybackStartRef.current = onPlaybackStart
-    setIntroVisible(true)
   }, [startRecording, recorderDiscard])
 
   /**
@@ -89,8 +92,23 @@ export function useRecordingFlow() {
     const style = document.createElement('style')
     style.textContent = '* { cursor: none !important; }'
     document.head.appendChild(style)
-    return () => { document.head.removeChild(style) }
+    return () => {
+      document.head.removeChild(style)
+    }
   }, [recordingActive, introVisible])
+
+  // ── Earth zoom revealing → close intro overlay ─────────────────────────────
+  // When the controller advances to "revealing", fade-out the intro overlay so
+  // it overlaps with the flyTo for a smooth visual transition.
+  useEffect(() => {
+    const unsub = useReplayStore.subscribe((state, prev) => {
+      if (state.earthZoomPhase === 'revealing' && prev.earthZoomPhase !== 'revealing') {
+        setIntroVisible(false)
+        onPlaybackStartRef.current = null
+      }
+    })
+    return unsub
+  }, [])
 
   // ── Auto-stop: globe orbit completed ────────────────────────────────────────
 
