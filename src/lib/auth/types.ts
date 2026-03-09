@@ -14,5 +14,5 @@ export interface AuthProvider {
   type: AuthProviderType
   name: string
   icon: ComponentType
-  login: () => Promise<void>
+  login: (options?: { redirectUri?: string }) => Promise<void>
 }

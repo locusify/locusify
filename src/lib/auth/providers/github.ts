@@ -2,8 +2,11 @@ import type { AuthProvider } from '../types'
 import { GitHubIcon } from '@/components/ui/github-icon'
 import { env } from '@/lib/env'
 
-async function login(): Promise<void> {
-  window.location.href = `${env.VITE_API_BASE_URL}/api/v1/auth/oauth/github`
+async function login(options?: { redirectUri?: string }): Promise<void> {
+  const url = new URL(`${env.VITE_API_BASE_URL}/api/v1/auth/oauth/github`)
+  if (options?.redirectUri)
+    url.searchParams.set('redirect_uri', options.redirectUri)
+  window.location.href = url.toString()
 }
 
 export const githubProvider: AuthProvider = {
