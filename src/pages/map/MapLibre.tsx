@@ -5,7 +5,7 @@ import type { PhotoMarker } from '@/types/map'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
-import { useGlobeOrbitStore } from '@/stores/globeOrbitStore'
+import { computeOrbitZoom, useGlobeOrbitStore } from '@/stores/globeOrbitStore'
 import { useMapStore } from '@/stores/mapStore'
 import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
@@ -389,7 +389,7 @@ export function Maplibre({
       // Save current view before flying out
       setPreviousViewState({ ...viewStateRef.current })
       const prev = viewStateRef.current
-      const globalView = { longitude: prev.longitude, latitude: prev.latitude, zoom: 2.5 }
+      const globalView = { longitude: prev.longitude, latitude: prev.latitude, zoom: computeOrbitZoom() }
       setViewState(globalView)
       setCurrentZoom(globalView.zoom)
     }
@@ -460,7 +460,7 @@ export function Maplibre({
           setCurrentZoom(evt.viewState.zoom)
           setViewState(evt.viewState)
         }}
-        minZoom={isOrbiting ? 0.5 : earthZoomActive ? 0 : isFragmentMode ? 2 : 0}
+        minZoom={isOrbiting ? 0.5 : earthZoomActive ? 0 : isFragmentMode ? 1 : 0}
         maxZoom={isFragmentMode ? 5 : 22}
       >
         {/* Map Controls — hidden during replay (camera follows automatically) */}

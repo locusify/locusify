@@ -7,17 +7,20 @@ function wrapLng(lng: number): number {
 
 /**
  * Compute a zoom level that shows the full globe in MapLibre globe projection.
- * Uses the smaller viewport dimension to ensure the globe fits regardless of orientation.
+ * Uses the smaller viewport dimension and linearly interpolates so the globe
+ * fits completely on any screen — including iPhone SE (375×667) in portrait.
  */
-function computeOrbitZoom(): number {
+export function computeOrbitZoom(): number {
   const minDim = Math.min(window.innerWidth, window.innerHeight)
-  // Empirical values for MapLibre globe projection.
-  // The globe should fill most of the viewport while remaining fully visible.
-  if (minDim < 400)
-    return 1.8
-  if (minDim < 700)
-    return 2.0
-  return 2.2
+  // Empirical bounds for MapLibre globe projection:
+  //   350px → zoom 1.0  (iPhone SE portrait, width = 375)
+  //   1000px → zoom 2.2 (desktop)
+  const MIN_DIM = 350
+  const MAX_DIM = 1000
+  const MIN_ZOOM = 1.0
+  const MAX_ZOOM = 2.2
+  const zoom = MIN_ZOOM + ((minDim - MIN_DIM) / (MAX_DIM - MIN_DIM)) * (MAX_ZOOM - MIN_ZOOM)
+  return Math.round(Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom)) * 100) / 100
 }
 
 interface GlobeOrbitState {
@@ -45,7 +48,7 @@ export const useGlobeOrbitStore = create<GlobeOrbitState>((set, get) => ({
   startLongitude: 0,
   currentLongitude: 0,
   latitude: 20,
-  zoom: 1.5,
+  zoom: computeOrbitZoom(),
   duration: 15000,
 
   startOrbit: (longitude, latitude) => {

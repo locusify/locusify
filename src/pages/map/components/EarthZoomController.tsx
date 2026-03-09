@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
+import { computeOrbitZoom } from '@/stores/globeOrbitStore'
 import { useReplayStore } from '@/stores/replayStore'
 
 /** Duration constants (ms) */
@@ -54,7 +55,7 @@ export function EarthZoomController() {
         canvas.style.background = 'transparent'
         container.style.background = 'transparent'
 
-        mapInstance.jumpTo({ center: firstPos, zoom: 1.8 })
+        mapInstance.jumpTo({ center: firstPos, zoom: computeOrbitZoom() })
 
         // Self-advance: after intro hold, push to revealing (no longer depends on intro callback)
         safeTimeout(() => {
@@ -98,7 +99,7 @@ export function EarthZoomController() {
 
           useReplayStore.getState().setEarthZoomPhase('flying')
 
-          // One continuous zoom from space (1.8) to target — no intermediate stop
+          // One continuous zoom from space to target — no intermediate stop
           mapInstance.flyTo({
             center: firstPos,
             zoom: landZoom,
