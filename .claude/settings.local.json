@@ -104,7 +104,8 @@
       "WebFetch(domain:maplibre.org)",
       "Bash(gh issue:*)",
       "Bash(pnpm eslint:*)",
-      "WebFetch(domain:mult.dev)"
+      "WebFetch(domain:mult.dev)",
+      "Bash(jq:*)"
     ],
     "deny": [],
     "ask": [],
