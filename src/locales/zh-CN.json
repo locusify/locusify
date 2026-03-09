@@ -213,6 +213,35 @@
   "auth.signup.switch.link": "登录",
   "auth.signup.success.message": "验证邮件已发送至 {{email}}。请检查您的收件箱并验证邮箱以继续。",
 
+  "auth.privacy.agree": "我同意",
+  "auth.privacy.privacyPolicy": "隐私政策",
+  "auth.privacy.and": "和",
+  "auth.privacy.termsOfService": "服务条款",
+  "auth.privacy.required": "请先同意隐私政策和服务条款",
+
+  "auth.login.forgotPassword": "忘记密码？",
+
+  "auth.forgotPassword.description": "输入邮箱以接收密码重置链接",
+  "auth.forgotPassword.submit": "发送重置链接",
+  "auth.forgotPassword.submitting": "发送中...",
+  "auth.forgotPassword.success": "重置链接已发送至 {{email}}，请查收邮箱。",
+  "auth.forgotPassword.backToLogin": "返回登录",
+
+  "auth.resetPassword.title": "重置密码",
+  "auth.resetPassword.description": "请输入新密码",
+  "auth.resetPassword.newPassword": "新密码",
+  "auth.resetPassword.confirmPassword": "确认新密码",
+  "auth.resetPassword.submit": "重置密码",
+  "auth.resetPassword.submitting": "重置中...",
+  "auth.resetPassword.success": "密码重置成功，请使用新密码登录。",
+  "auth.resetPassword.mismatch": "两次输入的密码不一致",
+  "auth.resetPassword.invalidCode": "无效或已过期的重置链接",
+
+  "auth.account.resetPassword": "重置密码",
+
+  "auth.method.otp": "验证码",
+  "auth.method.password": "密码",
+
   "settings.title": "设置",
   "settings.section.appearance": "外观",
   "settings.section.about": "关于",

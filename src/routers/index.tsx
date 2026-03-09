@@ -7,6 +7,7 @@ import { Map } from '@/pages/map'
 import SplashScreen from '@/pages/splashScreen/page'
 
 const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'))
+const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
 
 /** Routes */
 export const routes: RouteObject[] = [
@@ -20,6 +21,14 @@ export const routes: RouteObject[] = [
     element: (
       <Suspense fallback={<div className="flex min-h-dvh items-center justify-center"><p className="text-sm text-text/50">Signing in...</p></div>}>
         <AuthCallback />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/reset-password',
+    element: (
+      <Suspense fallback={<div className="flex min-h-dvh items-center justify-center"><p className="text-sm text-text/50">Loading...</p></div>}>
+        <ResetPassword />
       </Suspense>
     ),
   },

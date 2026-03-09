@@ -213,6 +213,35 @@
   "auth.signup.switch.link": "Sign in",
   "auth.signup.success.message": "Verification email sent to {{email}}. Please check your inbox and verify your email to continue.",
 
+  "auth.privacy.agree": "I agree to the",
+  "auth.privacy.privacyPolicy": "Privacy Policy",
+  "auth.privacy.and": "and",
+  "auth.privacy.termsOfService": "Terms of Service",
+  "auth.privacy.required": "Please agree to the Privacy Policy and Terms of Service first",
+
+  "auth.login.forgotPassword": "Forgot password?",
+
+  "auth.forgotPassword.description": "Enter your email to receive a password reset link",
+  "auth.forgotPassword.submit": "Send Reset Link",
+  "auth.forgotPassword.submitting": "Sending...",
+  "auth.forgotPassword.success": "Reset link sent to {{email}}. Please check your inbox.",
+  "auth.forgotPassword.backToLogin": "Back to login",
+
+  "auth.resetPassword.title": "Reset Password",
+  "auth.resetPassword.description": "Enter your new password",
+  "auth.resetPassword.newPassword": "New Password",
+  "auth.resetPassword.confirmPassword": "Confirm New Password",
+  "auth.resetPassword.submit": "Reset Password",
+  "auth.resetPassword.submitting": "Resetting...",
+  "auth.resetPassword.success": "Password reset successfully. You can now sign in.",
+  "auth.resetPassword.mismatch": "Passwords do not match",
+  "auth.resetPassword.invalidCode": "Invalid or expired reset link",
+
+  "auth.account.resetPassword": "Reset Password",
+
+  "auth.method.otp": "Verification Code",
+  "auth.method.password": "Password",
+
   "settings.title": "Settings",
   "settings.section.appearance": "Appearance",
   "settings.section.about": "About",

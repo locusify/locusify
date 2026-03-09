@@ -1,54 +1,35 @@
 import type { FC } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
+import { useCooldown } from '@/hooks/useCooldown'
 import { sendOtp, verifyOtp } from '@/lib/api/auth'
 import { cn } from '@/lib/utils'
 import { handleOAuthCallback } from '@/stores/authStore'
 
 interface EmailLoginFormProps {
   onSuccess: () => void
+  disabled?: boolean
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/
-const COOLDOWN_SECONDS = 60
 
-export const EmailLoginForm: FC<EmailLoginFormProps> = ({ onSuccess }) => {
+export const EmailLoginForm: FC<EmailLoginFormProps> = ({ onSuccess, disabled }) => {
   const { t } = useTranslation()
   const [step, setStep] = useState<'email' | 'code'>('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
-  const [cooldown, setCooldown] = useState(0)
   const [emailError, setEmailError] = useState('')
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current)
-        clearInterval(timerRef.current)
-    }
-  }, [])
-
-  const startCooldown = useCallback(() => {
-    setCooldown(COOLDOWN_SECONDS)
-    if (timerRef.current)
-      clearInterval(timerRef.current)
-    timerRef.current = setInterval(() => {
-      setCooldown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!)
-          timerRef.current = null
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-  }, [])
+  const { cooldown, startCooldown } = useCooldown()
 
   const handleSendCode = useCallback(async () => {
+    if (disabled) {
+      toast.error(t('auth.privacy.required'))
+      return
+    }
     setEmailError('')
     if (!EMAIL_RE.test(email)) {
       setEmailError(t('auth.email.invalidEmail'))
@@ -67,9 +48,13 @@ export const EmailLoginForm: FC<EmailLoginFormProps> = ({ onSuccess }) => {
     finally {
       setLoading(false)
     }
-  }, [email, startCooldown, t])
+  }, [disabled, email, startCooldown, t])
 
   const handleVerify = useCallback(async () => {
+    if (disabled) {
+      toast.error(t('auth.privacy.required'))
+      return
+    }
     if (code.length !== 6)
       return
 
@@ -85,7 +70,7 @@ export const EmailLoginForm: FC<EmailLoginFormProps> = ({ onSuccess }) => {
     finally {
       setLoading(false)
     }
-  }, [code, email, onSuccess, t])
+  }, [disabled, code, email, onSuccess, t])
 
   const handleResend = useCallback(async () => {
     if (cooldown > 0)
@@ -179,10 +164,11 @@ export const EmailLoginForm: FC<EmailLoginFormProps> = ({ onSuccess }) => {
               handleSendCode()
           }}
           aria-invalid={!!emailError}
+          disabled={loading}
           className="bg-fill-secondary border-fill-secondary text-text h-11 rounded-xl"
         />
         {emailError && (
-          <p className="text-destructive mt-1 text-xs">{emailError}</p>
+          <p className="text-red mt-1 text-xs">{emailError}</p>
         )}
       </div>
       <button
