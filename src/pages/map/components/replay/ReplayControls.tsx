@@ -1,16 +1,13 @@
-import type { TransportMode } from '@/types/replay'
 import { AnimatePresence, m } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { transportModeIcons } from '@/data/transportModes'
+import { transportModeIcons, TRANSPORT_MODES } from '@/data/transportModes'
 import { formatCoordinates, formatDate, formatTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { useReplayStore } from '@/stores/replayStore'
 
 const SPEED_OPTIONS = [0.5, 1, 1.5, 2, 4]
-
-const TRANSPORT_MODES: TransportMode[] = ['walking', 'cycling', 'driving', 'train', 'flying']
 
 interface ReplayControlsProps {
   onPlayClick?: () => void

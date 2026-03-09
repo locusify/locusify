@@ -1,23 +1,36 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
+import { computeCameraTarget, smoothBearing } from '@/lib/replay/camera'
 import { useReplayStore } from '@/stores/replayStore'
 
 /**
- * Pure logic component: tracks the interpolated replay position in real-time.
+ * Smart camera controller: tracks the interpolated replay position with
+ * damped zoom, bearing, and pitch for a drone-flyover feel.
  *
- * On first frame, fits the map to show all waypoints so the full trajectory
- * is visible. Then tracks the interpolated position every frame via jumpTo().
+ * On first frame, fits the map to show all waypoints. Then applies
+ * smooth camera following during playback using computeCameraTarget.
  */
 export function TrajectoryController() {
   const { current: map } = useMap()
+
+  // Damped camera state persists across frames via ref
+  const cameraRef = useRef({
+    zoom: 12,
+    bearing: 0,
+    pitch: 0,
+    centerLng: 0,
+    centerLat: 0,
+    initialised: false,
+    earthZoomHandled: false,
+  })
 
   useEffect(() => {
     if (!map)
       return
 
-    let initialised = false
-    /** Set when EarthZoomController finishes — consumed on the next play transition */
-    let earthZoomHandled = false
+    const cam = cameraRef.current
+    cam.initialised = false
+    cam.earthZoomHandled = false
 
     function fitToWaypoints(state: ReturnType<typeof useReplayStore.getState>) {
       const { waypoints } = state
@@ -56,15 +69,21 @@ export function TrajectoryController() {
 
       // When earth zoom finishes, mark that it already positioned the camera
       if (earthZoomPhase === 'done' && prevState.earthZoomPhase !== 'done') {
-        earthZoomHandled = true
-        initialised = true
+        cam.earthZoomHandled = true
+        cam.initialised = true
         return
       }
 
       if (state.status === 'idle' || !state.currentPosition) {
         // Reset so the next replay gets a fresh fitBounds entrance.
-        initialised = false
-        earthZoomHandled = false
+        cam.initialised = false
+        cam.earthZoomHandled = false
+        return
+      }
+
+      // When entering configuring, fit map to show route overview
+      if (state.status === 'configuring' && prevState.status !== 'configuring') {
+        fitToWaypoints(state)
         return
       }
 
@@ -73,8 +92,10 @@ export function TrajectoryController() {
       if (state.status === 'configuring')
         return
 
-      if (!initialised) {
-        initialised = true
+      if (!cam.initialised) {
+        cam.initialised = true
+        cam.centerLng = state.currentPosition[0]
+        cam.centerLat = state.currentPosition[1]
         fitToWaypoints(state)
         return
       }
@@ -82,16 +103,81 @@ export function TrajectoryController() {
       // Every play click re-fits the map, same as the initial entrance.
       // Skip if EarthZoomController already handled the positioning.
       if (state.status === 'playing' && prevState.status !== 'playing') {
-        if (earthZoomHandled) {
-          earthZoomHandled = false
+        if (cam.earthZoomHandled) {
+          cam.earthZoomHandled = false
           return
         }
         fitToWaypoints(state)
         return
       }
 
-      // Track interpolated position every frame — zero camera lag.
-      map.jumpTo({ center: state.currentPosition })
+      // --- Smart camera following ---
+      const cameraConfig = state.templateConfig.camera
+      const followMode = cameraConfig?.followMode ?? 'smart'
+
+      if (followMode === 'fixed') {
+        // Fixed mode: just track center, no zoom/bearing/pitch changes
+        map.jumpTo({ center: state.currentPosition })
+        return
+      }
+
+      if (followMode === 'topdown') {
+        // Top-down: track center with gentle zoom, no pitch/bearing
+        const damping = cameraConfig?.damping ?? 0.1
+        cam.centerLng += (state.currentPosition[0] - cam.centerLng) * damping * 2
+        cam.centerLat += (state.currentPosition[1] - cam.centerLat) * damping * 2
+        map.jumpTo({
+          center: [cam.centerLng, cam.centerLat],
+          bearing: 0,
+          pitch: 0,
+        })
+        return
+      }
+
+      // Smart mode: full camera computation
+      if (state.segments.length === 0) {
+        map.jumpTo({ center: state.currentPosition })
+        return
+      }
+
+      const ideal = computeCameraTarget(
+        state.waypoints,
+        state.segments,
+        state.currentWaypointIndex,
+        state.segmentProgress,
+        state.currentPosition,
+      )
+
+      const damping = cameraConfig?.damping ?? 0.08
+      const pitchEnabled = cameraConfig?.pitchEnabled !== false
+      const bearingEnabled = cameraConfig?.bearingEnabled !== false
+
+      // Damped interpolation toward ideal camera
+      // Zoom uses very low damping to prevent frequent zoom oscillation
+      cam.zoom += (ideal.zoom - cam.zoom) * damping * 0.3
+      if (bearingEnabled) {
+        // Dead zone: ignore bearing changes < 8° to eliminate micro-jitter
+        let bearingDiff = ideal.bearing - cam.bearing
+        while (bearingDiff > 180) bearingDiff -= 360
+        while (bearingDiff < -180) bearingDiff += 360
+        if (Math.abs(bearingDiff) >= 8) {
+          cam.bearing = smoothBearing(cam.bearing, ideal.bearing, damping * 0.3)
+        }
+      } else {
+        cam.bearing = 0
+      }
+      cam.pitch = pitchEnabled
+        ? cam.pitch + (ideal.pitch - cam.pitch) * damping
+        : 0
+      cam.centerLng += (state.currentPosition[0] - cam.centerLng) * damping * 2
+      cam.centerLat += (state.currentPosition[1] - cam.centerLat) * damping * 2
+
+      map.jumpTo({
+        center: [cam.centerLng, cam.centerLat],
+        zoom: cam.zoom,
+        bearing: cam.bearing,
+        pitch: cam.pitch,
+      })
     })
   }, [map])
 

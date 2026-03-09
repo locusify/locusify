@@ -11,4 +11,8 @@ export interface SegmentMeta {
   distanceKm: number
   timeDeltaMs: number
   mode: TransportMode
+  /** Pre-computed interpolated curve points for this segment */
+  curvePoints: [number, number][]
+  /** Whether this is a long-distance jump (>200km) */
+  isLongJump: boolean
 }

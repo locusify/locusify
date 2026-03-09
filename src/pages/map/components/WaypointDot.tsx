@@ -11,10 +11,12 @@ import { useSettingsStore } from '@/stores/settingsStore'
  * Pulsing dot marker at the current playback position.
  * Renders user avatar, preset character, or default blue dot
  * based on settings. Shows transport mode badge for current segment.
+ * Uses lineStyle color for pulse ring and enhanced glow when animated.
  */
 export function WaypointDot() {
   const currentPosition = useReplayStore(s => s.currentPosition)
   const currentSegmentMode = useReplayStore(s => s.currentSegmentMode)
+  const lineStyle = useReplayStore(s => s.templateConfig.lineStyle)
   const avatarSource = useSettingsStore(s => s.avatarSource)
   const user = useAuthStore(s => s.user)
 
@@ -22,6 +24,7 @@ export function WaypointDot() {
     return null
 
   const showBadge = currentSegmentMode !== 'unknown'
+  const pulseColor = lineStyle.color
 
   return (
     <Marker longitude={currentPosition[0]} latitude={currentPosition[1]} anchor="center" style={{ zIndex: 40 }}>
@@ -30,11 +33,22 @@ export function WaypointDot() {
         initial={false}
         animate={{ scale: 1 }}
       >
-        {/* Pulse ring */}
-        <div className="absolute size-10 animate-ping rounded-full bg-sky-400 opacity-30" />
+        {/* Primary pulse ring — uses lineStyle color */}
+        <div
+          className="absolute size-10 animate-ping rounded-full opacity-30"
+          style={{ backgroundColor: pulseColor }}
+        />
+
+        {/* Secondary pulse ring — larger, slower, only when animated */}
+        {lineStyle.animated && (
+          <div
+            className="absolute size-14 animate-pulse rounded-full opacity-15"
+            style={{ backgroundColor: pulseColor }}
+          />
+        )}
 
         {/* Avatar / dot */}
-        <AvatarContent avatarSource={avatarSource} avatarUrl={user?.avatarUrl} userName={user?.name} />
+        <AvatarContent avatarSource={avatarSource} avatarUrl={user?.avatarUrl} userName={user?.name} lineColor={pulseColor} />
 
         {/* Transport mode badge */}
         {showBadge && (
@@ -51,10 +65,12 @@ function AvatarContent({
   avatarSource,
   avatarUrl,
   userName,
+  lineColor,
 }: {
   avatarSource: { type: string, presetId?: string }
   avatarUrl?: string
   userName?: string
+  lineColor: string
 }) {
   // Profile avatar with image
   if (avatarSource.type === 'profile' && avatarUrl) {
@@ -62,7 +78,8 @@ function AvatarContent({
       <img
         src={avatarUrl}
         alt=""
-        className="relative size-9 rounded-full border-2 border-sky-400 object-cover shadow-[0_0_8px_rgba(56,189,248,0.4)]"
+        className="relative size-9 rounded-full border-2 object-cover"
+        style={{ borderColor: lineColor, boxShadow: `0 0 8px ${lineColor}66` }}
       />
     )
   }
@@ -71,7 +88,10 @@ function AvatarContent({
   if (avatarSource.type === 'profile') {
     const initial = (userName?.[0] ?? '?').toUpperCase()
     return (
-      <div className="relative flex size-9 items-center justify-center rounded-full border-2 border-sky-400 bg-sky-400 text-lg font-semibold text-white shadow-[0_0_8px_rgba(56,189,248,0.4)]">
+      <div
+        className="relative flex size-9 items-center justify-center rounded-full border-2 text-lg font-semibold text-white"
+        style={{ borderColor: lineColor, backgroundColor: lineColor, boxShadow: `0 0 8px ${lineColor}66` }}
+      >
         {initial}
       </div>
     )
@@ -83,8 +103,8 @@ function AvatarContent({
     if (preset) {
       return (
         <div
-          className="relative flex size-9 items-center justify-center rounded-full border-2 shadow-[0_0_8px_rgba(56,189,248,0.4)]"
-          style={{ backgroundColor: preset.color, borderColor: preset.color }}
+          className="relative flex size-9 items-center justify-center rounded-full border-2"
+          style={{ backgroundColor: preset.color, borderColor: preset.color, boxShadow: `0 0 8px ${lineColor}66` }}
         >
           <span className={cn(preset.icon, 'size-5 text-white')} />
         </div>
@@ -92,8 +112,11 @@ function AvatarContent({
     }
   }
 
-  // Default blue dot
+  // Default dot — uses lineStyle color
   return (
-    <div className="relative size-3 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+    <div
+      className="relative size-3 rounded-full"
+      style={{ backgroundColor: lineColor, boxShadow: `0 0 8px ${lineColor}99` }}
+    />
   )
 }

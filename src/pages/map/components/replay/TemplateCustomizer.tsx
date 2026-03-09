@@ -9,7 +9,7 @@ interface TemplateCustomizerProps {
   onChange: (config: ReplayTemplateConfig) => void
 }
 
-type Tab = 'music' | 'filter' | 'text' | 'transition' | 'speed' | 'line'
+type Tab = 'music' | 'filter' | 'text' | 'transition' | 'speed' | 'line' | 'camera'
 
 const FILTER_TYPES: FilterType[] = ['none', 'vintage', 'warm', 'cool', 'b&w', 'film', 'cinematic']
 const TRANSITION_TYPES: TransitionType[] = ['cut', 'crossfade', 'slide-left', 'zoom-in', 'blur']
@@ -27,10 +27,19 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
     { id: 'transition', icon: 'i-mingcute-transfer-line', label: t('template.customize.transition') },
     { id: 'speed', icon: 'i-mingcute-speed-line', label: t('template.customize.speed') },
     { id: 'line', icon: 'i-mingcute-route-line', label: t('template.customize.line') },
+    { id: 'camera', icon: 'i-mingcute-video-camera-line', label: t('template.customize.camera') },
   ]
 
   const update = <K extends keyof ReplayTemplateConfig>(key: K, value: ReplayTemplateConfig[K]) => {
     onChange({ ...config, [key]: value })
+  }
+
+  // Resolve camera config with defaults for the UI
+  const cameraConfig = {
+    followMode: config.camera?.followMode ?? 'smart' as const,
+    pitchEnabled: config.camera?.pitchEnabled !== false,
+    bearingEnabled: config.camera?.bearingEnabled !== false,
+    damping: config.camera?.damping ?? 0.08,
   }
 
   return (
@@ -361,6 +370,66 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
                 />
                 <span className="text-[10px] text-text/60">{t('template.customize.animated')}</span>
               </label>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'camera' && (
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <span className="text-[10px] text-text/40">{t('template.customize.followMode')}</span>
+              <div className="flex flex-wrap gap-1">
+                {(['smart', 'fixed', 'topdown'] as const).map(mode => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => update('camera', { ...cameraConfig, followMode: mode })}
+                    className={cn(
+                      'rounded-lg border px-2 py-1 text-[10px] capitalize transition-colors',
+                      cameraConfig.followMode === mode
+                        ? 'border-sky-400 bg-sky-400/10 text-sky-400'
+                        : 'border-fill-tertiary text-text/60 hover:border-text/20',
+                    )}
+                  >
+                    {t(`template.customize.followMode.${mode}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={cameraConfig.pitchEnabled}
+                  onChange={e => update('camera', { ...cameraConfig, pitchEnabled: e.target.checked })}
+                  className="accent-sky-400"
+                />
+                <span className="text-[10px] text-text/60">{t('template.customize.pitch')}</span>
+              </label>
+              <label className="flex items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={cameraConfig.bearingEnabled}
+                  onChange={e => update('camera', { ...cameraConfig, bearingEnabled: e.target.checked })}
+                  className="accent-sky-400"
+                />
+                <span className="text-[10px] text-text/60">{t('template.customize.bearing')}</span>
+              </label>
+            </div>
+            <div className="space-y-1.5">
+              <label className="flex items-center justify-between text-[11px] text-text/50">
+                <span>{t('template.customize.damping')}</span>
+                <span>{cameraConfig.damping.toFixed(2)}</span>
+              </label>
+              <input
+                type="range"
+                min={0.01}
+                max={0.2}
+                step={0.01}
+                value={cameraConfig.damping}
+                onChange={e => update('camera', { ...cameraConfig, damping: Number(e.target.value) })}
+                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-text/10 accent-sky-400 [&::-webkit-slider-thumb]:size-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-sky-400"
+              />
             </div>
           </div>
         )}

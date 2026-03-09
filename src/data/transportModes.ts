@@ -9,3 +9,6 @@ export const transportModeIcons: Record<TransportMode, string> = {
   flying: 'i-mingcute-airplane-line',
   unknown: 'i-mingcute-location-line',
 }
+
+/** Selectable transport modes (excludes 'unknown'). */
+export const TRANSPORT_MODES: TransportMode[] = ['walking', 'cycling', 'driving', 'train', 'flying']

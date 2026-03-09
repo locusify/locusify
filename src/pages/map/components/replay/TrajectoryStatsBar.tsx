@@ -7,16 +7,16 @@ import { useReplayStore } from '@/stores/replayStore'
 import { AnimatedNumber } from './AnimatedNumber'
 
 /**
- * Bottom stats bar shown during trajectory replay.
+ * Bottom stats bar shown during trajectory playback.
  * Left: logo + brand name. Middle: 2 animated stats. Right: QR code.
- * Visible during playing/paused/completed — including recording.
+ * Visible from configuring through playing/paused/completed — including recording.
  */
-export function ReplayStatsBar() {
+export function TrajectoryStatsBar() {
   const { t } = useTranslation()
   const status = useReplayStore(s => s.status)
   const stats = useReplayStats()
 
-  const isVisible = status === 'playing' || status === 'paused' || status === 'completed'
+  const isVisible = status === 'configuring' || status === 'playing' || status === 'paused' || status === 'completed'
 
   const items = [
     {

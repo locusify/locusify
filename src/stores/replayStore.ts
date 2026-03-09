@@ -6,9 +6,18 @@ import { create } from 'zustand'
 import { templates } from '@/data/templates'
 import AudioManager from '@/lib/audio/AudioManager'
 import { haversineDistance } from '@/lib/geo'
+import { interpolateSegment } from '@/lib/replay/curves'
 
 /** Duration per segment in ms at 1x speed */
 const BASE_SEGMENT_DURATION = 2000
+
+/** Dwell time at each waypoint before advancing to next segment (ms) */
+const DWELL_DURATION = 400
+
+/** Ease-in-out curve for smoother segment traversal */
+function easeInOut(t: number): number {
+  return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2
+}
 
 interface ReplayWaypoint {
   /** Marker ID */
@@ -40,15 +49,39 @@ function computePosition(
   waypoints: ReplayWaypoint[],
   waypointIndex: number,
   segmentProgress: number,
+  segments: SegmentMeta[],
 ): [number, number] | null {
   if (waypoints.length === 0)
     return null
   if (waypointIndex >= waypoints.length - 1) {
     return waypoints[waypoints.length - 1].position
   }
+
+  const seg = segments[waypointIndex]
+  const t = easeInOut(Math.max(0, Math.min(1, segmentProgress)))
+
+  // Walk along pre-computed curve points
+  if (seg?.curvePoints && seg.curvePoints.length >= 2) {
+    const totalPoints = seg.curvePoints.length - 1
+    const exactIdx = t * totalPoints
+    const idx = Math.floor(exactIdx)
+    const frac = exactIdx - idx
+
+    if (idx >= totalPoints) {
+      return seg.curvePoints[totalPoints]
+    }
+
+    const p0 = seg.curvePoints[idx]
+    const p1 = seg.curvePoints[idx + 1]
+    return [
+      p0[0] + (p1[0] - p0[0]) * frac,
+      p0[1] + (p1[1] - p0[1]) * frac,
+    ]
+  }
+
+  // Fallback: linear interpolation
   const from = waypoints[waypointIndex].position
   const to = waypoints[waypointIndex + 1].position
-  const t = Math.max(0, Math.min(1, segmentProgress))
   return [
     from[0] + (to[0] - from[0]) * t,
     from[1] + (to[1] - from[1]) * t,
@@ -62,12 +95,16 @@ function computeSegments(waypoints: ReplayWaypoint[]): SegmentMeta[] {
     const to = waypoints[i + 1]
     const distanceKm = haversineDistance(from.position, to.position)
     const timeDeltaMs = to.timestamp.getTime() - from.timestamp.getTime()
+    const mode: TransportMode = 'walking'
+    const curvePoints = interpolateSegment(from.position, to.position, distanceKm, mode, i)
     segments.push({
       fromIndex: i,
       toIndex: i + 1,
       distanceKm,
       timeDeltaMs,
-      mode: 'walking',
+      mode,
+      curvePoints,
+      isLongJump: distanceKm > 200,
     })
   }
   return segments
@@ -100,6 +137,8 @@ interface ReplayState {
   customOverrides: Partial<ReplayTemplateConfig>
   captions: string[]
   earthZoomPhase: EarthZoomPhase
+  /** Remaining dwell time (ms) at current waypoint before advancing */
+  dwellRemaining: number
 
   startReplay: (markers: PhotoMarker[], startPaused?: boolean) => void
   prepareReplay: (markers: PhotoMarker[]) => void
@@ -138,6 +177,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
   customOverrides: {},
   captions: [],
   earthZoomPhase: 'idle',
+  dwellRemaining: 0,
 
   setRecordingActive: active => set({ recordingActive: active }),
 
@@ -172,6 +212,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       totalProgress: 0,
       speedMultiplier: get().speedMultiplier,
       currentPosition: waypoints[0].position,
+      dwellRemaining: 0,
     })
   },
 
@@ -191,6 +232,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       totalProgress: 0,
       speedMultiplier: get().templateConfig.defaultSpeed || get().speedMultiplier,
       currentPosition: waypoints[0].position,
+      dwellRemaining: 0,
     })
   },
 
@@ -233,6 +275,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       currentPosition: waypoints[0]?.position ?? null,
       recordingActive: false,
       earthZoomPhase: 'idle',
+      dwellRemaining: 0,
     })
   },
 
@@ -246,6 +289,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       speedMultiplier,
       currentPosition: waypoints[0]?.position ?? null,
       earthZoomPhase: 'idle',
+      dwellRemaining: 0,
     })
   },
 
@@ -267,6 +311,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       customOverrides: {},
       captions: [],
       earthZoomPhase: 'idle',
+      dwellRemaining: 0,
     })
   },
 
@@ -287,6 +332,7 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
         totalProgress: 1,
         currentPosition: waypoints[maxIndex].position,
         status: 'completed',
+        dwellRemaining: 0,
       })
       return
     }
@@ -296,15 +342,21 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       totalProgress: clampedIndex / totalSegments,
       currentPosition: waypoints[clampedIndex].position,
       status: status === 'completed' ? 'paused' : status,
+      dwellRemaining: 0,
     })
   },
 
   setSegmentMode: (segmentIndex, mode) => {
-    const { segments, currentWaypointIndex } = get()
+    const { segments, currentWaypointIndex, waypoints } = get()
     if (segmentIndex < 0 || segmentIndex >= segments.length)
       return
     const updated = [...segments]
-    updated[segmentIndex] = { ...updated[segmentIndex], mode }
+    const seg = updated[segmentIndex]
+    // Recompute curve points for the new mode
+    const from = waypoints[seg.fromIndex].position
+    const to = waypoints[seg.toIndex].position
+    const curvePoints = interpolateSegment(from, to, seg.distanceKm, mode, segmentIndex)
+    updated[segmentIndex] = { ...seg, mode, curvePoints }
     const patch: Partial<ReplayState> = { segments: updated }
     if (segmentIndex === currentWaypointIndex) {
       patch.currentSegmentMode = mode
@@ -323,34 +375,70 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
 
     // Cap delta to prevent large jumps (e.g. after tab switch)
     const cappedDelta = Math.min(delta, 200)
-    const segmentDuration = (state.templateConfig.segmentDuration || BASE_SEGMENT_DURATION) / state.speedMultiplier
-    const progressIncrement = cappedDelta / segmentDuration
 
-    let segProg = state.segmentProgress + progressIncrement
-    let wpIdx = state.currentWaypointIndex
-
-    // Advance through completed segments
-    while (segProg >= 1 && wpIdx < totalSegments - 1) {
-      segProg -= 1
-      wpIdx += 1
-    }
-
-    // Completion: last segment finished
-    if (wpIdx >= totalSegments - 1 && segProg >= 1) {
+    // --- Dwell phase: pause at waypoint before advancing ---
+    if (state.dwellRemaining > 0) {
+      const remaining = state.dwellRemaining - cappedDelta
+      if (remaining > 0) {
+        set({ dwellRemaining: remaining })
+        return
+      }
+      // Dwell finished — advance to next segment
+      const wpIdx = state.currentWaypointIndex + 1
+      if (wpIdx >= totalSegments) {
+        set({
+          status: 'completed',
+          currentWaypointIndex: totalSegments,
+          segmentProgress: 0,
+          totalProgress: 1,
+          currentPosition: state.waypoints[totalSegments].position,
+          dwellRemaining: 0,
+        })
+        return
+      }
       set({
-        status: 'completed',
-        currentWaypointIndex: totalSegments,
+        dwellRemaining: 0,
+        currentWaypointIndex: wpIdx,
         segmentProgress: 0,
-        totalProgress: 1,
-        currentPosition: state.waypoints[totalSegments].position,
+        currentSegmentMode: state.segments[wpIdx]?.mode ?? 'walking',
       })
       return
     }
 
-    // Clamp segment progress to [0, 1) for safety
+    const segmentDuration = (state.templateConfig.segmentDuration || BASE_SEGMENT_DURATION) / state.speedMultiplier
+    const progressIncrement = cappedDelta / segmentDuration
+
+    let segProg = state.segmentProgress + progressIncrement
+    const wpIdx = state.currentWaypointIndex
+
+    // Segment completed — enter dwell phase
+    if (segProg >= 1) {
+      // Last segment completed
+      if (wpIdx >= totalSegments - 1) {
+        set({
+          status: 'completed',
+          currentWaypointIndex: totalSegments,
+          segmentProgress: 0,
+          totalProgress: 1,
+          currentPosition: state.waypoints[totalSegments].position,
+          dwellRemaining: 0,
+        })
+        return
+      }
+      // Clamp at end and start dwelling
+      set({
+        segmentProgress: 1,
+        totalProgress: Math.min((wpIdx + 1) / totalSegments, 1),
+        currentPosition: state.waypoints[wpIdx + 1].position,
+        dwellRemaining: DWELL_DURATION,
+      })
+      return
+    }
+
+    // Normal progress within segment
     segProg = Math.min(segProg, 0.9999)
     const totalProgress = Math.min((wpIdx + segProg) / totalSegments, 1)
-    const currentPosition = computePosition(state.waypoints, wpIdx, segProg)
+    const currentPosition = computePosition(state.waypoints, wpIdx, segProg, state.segments)
 
     set({
       currentWaypointIndex: wpIdx,

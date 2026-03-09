@@ -47,6 +47,12 @@ export interface ReplayTemplateConfig {
     style: 'stats-card' | 'logo-fade' | 'none'
     duration: number
   }
+  camera?: {
+    followMode: 'smart' | 'fixed' | 'topdown'
+    pitchEnabled: boolean
+    bearingEnabled: boolean
+    damping: number
+  }
   segmentDuration: number
   defaultSpeed: number
 }

@@ -81,6 +81,9 @@
 
   "workspace.config.title": "配置路线",
   "workspace.config.start": "开始回放",
+  "workspace.config.route.title": "路线配置",
+  "workspace.config.route.next": "下一步",
+  "workspace.config.route.back": "返回",
 
   "workspace.controls.play": "播放",
   "workspace.controls.pause": "暂停",
@@ -365,6 +368,14 @@
   "template.customize.lineWidth": "宽度",
   "template.customize.glow": "发光",
   "template.customize.animated": "动画",
+  "template.customize.camera": "镜头",
+  "template.customize.followMode": "跟随模式",
+  "template.customize.followMode.smart": "智能",
+  "template.customize.followMode.fixed": "固定",
+  "template.customize.followMode.topdown": "俯视",
+  "template.customize.pitch": "俯仰",
+  "template.customize.bearing": "方向",
+  "template.customize.damping": "平滑度",
 
   "template.music.upbeat": "动感",
   "template.music.acoustic": "原声吉他",

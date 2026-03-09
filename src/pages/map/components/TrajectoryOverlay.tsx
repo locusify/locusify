@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { ReplayControls } from './replay/ReplayControls'
-import { ReplayStatsBar } from './replay/ReplayStatsBar'
+import { TrajectoryStatsBar } from './replay/TrajectoryStatsBar'
 import { TemplateCustomizer } from './replay/TemplateCustomizer'
 import { TemplateSelector } from './replay/TemplateSelector'
 
@@ -38,24 +38,33 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
   const startEarthZoom = useReplayStore(s => s.startEarthZoom)
   const isFragmentMode = useRegionStore(s => s.isFragmentMode)
 
+  const isConfiguring = status === 'configuring'
+
   const [showTemplatePanel, setShowTemplatePanel] = useState(false)
   const [showCustomizePanel, setShowCustomizePanel] = useState(false)
 
-  // Every play click (initial start, resume, restart) goes through the intro.
-  // In non-fragment mode, also trigger the cinematic earth zoom-in effect.
-  // startEarthZoom() must run AFTER the intro overlay is visible so the globe
-  // setup (projection switch + jumpTo space) happens behind the opaque overlay.
+  // Actual start logic — called from template panel's "Start" button
+  const handleStartReplay = useCallback(async () => {
+    setShowTemplatePanel(false)
+    setShowCustomizePanel(false)
+    confirmConfig()
+    if (!isFragmentMode) {
+      onBeginRecording?.(() => {})
+      startEarthZoom()
+    }
+    else {
+      await onBeginRecording?.(() => togglePlayPause())
+    }
+  }, [confirmConfig, isFragmentMode, onBeginRecording, startEarthZoom, togglePlayPause])
+
+  // Play button click:
+  // - configuring: open template panel
+  // - completed: restart (goes back to configuring → same flow)
+  // - paused: resume via intro
   const handlePlayClick = useCallback(async () => {
     if (status === 'configuring') {
-      confirmConfig()
-      if (!isFragmentMode) {
-        // Earth zoom timing is managed by EarthZoomController — no callback needed
-        onBeginRecording?.(() => {})
-        startEarthZoom()
-      }
-      else {
-        await onBeginRecording?.(() => togglePlayPause())
-      }
+      setShowTemplatePanel(prev => !prev)
+      setShowCustomizePanel(false)
     }
     else if (status === 'completed') {
       restartReplay()
@@ -63,7 +72,6 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
     else {
       // Pause-resume
       if (!isFragmentMode) {
-        // Earth zoom timing is managed by EarthZoomController — no callback needed
         onShowIntro?.(() => {})
         startEarthZoom()
       }
@@ -71,15 +79,13 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
         onShowIntro?.(() => togglePlayPause())
       }
     }
-  }, [status, onBeginRecording, onShowIntro, confirmConfig, restartReplay, togglePlayPause, isFragmentMode, startEarthZoom])
+  }, [status, onShowIntro, restartReplay, togglePlayPause, isFragmentMode, startEarthZoom])
 
   const handleTemplateSelect = useCallback((template: ReplayTemplate) => {
     setTemplate(template.id, template.config)
-    setShowTemplatePanel(false)
   }, [setTemplate])
 
   const handleConfigChange = useCallback((config: ReplayTemplateConfig) => {
-    // Compute overrides relative to the base template
     const base = getTemplateById(templateId)
     if (!base)
       return
@@ -96,53 +102,79 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
     onUpgradeClick?.()
   }, [onUpgradeClick])
 
-  const isConfiguring = status === 'configuring'
-
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-end">
-      {/* Template selection panel (configuring phase) */}
-      {isConfiguring && !showCustomizePanel && (
-        <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-40 max-h-[60vh] overflow-y-auto rounded-t-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-text">{t('template.selector.title')}</h2>
-            <button
-              type="button"
-              onClick={() => setShowCustomizePanel(true)}
-              className="flex items-center gap-1 rounded-lg bg-text/5 px-2.5 py-1.5 text-[11px] font-medium text-text/60 transition-colors hover:bg-text/10 hover:text-text"
-            >
-              <i className="i-mingcute-settings-3-line text-xs" />
-              {t('template.customize.title')}
-            </button>
-          </div>
-          <TemplateSelector
-            selectedId={templateId}
-            onSelect={handleTemplateSelect}
-            onUpgradeClick={handleUpgrade}
-          />
-          <button
-            type="button"
-            onClick={handlePlayClick}
-            className="mt-4 w-full rounded-xl bg-sky-400 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sky-500"
-          >
-            {t('workspace.config.start')}
-          </button>
-        </div>
-      )}
+      {/* Stats bar — always visible in replay mode */}
+      <TrajectoryStatsBar />
 
-      {/* Customize panel (configuring phase, drill-in from template panel) */}
+      {/* Template panel — above controls, shown when play clicked during configuring OR via template button during playback */}
       <AnimatePresence>
-        {isConfiguring && showCustomizePanel && (
+        {showTemplatePanel && !showCustomizePanel && (
           <m.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="pointer-events-auto absolute inset-x-0 bottom-0 z-40 max-h-[65vh] overflow-y-auto rounded-t-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className={cn(
+              'pointer-events-auto absolute left-2 right-2 z-40 max-h-[55vh] overflow-y-auto',
+              'rounded-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85',
+              isConfiguring ? 'bottom-28' : 'bottom-28',
+            )}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text">{t('template.selector.title')}</h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTemplatePanel(false)
+                  setShowCustomizePanel(true)
+                }}
+                className="flex items-center gap-1 rounded-lg bg-text/5 px-2.5 py-1.5 text-[11px] font-medium text-text/60 transition-colors hover:bg-text/10 hover:text-text"
+              >
+                <i className="i-mingcute-settings-3-line text-xs" />
+                {t('template.customize.title')}
+              </button>
+            </div>
+            <TemplateSelector
+              selectedId={templateId}
+              onSelect={handleTemplateSelect}
+              onUpgradeClick={handleUpgrade}
+            />
+            {isConfiguring && (
+              <button
+                type="button"
+                onClick={handleStartReplay}
+                className="mt-4 w-full rounded-xl bg-sky-400 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sky-500"
+              >
+                {t('workspace.config.start')}
+              </button>
+            )}
+          </m.div>
+        )}
+      </AnimatePresence>
+
+      {/* Customize panel */}
+      <AnimatePresence>
+        {showCustomizePanel && (
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className={cn(
+              'pointer-events-auto absolute left-2 right-2 z-40 max-h-[60vh] overflow-y-auto',
+              'rounded-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85',
+              'bottom-28',
+            )}
           >
             <div className="mb-3 flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setShowCustomizePanel(false)}
+                onClick={() => {
+                  setShowCustomizePanel(false)
+                  if (isConfiguring)
+                    setShowTemplatePanel(true)
+                }}
                 className="flex size-7 items-center justify-center rounded-lg text-text/60 transition-colors hover:bg-text/5 hover:text-text"
               >
                 <i className="i-mingcute-arrow-left-line text-sm" />
@@ -153,65 +185,21 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
               config={templateConfig}
               onChange={handleConfigChange}
             />
-            <button
-              type="button"
-              onClick={() => setShowCustomizePanel(false)}
-              className="mt-4 w-full rounded-xl bg-sky-400 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sky-500"
-            >
-              {t('workspace.config.start')}
-            </button>
-          </m.div>
-        )}
-      </AnimatePresence>
-
-      {/* Template/customize popover during playback — toggled via ReplayControls buttons */}
-      <AnimatePresence>
-        {showTemplatePanel && !isConfiguring && (
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className={cn(
-              'pointer-events-auto absolute bottom-28 left-2 right-2 z-40 max-h-[50vh] overflow-y-auto',
-              'rounded-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85',
+            {isConfiguring && (
+              <button
+                type="button"
+                onClick={handleStartReplay}
+                className="mt-4 w-full rounded-xl bg-sky-400 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sky-500"
+              >
+                {t('workspace.config.start')}
+              </button>
             )}
-          >
-            <TemplateSelector
-              selectedId={templateId}
-              onSelect={(tmpl) => {
-                handleTemplateSelect(tmpl)
-                setShowTemplatePanel(false)
-              }}
-              onUpgradeClick={handleUpgrade}
-            />
           </m.div>
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showCustomizePanel && !isConfiguring && (
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className={cn(
-              'pointer-events-auto absolute bottom-28 left-2 right-2 z-40 max-h-[55vh] overflow-y-auto',
-              'rounded-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85',
-            )}
-          >
-            <TemplateCustomizer
-              config={templateConfig}
-              onChange={handleConfigChange}
-            />
-          </m.div>
-        )}
-      </AnimatePresence>
-
-      {/* Stats bar — visible during replay (including recording) */}
-      {!isConfiguring && <ReplayStatsBar />}
-
-      {/* Bottom gradient + controls — hidden during recording */}
-      {!recordingActive && !isConfiguring && (
+      {/* Bottom gradient + controls — always shown except during recording */}
+      {!recordingActive && (
         <>
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
           <div className="pointer-events-auto relative mx-2 pb-2 sm:pb-4">

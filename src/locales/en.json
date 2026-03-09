@@ -81,6 +81,9 @@
 
   "workspace.config.title": "Configure Route",
   "workspace.config.start": "Start Replay",
+  "workspace.config.route.title": "Route Configuration",
+  "workspace.config.route.next": "Next",
+  "workspace.config.route.back": "Back",
 
   "workspace.controls.play": "Play",
   "workspace.controls.pause": "Pause",
@@ -365,6 +368,14 @@
   "template.customize.lineWidth": "Width",
   "template.customize.glow": "Glow",
   "template.customize.animated": "Animated",
+  "template.customize.camera": "Camera",
+  "template.customize.followMode": "Follow Mode",
+  "template.customize.followMode.smart": "Smart",
+  "template.customize.followMode.fixed": "Fixed",
+  "template.customize.followMode.topdown": "Top Down",
+  "template.customize.pitch": "Pitch",
+  "template.customize.bearing": "Bearing",
+  "template.customize.damping": "Smoothing",
 
   "template.music.upbeat": "Upbeat",
   "template.music.acoustic": "Acoustic",
