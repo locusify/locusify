@@ -32,6 +32,7 @@ export interface ReplayTemplateConfig {
     showLocation: boolean
     fontFamily: string
     color: string
+    customText?: string
   }
   lineStyle: {
     color: string

@@ -5,6 +5,7 @@ type ReplayStatus = PlaybackState['status']
 
 class AudioManager {
   private static instance: AudioManager
+  private static unavailableTracks = new Set<string>()
   private context: AudioContext | null = null
   private gainNode: GainNode | null = null
   private source: AudioBufferSourceNode | null = null
@@ -54,7 +55,34 @@ class AudioManager {
     }
     catch {
       console.warn(`Failed to load audio track: ${trackId}`)
+      AudioManager.unavailableTracks.add(trackId)
       this.buffer = null
+    }
+  }
+
+  static isUnavailable(trackId: string): boolean {
+    return AudioManager.unavailableTracks.has(trackId)
+  }
+
+  static async probeTrack(trackId: string): Promise<boolean> {
+    if (trackId === 'none')
+      return true
+    if (AudioManager.unavailableTracks.has(trackId))
+      return false
+    const track = getTrackById(trackId)
+    if (!track || !track.url)
+      return false
+    try {
+      const response = await fetch(track.url, { method: 'HEAD' })
+      if (!response.ok) {
+        AudioManager.unavailableTracks.add(trackId)
+        return false
+      }
+      return true
+    }
+    catch {
+      AudioManager.unavailableTracks.add(trackId)
+      return false
     }
   }
 

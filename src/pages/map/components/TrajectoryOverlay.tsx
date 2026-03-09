@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { ReplayControls } from './replay/ReplayControls'
+import { ReplayTextOverlay } from './replay/ReplayTextOverlay'
 import { TrajectoryStatsBar } from './replay/TrajectoryStatsBar'
 import { TemplateCustomizer } from './replay/TemplateCustomizer'
 import { TemplateSelector } from './replay/TemplateSelector'
@@ -104,6 +105,11 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
 
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-end">
+      {/* Text overlay — shown during playback */}
+      {templateConfig && (
+        <ReplayTextOverlay config={templateConfig.textOverlay} />
+      )}
+
       {/* Stats bar — always visible in replay mode */}
       <TrajectoryStatsBar />
 

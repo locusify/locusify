@@ -63,10 +63,10 @@ export function ReplayTextOverlay({ config, caption }: ReplayTextOverlayProps) {
             ...(isNeon ? { textShadow: `0 0 8px ${config.color}, 0 0 16px ${config.color}40` } : {}),
           }}
         >
-          {/* AI caption or description */}
-          {caption && (
+          {/* Custom user caption (takes priority over AI caption) */}
+          {(config.customText || caption) && (
             <p className={cn(styleClasses[config.style], 'drop-shadow-lg')}>
-              {caption}
+              {config.customText || caption}
             </p>
           )}
 

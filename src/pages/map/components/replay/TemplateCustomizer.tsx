@@ -1,6 +1,7 @@
 import type { FilterType, ReplayTemplateConfig, TextOverlayStyle, TransitionType } from '@/types/template'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import AudioManager from '@/lib/audio/AudioManager'
 import { audioTracks } from '@/lib/audio/tracks'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +20,22 @@ const TEXT_POSITIONS = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 
 export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps) {
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>('music')
+  const [unavailableTracks, setUnavailableTracks] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    const checkTracks = async () => {
+      const results = await Promise.all(
+        audioTracks
+          .filter(t => t.id !== 'none')
+          .map(async track => {
+            const available = await AudioManager.probeTrack(track.id)
+            return { id: track.id, available }
+          }),
+      )
+      setUnavailableTracks(new Set(results.filter(r => !r.available).map(r => r.id)))
+    }
+    checkTracks()
+  }, [])
 
   const tabs: { id: Tab, icon: string, label: string }[] = [
     { id: 'music', icon: 'i-mingcute-music-2-line', label: t('template.customize.music') },
@@ -69,21 +86,31 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
         {activeTab === 'music' && (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
-              {audioTracks.map(track => (
-                <button
-                  key={track.id}
-                  type="button"
-                  onClick={() => update('music', { ...config.music, trackId: track.id })}
-                  className={cn(
-                    'rounded-lg border px-2.5 py-2 text-[11px] transition-colors',
-                    config.music.trackId === track.id
-                      ? 'border-sky-400 bg-sky-400/10 text-sky-400'
-                      : 'border-fill-tertiary text-text/60 hover:border-text/20',
-                  )}
-                >
-                  {t(track.nameKey)}
-                </button>
-              ))}
+              {audioTracks.map(track => {
+                const isUnavailable = track.id !== 'none' && unavailableTracks.has(track.id)
+                return (
+                  <button
+                    key={track.id}
+                    type="button"
+                    onClick={() => !isUnavailable && update('music', { ...config.music, trackId: track.id })}
+                    className={cn(
+                      'relative rounded-lg border px-2.5 py-2 text-[11px] transition-colors',
+                      isUnavailable
+                        ? 'cursor-default border-fill-tertiary opacity-40'
+                        : config.music.trackId === track.id
+                          ? 'border-sky-400 bg-sky-400/10 text-sky-400'
+                          : 'border-fill-tertiary text-text/60 hover:border-text/20',
+                    )}
+                  >
+                    <span className={cn(isUnavailable && 'line-through')}>{t(track.nameKey)}</span>
+                    {isUnavailable && (
+                      <span className="absolute -top-1.5 -right-1 rounded-full bg-text/20 px-1 py-px text-[8px] text-text/50">
+                        {t('template.music.unavailable')}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
             <div className="space-y-1.5">
               <label className="flex items-center justify-between text-[11px] text-text/50">
@@ -120,7 +147,7 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
                       : 'border-fill-tertiary text-text/60 hover:border-text/20',
                   )}
                 >
-                  {type}
+                  {t(`template.filter.${type}`)}
                 </button>
               ))}
             </div>
@@ -181,7 +208,7 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
                             : 'border-fill-tertiary text-text/60 hover:border-text/20',
                         )}
                       >
-                        {style}
+                        {t(`template.textStyle.${style}`)}
                       </button>
                     ))}
                   </div>
@@ -201,7 +228,7 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
                             : 'border-fill-tertiary text-text/60 hover:border-text/20',
                         )}
                       >
-                        {pos}
+                        {t(`template.position.${pos}`)}
                       </button>
                     ))}
                   </div>
@@ -226,6 +253,16 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
                     <span className="text-[10px] text-text/60">{t('template.customize.showLocation')}</span>
                   </label>
                 </div>
+                <div className="space-y-1.5">
+                  <span className="text-[10px] text-text/40">{t('template.customize.customText')}</span>
+                  <textarea
+                    rows={2}
+                    value={config.textOverlay.customText ?? ''}
+                    onChange={e => update('textOverlay', { ...config.textOverlay, customText: e.target.value })}
+                    placeholder={t('template.customize.customTextPlaceholder')}
+                    className="w-full resize-none rounded-lg border border-fill-tertiary bg-transparent px-2.5 py-2 text-[11px] text-text placeholder:text-text/30 focus:outline-none focus:border-text/30"
+                  />
+                </div>
               </>
             )}
           </div>
@@ -246,7 +283,7 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
                       : 'border-fill-tertiary text-text/60 hover:border-text/20',
                   )}
                 >
-                  {type}
+                  {t(`template.transition.${type}`)}
                 </button>
               ))}
             </div>

@@ -383,6 +383,36 @@
   "template.music.ambient": "氛围",
   "template.music.orchestral": "交响乐",
   "template.music.none": "无",
+  "template.music.unavailable": "即将推出",
+
+  "template.filter.none": "无",
+  "template.filter.vintage": "复古",
+  "template.filter.warm": "暖调",
+  "template.filter.cool": "冷调",
+  "template.filter.b&w": "黑白",
+  "template.filter.film": "胶片",
+  "template.filter.cinematic": "电影感",
+
+  "template.transition.cut": "硬切",
+  "template.transition.crossfade": "交叉淡化",
+  "template.transition.slide-left": "滑动",
+  "template.transition.zoom-in": "放大",
+  "template.transition.blur": "模糊",
+
+  "template.textStyle.handwritten": "手写",
+  "template.textStyle.minimal": "简约",
+  "template.textStyle.bold": "粗体",
+  "template.textStyle.typewriter": "打字机",
+  "template.textStyle.neon": "霓虹",
+
+  "template.position.top-left": "左上",
+  "template.position.top-right": "右上",
+  "template.position.bottom-left": "左下",
+  "template.position.bottom-right": "右下",
+  "template.position.center": "居中",
+
+  "template.customize.customText": "自定义文字",
+  "template.customize.customTextPlaceholder": "输入自定义说明文字...",
 
   "template.stats.title": "旅程统计",
   "template.stats.photos": "照片",

@@ -383,6 +383,36 @@
   "template.music.ambient": "Ambient",
   "template.music.orchestral": "Orchestral",
   "template.music.none": "None",
+  "template.music.unavailable": "Coming Soon",
+
+  "template.filter.none": "None",
+  "template.filter.vintage": "Vintage",
+  "template.filter.warm": "Warm",
+  "template.filter.cool": "Cool",
+  "template.filter.b&w": "B&W",
+  "template.filter.film": "Film",
+  "template.filter.cinematic": "Cinematic",
+
+  "template.transition.cut": "Cut",
+  "template.transition.crossfade": "Crossfade",
+  "template.transition.slide-left": "Slide",
+  "template.transition.zoom-in": "Zoom In",
+  "template.transition.blur": "Blur",
+
+  "template.textStyle.handwritten": "Handwritten",
+  "template.textStyle.minimal": "Minimal",
+  "template.textStyle.bold": "Bold",
+  "template.textStyle.typewriter": "Typewriter",
+  "template.textStyle.neon": "Neon",
+
+  "template.position.top-left": "Top Left",
+  "template.position.top-right": "Top Right",
+  "template.position.bottom-left": "Bottom Left",
+  "template.position.bottom-right": "Bottom Right",
+  "template.position.center": "Center",
+
+  "template.customize.customText": "Custom Caption",
+  "template.customize.customTextPlaceholder": "Add your own caption...",
 
   "template.stats.title": "Journey Stats",
   "template.stats.photos": "Photos",
