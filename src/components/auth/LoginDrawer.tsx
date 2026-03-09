@@ -19,7 +19,6 @@ import { useCooldown } from '@/hooks/useCooldown'
 import { forgotPassword } from '@/lib/api/auth'
 import { ApiError } from '@/lib/api/client'
 import { getAuthProviders } from '@/lib/auth'
-import { env } from '@/lib/env'
 import { cn, glassPanel } from '@/lib/utils'
 import { logout, useAuthStore } from '@/stores/authStore'
 
@@ -52,7 +51,7 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
     setLoggingIn(true)
     setActiveProvider(provider.type)
     try {
-      await provider.login(env.VITE_OAUTH_REDIRECT_URI ? { redirectUri: env.VITE_OAUTH_REDIRECT_URI } : undefined)
+      await provider.login()
       // Redirect flow — page will navigate away; no need to close drawer
     }
     catch {

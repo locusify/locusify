@@ -9,7 +9,7 @@ const envSchema = z.object({
   /** Debug: force Pro subscription status */
   VITE_DEBUG_PRO: z.coerce.boolean().default(false),
   /** Native OAuth redirect URI (e.g. locusify://auth/callback) */
-  VITE_OAUTH_REDIRECT_URI: z.string().optional(),
+  VITE_OAUTH_REDIRECT_URI: z.string(),
 })
 
 export type Env = z.infer<typeof envSchema>
