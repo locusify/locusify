@@ -42,9 +42,11 @@ Locusify/
 │   ├── lib/                # Utility libraries
 │   ├── locales/            # i18n translations
 │   ├── pages/              # Page components
+│   │   ├── auth/          # Auth callback & password reset
 │   │   ├── error/         # Error pages
 │   │   ├── explore/       # Explore page
 │   │   ├── map/           # Map page + trajectory replay
+│   │   ├── pricing/       # Pricing drawer
 │   │   ├── settings/      # Settings page
 │   │   └── splashScreen/  # Splash screen
 │   ├── routers/            # Route definitions

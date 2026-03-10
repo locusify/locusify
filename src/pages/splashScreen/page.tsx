@@ -3,8 +3,7 @@ import { Camera, Map, Video } from 'lucide-react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-
-const logoUrl = 'https://raw.githubusercontent.com/caterpi11ar/assets/main/logo/locusify.png'
+import locusifyLogo from '@/assets/locusify.png'
 
 const SplashScreen: FC = () => {
   const { t } = useTranslation()
@@ -23,7 +22,7 @@ const SplashScreen: FC = () => {
         <div className="flex flex-col items-center text-center flex-1 justify-center max-w-2xl animate-in fade-in duration-500">
           {/* Logo */}
           <div className="flex size-28 md:size-36 items-center justify-center mb-8 md:mb-12">
-            <img src={logoUrl} alt="Locusify Logo" className="size-full" />
+            <img src={locusifyLogo} alt="Locusify Logo" className="size-full" />
           </div>
 
           {/* Heading */}
