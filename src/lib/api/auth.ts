@@ -1,5 +1,16 @@
 import { apiClient } from './client'
 
+export interface AuthMeResponse {
+  id: string
+  email: string
+  created_at: string
+  last_sign_in_at: string
+}
+
+export function fetchAuthMe() {
+  return apiClient.get<AuthMeResponse>('/auth/me')
+}
+
 export interface OtpVerifyResponse {
   access_token: string
   refresh_token: string

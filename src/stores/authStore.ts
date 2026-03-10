@@ -1,7 +1,9 @@
+import type { AuthMeResponse } from '@/lib/api/auth'
 import type { AuthUser } from '@/lib/auth/types'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import defaultAvatar from '@/assets/locusify-fit.png'
+import { fetchAuthMe } from '@/lib/api/auth'
 import { apiClient, ApiError } from '@/lib/api/client'
 import { clearTokens, getTokens, setTokens } from '@/lib/auth/token-storage'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
@@ -43,13 +45,6 @@ export const useAuthStore = create<AuthState>()(
     },
   ),
 )
-
-interface AuthMeResponse {
-  id: string
-  email: string
-  created_at: string
-  last_sign_in_at: string
-}
 
 interface ProfileResponse {
   id: string
@@ -97,7 +92,7 @@ export async function handleOAuthCallback(accessToken: string, refreshToken: str
   setTokens(accessToken, refreshToken)
 
   const [me, profile] = await Promise.all([
-    apiClient.get<AuthMeResponse>('/auth/me'),
+    fetchAuthMe(),
     fetchProfileSafe(),
   ])
 
@@ -128,7 +123,7 @@ export async function initializeAuth() {
   }
 
   try {
-    const me = await apiClient.get<AuthMeResponse>('/auth/me')
+    const me = await fetchAuthMe()
     const profile = await fetchProfileSafe()
 
     useAuthStore.getState().setUser(buildAuthUser(me, profile))
