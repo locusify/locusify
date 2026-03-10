@@ -1,7 +1,7 @@
 import type { ReplayTemplateConfig } from '@/types/template'
 import { AnimatePresence, m } from 'motion/react'
 import { useEffect, useState } from 'react'
-import locusifyLogo from '@/assets/locusify-fit.png'
+import locusifyLogo from '@/assets/locusify.png'
 
 // Must match INTRO_MS in useVideoRecorder.ts
 const FADE_IN_S = 0.7

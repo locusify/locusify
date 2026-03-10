@@ -1,6 +1,6 @@
 import { AnimatePresence, m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
-import locusifyLogo from '@/assets/locusify-fit.png'
+import locusifyLogo from '@/assets/locusify.png'
 import qrcodeImg from '@/assets/qrcode.jpeg'
 import { useReplayStats } from '@/hooks/useReplayStats'
 import { useReplayStore } from '@/stores/replayStore'
