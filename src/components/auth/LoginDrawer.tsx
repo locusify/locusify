@@ -60,7 +60,7 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange, dismissi
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
-      <DrawerContent className="max-h-[80vh] border-none bg-transparent backdrop-blur-none">
+      <DrawerContent className="max-h-[95dvh] sm:max-h-[80vh] border-none bg-transparent backdrop-blur-none">
         <DrawerHeader className="hidden">
           <DrawerTitle>{t('auth.drawer.login.title')}</DrawerTitle>
           <DrawerDescription>{t('auth.drawer.login.description')}</DrawerDescription>
@@ -131,7 +131,7 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange, dismissi
                       )}
                     >
                       {isActive ? <Spinner className="size-5" /> : <provider.icon />}
-                      <span>
+                      <span className="hidden sm:inline">
                         {provider.type === 'google'
                           ? t('auth.login.oauth.google')
                           : t('auth.login.oauth.github')}
