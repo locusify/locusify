@@ -10,7 +10,7 @@ import { useLongPress } from '@/hooks/useLongPress'
 import { useRecordingFlow } from '@/hooks/useRecordingFlow'
 import { useRegionPhotoMapping } from '@/hooks/useRegionPhotoMapping'
 import { extractExifData } from '@/lib/exif'
-import { isVideoFile } from '@/lib/utils'
+import { categorizeFiles, getFilenameStem } from '@/lib/utils'
 import { SettingsDrawer } from '@/pages/settings'
 import { useAuthStore } from '@/stores/authStore'
 import { useGlobeOrbitStore } from '@/stores/globeOrbitStore'
@@ -166,38 +166,37 @@ function MapSectionContent() {
       return
 
     const { lng, lat } = pendingLngLat.current
+    const allFiles: File[] = []
+    for (let i = 0; i < fileList.length; i++) {
+      allFiles.push(fileList[i])
+    }
+
+    const { imageFiles, videoMap, standaloneVideos } = categorizeFiles(allFiles)
     const photos: Photo[] = []
 
-    for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i]
-      const isVideo = isVideoFile(file)
-      const isImage = file.type.startsWith('image/')
-
-      if (!isImage && !isVideo)
-        continue
-
+    for (const file of imageFiles) {
       const preview = URL.createObjectURL(file)
 
       let dateTaken: string | undefined
       let camera: { make?: string, model?: string } | undefined
-      let exif: Awaited<ReturnType<typeof extractExifData>> | undefined
-
-      if (isImage) {
-        exif = (await extractExifData(file)) ?? undefined
-        if (exif) {
-          const dateTimeOriginal = exif.DateTimeOriginal
-          const createDate = exif.CreateDate
-          if (dateTimeOriginal) {
-            dateTaken = dateTimeOriginal instanceof Date ? dateTimeOriginal.toISOString() : dateTimeOriginal
-          }
-          else if (createDate) {
-            dateTaken = createDate instanceof Date ? createDate.toISOString() : createDate
-          }
-          if (exif.Make || exif.Model) {
-            camera = { make: exif.Make, model: exif.Model }
-          }
+      const exif = (await extractExifData(file)) ?? undefined
+      if (exif) {
+        const dateTimeOriginal = exif.DateTimeOriginal
+        const createDate = exif.CreateDate
+        if (dateTimeOriginal) {
+          dateTaken = dateTimeOriginal instanceof Date ? dateTimeOriginal.toISOString() : dateTimeOriginal
+        }
+        else if (createDate) {
+          dateTaken = createDate instanceof Date ? createDate.toISOString() : createDate
+        }
+        if (exif.Make || exif.Model) {
+          camera = { make: exif.Make, model: exif.Model }
         }
       }
+
+      // Check for paired Live Photo video
+      const stem = getFilenameStem(file.name).toLowerCase()
+      const pairedVideo = videoMap.get(stem)
 
       photos.push({
         id: `${file.name}-${file.lastModified}`,
@@ -216,10 +215,33 @@ function MapSectionContent() {
         exif: exif ?? undefined,
         dateTaken,
         camera,
-        ...(isVideo && {
-          videoFile: file,
-          videoSource: { type: 'video' as const, videoUrl: preview },
+        ...(pairedVideo && {
+          videoFile: pairedVideo,
+          videoSource: { type: 'live-photo' as const, videoUrl: URL.createObjectURL(pairedVideo) },
         }),
+      })
+    }
+
+    // Process standalone videos
+    for (const videoFile of standaloneVideos) {
+      const preview = URL.createObjectURL(videoFile)
+
+      photos.push({
+        id: `${videoFile.name}-${videoFile.lastModified}`,
+        file: videoFile,
+        preview,
+        name: videoFile.name,
+        size: videoFile.size,
+        type: videoFile.type,
+        lastModified: videoFile.lastModified,
+        gpsInfo: {
+          latitude: lat,
+          longitude: lng,
+          latitudeRef: lat >= 0 ? GPSDirection.North : GPSDirection.South,
+          longitudeRef: lng >= 0 ? GPSDirection.East : GPSDirection.West,
+        },
+        videoFile,
+        videoSource: { type: 'video' as const, videoUrl: preview },
       })
     }
 

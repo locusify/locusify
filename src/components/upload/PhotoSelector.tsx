@@ -6,61 +6,10 @@ import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { env } from '@/lib/env'
 import { extractExifData } from '@/lib/exif'
-import { cn, isVideoFile } from '@/lib/utils'
+import { categorizeFiles, cn, getFilenameStem } from '@/lib/utils'
 import { convertExifGPSToDecimal } from '@/pages/map/utils'
 import { getCamera, isNative } from '@/platforms'
 import { GPSDirection } from '@/types/map'
-
-/** Get the filename stem without extension (e.g. "IMG_1234" from "IMG_1234.HEIC") */
-function getFilenameStem(name: string): string {
-  const lastDot = name.lastIndexOf('.')
-  return lastDot > 0 ? name.substring(0, lastDot) : name
-}
-
-/**
- * Categorize files into images, paired Live Photo videos, and standalone videos.
- * Videos with a matching image filename stem are treated as Live Photos;
- * unmatched videos become standalone media items.
- */
-function categorizeFiles(allFiles: File[]): {
-  imageFiles: File[]
-  videoMap: Map<string, File>
-  standaloneVideos: File[]
-} {
-  const imageFiles: File[] = []
-  const videoFiles: File[] = []
-
-  for (const file of allFiles) {
-    if (isVideoFile(file)) {
-      videoFiles.push(file)
-    }
-    else if (file.type.startsWith('image/')) {
-      imageFiles.push(file)
-    }
-  }
-
-  // Build a set of image filename stems for pairing
-  const imageStems = new Set<string>()
-  for (const img of imageFiles) {
-    imageStems.add(getFilenameStem(img.name).toLowerCase())
-  }
-
-  // Partition videos into paired (Live Photo) and standalone
-  const videoMap = new Map<string, File>()
-  const standaloneVideos: File[] = []
-
-  for (const vf of videoFiles) {
-    const stem = getFilenameStem(vf.name).toLowerCase()
-    if (imageStems.has(stem)) {
-      videoMap.set(stem, vf)
-    }
-    else {
-      standaloneVideos.push(vf)
-    }
-  }
-
-  return { imageFiles, videoMap, standaloneVideos }
-}
 
 // Mock GPS locations for dev testing (Japan locations)
 const MOCK_GPS_LOCATIONS: GPSCoordinates[] = [

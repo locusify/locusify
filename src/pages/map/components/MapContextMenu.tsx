@@ -1,5 +1,5 @@
 import { ImagePlus } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { glassPanel } from '@/lib/utils'
@@ -22,6 +22,22 @@ interface MapContextMenuProps {
 export function MapContextMenu({ position, onAddPhotos, onClose }: MapContextMenuProps) {
   const { t } = useTranslation()
   const menuRef = useRef<HTMLDivElement>(null)
+
+  // Clamp menu position so it stays within the viewport
+  useLayoutEffect(() => {
+    const el = menuRef.current
+    if (!position || !el)
+      return
+    const { width, height } = el.getBoundingClientRect()
+    let x = position.x
+    let y = position.y
+    if (x + width > window.innerWidth)
+      x = position.x - width
+    if (y + height > window.innerHeight)
+      y = position.y - height
+    el.style.left = `${x}px`
+    el.style.top = `${y}px`
+  }, [position])
 
   // Focus the menu when it appears for keyboard accessibility
   useEffect(() => {
