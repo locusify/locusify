@@ -72,6 +72,17 @@ Update the `version` field in `package.json` to the new version number. Do **not
 - Confirm `package.json` version matches the new version
 - Show a summary of what was created
 
+### 8. Create git tag and trigger CI/CD
+
+After all files are committed, create an annotated git tag and push it to trigger the Android build workflow:
+
+```bash
+git tag -a v{newVersion} -m "Release v{newVersion}"
+git push origin v{newVersion}
+```
+
+This will automatically trigger the GitHub Actions workflow to build and publish the signed Android APK to GitHub Releases.
+
 ## Reference: Existing release notes style
 
 Below is an example from v1.1.0 for tone and formatting reference:

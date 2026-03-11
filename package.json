@@ -1,7 +1,7 @@
 {
   "name": "locusify",
   "type": "module",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "packageManager": "pnpm@10.15.0",
   "author": "caterpi11ar",
   "license": "ISC",
@@ -28,7 +28,8 @@
     "cap:sync": "cap sync",
     "cap:open:ios": "cap open ios",
     "cap:open:android": "cap open android",
-    "build:mobile": "pnpm build && cap sync"
+    "build:mobile": "pnpm build && cap sync",
+    "build:android": "pnpm build && cap sync android && cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

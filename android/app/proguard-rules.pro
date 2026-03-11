@@ -19,3 +19,22 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# --- Capacitor ---
+-keep class com.getcapacitor.** { *; }
+-keep @com.getcapacitor.annotation.CapacitorPlugin class * { *; }
+-keep class * extends com.getcapacitor.Plugin { *; }
+-dontwarn com.getcapacitor.**
+
+# Keep JavaScript interface for WebView bridge
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# --- Cordova compatibility ---
+-keep class org.apache.cordova.** { *; }
+-dontwarn org.apache.cordova.**
+
+# --- AndroidX ---
+-keep class androidx.** { *; }
+-dontwarn androidx.**
