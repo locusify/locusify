@@ -131,7 +131,14 @@
       "Bash(cp /Users/qin.dai/caterpi11ar/locusify/public/screenshots/home.png \"$GEN/public/screenshots/home.png\")",
       "Bash(cp /Users/qin.dai/caterpi11ar/locusify/public/screenshots/map.jpeg \"$GEN/public/screenshots/map.jpeg\")",
       "Bash(cp /Users/qin.dai/caterpi11ar/locusify/public/screenshots/vlog.png \"$GEN/public/screenshots/vlog.png\")",
-      "Read(//Users/qin.dai/caterpi11ar/locusify/.agents/skills/app-store-screenshots/generator/$GEN/**)"
+      "Read(//Users/qin.dai/caterpi11ar/locusify/.agents/skills/app-store-screenshots/generator/$GEN/**)",
+      "mcp__context7__query-docs",
+      "WebFetch(domain:gist.github.com)",
+      "Bash(do echo:*)",
+      "Bash(for dir in mdpi hdpi xhdpi xxhdpi xxxhdpi)",
+      "Bash(done)",
+      "Bash(keytool:*)",
+      "Bash(base64:*)"
     ],
     "deny": [],
     "ask": [],
