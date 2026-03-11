@@ -32,10 +32,16 @@
 
 ---
 
-## Demo
+## Screenshots
 
 <p align="center">
-  <img src="example/locusify-replay.gif" alt="Locusify Demo — GPS photo route replay" width="680" />
+  <img src="public/screenshots/02-hero-zh-1125x2436.png" alt="Locusify 主打" width="160" />
+  &nbsp;
+  <img src="public/screenshots/04-route-zh-1125x2436.png" alt="Locusify 路线地图" width="160" />
+  &nbsp;
+  <img src="public/screenshots/06-vlog-zh-1125x2436.png" alt="Locusify Vlog" width="160" />
+  &nbsp;
+  <img src="public/screenshots/08-more-zh-1125x2436.png" alt="Locusify 更多功能" width="160" />
 </p>
 
 ---
