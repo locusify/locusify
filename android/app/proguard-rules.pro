@@ -35,6 +35,12 @@
 -keep class org.apache.cordova.** { *; }
 -dontwarn org.apache.cordova.**
 
+# --- Kotlin ---
+-keep class kotlin.** { *; }
+-dontwarn kotlin.**
+-keep class kotlinx.** { *; }
+-dontwarn kotlinx.**
+
 # --- AndroidX ---
 -keep class androidx.** { *; }
 -dontwarn androidx.**
