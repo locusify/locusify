@@ -5,11 +5,12 @@ import type { PhotoMarker } from '@/types/map'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
+import { getGeolocation } from '@/platforms'
 import { computeOrbitZoom, useGlobeOrbitStore } from '@/stores/globeOrbitStore'
 import { useMapStore } from '@/stores/mapStore'
 import { useRegionStore } from '@/stores/regionStore'
-import { useReplayStore } from '@/stores/replayStore'
 
+import { useReplayStore } from '@/stores/replayStore'
 import { EarthZoomController } from './components/EarthZoomController'
 import { GeoJsonLayer } from './components/GeoJsonLayer'
 import { GlobeOrbitController } from './components/GlobeOrbitController'
@@ -193,29 +194,21 @@ export function Maplibre({
 
   // Get user's geolocation on mount to set initial view
   useEffect(() => {
-    if (!navigator.geolocation) {
-      return
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { longitude, latitude } = position.coords
-        setViewState({
-          longitude,
-          latitude,
-          zoom: 14,
-        })
-        setCurrentZoom(14)
-      },
-      (error) => {
-        console.warn('Geolocation error:', error)
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000,
-      },
-    )
+    getGeolocation().getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000,
+    }).then((position) => {
+      const { longitude, latitude } = position
+      setViewState({
+        longitude,
+        latitude,
+        zoom: 14,
+      })
+      setCurrentZoom(14)
+    }).catch((error) => {
+      console.warn('Geolocation error:', error)
+    })
   }, [])
 
   // Handle marker click - only call the external callback

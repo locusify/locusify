@@ -1,7 +1,8 @@
 import type { AvatarSource } from '@/types/replay'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import { i18n } from '@/i18n'
+import { platformStorage } from '@/lib/zustand-storage'
 
 type Theme = 'light' | 'dark' | 'system'
 
@@ -29,6 +30,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'locusify-settings',
+      storage: createJSONStorage(() => platformStorage),
       onRehydrateStorage: () => (state) => {
         if (state?.language) {
           i18n.changeLanguage(state.language)

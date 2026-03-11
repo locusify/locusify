@@ -1,11 +1,12 @@
 import type { AuthMeResponse } from '@/lib/api/auth'
 import type { AuthUser } from '@/lib/auth/types'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import defaultAvatar from '@/assets/locusify.png'
 import { fetchAuthMe } from '@/lib/api/auth'
 import { apiClient, ApiError } from '@/lib/api/client'
 import { clearTokens, getTokens, setTokens } from '@/lib/auth/token-storage'
+import { platformStorage } from '@/lib/zustand-storage'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 
 export interface UserProfile {
@@ -41,6 +42,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'locusify-auth',
+      storage: createJSONStorage(() => platformStorage),
       partialize: state => ({ user: state.user }),
     },
   ),
@@ -89,7 +91,7 @@ function buildUserProfile(profile: ProfileResponse): UserProfile {
 }
 
 export async function handleOAuthCallback(accessToken: string, refreshToken: string) {
-  setTokens(accessToken, refreshToken)
+  await setTokens(accessToken, refreshToken)
 
   const [me, profile] = await Promise.all([
     fetchAuthMe(),
@@ -111,12 +113,12 @@ export async function logout() {
   catch {
     // Logout API failure is non-critical
   }
-  clearTokens()
+  await clearTokens()
   useAuthStore.getState().clearUser()
 }
 
 export async function initializeAuth() {
-  const { accessToken } = getTokens()
+  const { accessToken } = await getTokens()
   if (!accessToken) {
     useAuthStore.getState().clearUser()
     return
@@ -135,7 +137,7 @@ export async function initializeAuth() {
   }
   catch (err) {
     if (err instanceof ApiError && err.code === 'UNAUTHORIZED') {
-      clearTokens()
+      await clearTokens()
       useAuthStore.getState().clearUser()
     }
     else {

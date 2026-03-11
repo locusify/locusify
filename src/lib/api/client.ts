@@ -33,7 +33,7 @@ interface ApiResponse<T> {
 let refreshPromise: Promise<boolean> | null = null
 
 async function refreshToken(): Promise<boolean> {
-  const { refreshToken } = getTokens()
+  const { refreshToken } = await getTokens()
   if (!refreshToken)
     return false
 
@@ -49,7 +49,7 @@ async function refreshToken(): Promise<boolean> {
 
     const json: ApiResponse<{ access_token: string, refresh_token: string }> = await res.json()
     if (json.success && json.data) {
-      setTokens(json.data.access_token, json.data.refresh_token)
+      await setTokens(json.data.access_token, json.data.refresh_token)
       return true
     }
     return false
@@ -60,7 +60,7 @@ async function refreshToken(): Promise<boolean> {
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const accessToken = getAccessToken()
+  const accessToken = await getAccessToken()
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
     if (refreshed) {
       // Retry with new token
-      const newToken = getAccessToken()
+      const newToken = await getAccessToken()
       headers.Authorization = `Bearer ${newToken}`
       res = await fetch(`${BASE_URL}${path}`, {
         method,
@@ -96,7 +96,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     }
     else {
       // Refresh failed → clear auth state
-      clearTokens()
+      await clearTokens()
       // Dynamic import to avoid circular dependency
       const { useAuthStore } = await import('@/stores/authStore')
       useAuthStore.getState().clearUser()

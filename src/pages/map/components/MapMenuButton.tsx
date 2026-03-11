@@ -99,6 +99,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
     return (
       <m.div
         className="absolute top-3 left-2 z-40 sm:top-4 sm:left-4"
+        style={{ paddingTop: 'var(--safe-area-top)', paddingLeft: 'var(--safe-area-left)' }}
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
@@ -146,6 +147,7 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
   return (
     <m.div
       className="absolute bottom-3 right-2 z-40 flex flex-col-reverse gap-2 sm:bottom-4 sm:right-4 sm:gap-3"
+      style={{ paddingBottom: 'var(--safe-area-bottom)', paddingRight: 'var(--safe-area-right)' }}
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}

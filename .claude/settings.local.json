@@ -106,7 +106,17 @@
       "Bash(pnpm eslint:*)",
       "WebFetch(domain:mult.dev)",
       "Bash(jq:*)",
-      "Bash(identify:*)"
+      "Bash(identify:*)",
+      "Bash(npx cap:*)",
+      "Bash(pod install:*)",
+      "Bash(xcode-select:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(xcrun simctl:*)",
+      "Bash(echo:*)",
+      "Bash(export:*)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(open:*)",
+      "Bash(pnpm build:mobile:*)"
     ],
     "deny": [],
     "ask": [],

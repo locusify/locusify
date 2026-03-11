@@ -73,7 +73,8 @@ export function interpolateBezierCurve(
   const dx = to[0] - from[0]
   const dy = to[1] - from[1]
   const len = Math.sqrt(dx * dx + dy * dy)
-  if (len < 1e-8) return [from, to]
+  if (len < 1e-8)
+    return [from, to]
 
   // Offset magnitude: ~15% of the segment length, alternating direction
   const sign = segmentIndex % 2 === 0 ? 1 : -1

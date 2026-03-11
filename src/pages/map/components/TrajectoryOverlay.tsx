@@ -8,9 +8,9 @@ import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { ReplayControls } from './replay/ReplayControls'
 import { ReplayTextOverlay } from './replay/ReplayTextOverlay'
-import { TrajectoryStatsBar } from './replay/TrajectoryStatsBar'
 import { TemplateCustomizer } from './replay/TemplateCustomizer'
 import { TemplateSelector } from './replay/TemplateSelector'
+import { TrajectoryStatsBar } from './replay/TrajectoryStatsBar'
 
 interface TrajectoryOverlayProps {
   onBeginRecording?: (onPlaybackStart: () => void) => Promise<void>
