@@ -6,7 +6,7 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Marker } from 'react-map-gl/maplibre'
 import { GlassButton } from '@/components/ui/glass-button'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyMedia } from '@/components/ui/lazy-media'
 import { formatCoordinates, formatDate } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { ClusterPhotoGrid } from './ClusterPhotoGrid'
@@ -70,13 +70,16 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
               <div className="bg-blue/30 absolute inset-0 -m-2 animate-pulse rounded-full" />
             )}
 
-            {/* Photo background preview */}
+            {/* Photo/Video background preview */}
             <div className="absolute inset-0 overflow-hidden rounded-full">
               {marker.photo.thumbnailUrl && (
-                <LazyImage
+                <LazyMedia
                   src={marker.photo.thumbnailUrl}
                   alt={marker.photo.title || marker.id}
-                  className="size-full object-cover opacity-40"
+                  className="size-full opacity-40"
+                  thumbHash={marker.photo.thumbHash}
+                  videoSource={marker.photo.video}
+                  showBadge={false}
                   rootMargin="100px"
                   threshold={0.1}
                 />
@@ -143,13 +146,15 @@ export const PhotoMarkerPin: FC<PhotoMarkerPinProps> = ({
               : (
                   /* Single photo mode */
                   <>
-                    {/* Photo header */}
+                    {/* Photo/Video header */}
                     <div className="relative h-32 overflow-hidden">
                       {marker.photo.thumbnailUrl && (
-                        <LazyImage
+                        <LazyMedia
                           src={marker.photo.thumbnailUrl}
                           alt={marker.photo.title || marker.id}
-                          className="size-full object-cover"
+                          className="size-full"
+                          thumbHash={marker.photo.thumbHash}
+                          videoSource={marker.photo.video}
                           rootMargin="200px"
                           threshold={0.1}
                         />

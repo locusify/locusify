@@ -2,7 +2,7 @@ import type { PhotoMarker } from '@/types/map'
 import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyMedia } from '@/components/ui/lazy-media'
 import { formatCoordinates, formatDate } from '@/lib/formatters'
 
 interface ClusterPhotoGridProps {
@@ -42,14 +42,15 @@ export function ClusterPhotoGrid({
               onClick={() => onPhotoClick?.(photoMarker)}
               className="block size-full"
             >
-              <LazyImage
+              <LazyMedia
                 src={
                   photoMarker.photo.thumbnailUrl
                   || photoMarker.photo.originalUrl
                 }
                 alt={photoMarker.photo.title || photoMarker.photo.id}
                 thumbHash={photoMarker.photo.thumbHash}
-                className="size-full object-cover transition-transform duration-300 group-hover:scale-110"
+                className="size-full transition-transform duration-300 group-hover:scale-110"
+                videoSource={photoMarker.photo.video}
                 rootMargin="200px"
                 threshold={0.1}
               />

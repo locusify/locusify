@@ -1,7 +1,7 @@
 import { m } from 'motion/react'
 import { useMemo } from 'react'
 import { Marker } from 'react-map-gl/maplibre'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyMedia } from '@/components/ui/lazy-media'
 import {
   CONNECTOR_COLOR,
   CONNECTOR_DASH,
@@ -123,11 +123,13 @@ function PhotoCard({ waypointIndex, zIndex }: { waypointIndex: number, zIndex: n
               style={filterStyle ? { filter: filterStyle } : undefined}
             >
               {photo.thumbnailUrl && (
-                <LazyImage
+                <LazyMedia
                   src={photo.thumbnailUrl}
                   alt={photo.title || marker.id}
                   className="size-full"
                   objectFit="contain"
+                  thumbHash={photo.thumbHash}
+                  videoSource={photo.video}
                   rootMargin="200px"
                   threshold={0.1}
                 />

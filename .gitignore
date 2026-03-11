@@ -1,6 +1,9 @@
 node_modules/
 dist/
 
+# OS files
+.DS_Store
+
 # Environment variables
 .env
 .env.local
