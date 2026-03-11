@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Drawer,
@@ -14,6 +14,7 @@ import { PricingDrawer } from '@/pages/pricing'
 import { useAuthStore } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
 import { AboutSection } from './components/AboutSection'
+import { AccountSection } from './components/AccountSection'
 import { AvatarSetting } from './components/AvatarSetting'
 import { LanguageSetting } from './components/LanguageSetting'
 import { PrivacySection } from './components/PrivacySection'
@@ -24,13 +25,19 @@ import { ThemeSetting } from './components/ThemeSetting'
 interface SettingsDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onLogout?: () => void
 }
 
-export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange }) => {
+export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange, onLogout }) => {
   const { t } = useTranslation()
   const user = useAuthStore(s => s.user)
   const { subscription, isPro } = useSubscriptionStore()
   const [pricingOpen, setPricingOpen] = useState(false)
+
+  const handleLogout = useCallback(() => {
+    onOpenChange(false)
+    onLogout?.()
+  }, [onOpenChange, onLogout])
 
   return (
     <>
@@ -43,6 +50,11 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange }) 
           <div className={cn(glassPanel, 'flex flex-col overflow-hidden rounded-t-2xl')}>
             <div className="flex-1 overflow-y-auto p-4 pb-safe">
               <h2 className="mb-4 text-lg font-semibold text-text">{t('settings.title')}</h2>
+              {user && (
+                <SettingsSection label={t('settings.section.account')}>
+                  <AccountSection onLogout={handleLogout} />
+                </SettingsSection>
+              )}
               <SettingsSection label={t('settings.section.appearance')}>
                 <ThemeSetting />
                 <Separator />

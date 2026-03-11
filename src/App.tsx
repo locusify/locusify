@@ -24,7 +24,7 @@ const App: FC = () => {
 
         if (accessToken && refreshToken) {
           handleOAuthCallback(accessToken, refreshToken)
-            .then(() => router.navigate('/map', { replace: true }))
+            .then(() => router.navigate('/', { replace: true }))
             .catch(err => console.error('OAuth callback failed:', err))
         }
       }

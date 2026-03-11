@@ -63,7 +63,7 @@ export default function ResetPassword() {
     try {
       await resetPassword(tokenHash!, newPassword)
       toast.success(t('auth.resetPassword.success'))
-      navigate('/map', { replace: true })
+      navigate('/', { replace: true })
     }
     catch (err) {
       const lang = i18n.language.startsWith('zh') ? 'zh' : 'en'

@@ -17,7 +17,7 @@ export default function AuthCallback() {
     }
 
     handleOAuthCallback(accessToken, refreshToken)
-      .then(() => navigate('/map', { replace: true }))
+      .then(() => navigate('/', { replace: true }))
       .catch(() => setError('Authentication failed. Please try again.'))
   }, [navigate])
 

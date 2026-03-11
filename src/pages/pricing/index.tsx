@@ -53,7 +53,7 @@ export const PricingDrawer: FC<PricingDrawerProps> = ({ open, onOpenChange }) =>
   const handleUpgrade = () => {
     onOpenChange(false)
     if (user) {
-      navigate('/map')
+      navigate('/')
     }
   }
 

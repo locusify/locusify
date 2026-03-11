@@ -146,14 +146,6 @@
   "gallery.photo.count": "{{count}} photos",
   "gallery.remove": "Remove photo",
 
-  "splash.brand.name": "Locusify",
-  "splash.hero.subtitle": "Transform your travel photos into visual route maps and cinematic vlogs",
-  "splash.features.photoUpload": "Photo Upload",
-  "splash.features.routeMaps": "Route Maps",
-  "splash.features.autoVlogs": "Auto Vlogs",
-  "splash.cta.getStarted": "Get Started",
-  "splash.cta.createAccount": "Create Account",
-
   "auth.email.placeholder": "Enter your email",
   "auth.email.sendCode": "Send Code",
   "auth.email.sending": "Sending...",
@@ -247,6 +239,7 @@
 
   "settings.title": "Settings",
   "settings.section.appearance": "Appearance",
+  "settings.section.account": "Account",
   "settings.section.about": "About",
   "settings.language.label": "Language",
   "settings.language.en": "English",

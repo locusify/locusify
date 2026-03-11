@@ -15,30 +15,25 @@ import {
 } from '@/components/ui/drawer'
 import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
-import { useCooldown } from '@/hooks/useCooldown'
-import { forgotPassword } from '@/lib/api/auth'
-import { ApiError } from '@/lib/api/client'
 import { getAuthProviders } from '@/lib/auth'
 import { cn, glassPanel } from '@/lib/utils'
-import { logout, useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/stores/authStore'
 
 interface LoginDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  dismissible?: boolean
 }
 
 type LoginMethod = 'otp' | 'password'
 
-export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
-  const { t, i18n } = useTranslation()
-  const user = useAuthStore(s => s.user)
+export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange, dismissible = true }) => {
+  const { t } = useTranslation()
   const isLoggingIn = useAuthStore(s => s.isLoggingIn)
   const setLoggingIn = useAuthStore(s => s.setLoggingIn)
   const [activeProvider, setActiveProvider] = useState<AuthProviderType | null>(null)
   const [privacyConsented, setPrivacyConsented] = useState(false)
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('otp')
-  const [resettingPassword, setResettingPassword] = useState(false)
-  const { cooldown, startCooldown } = useCooldown()
 
   const handleLogin = useCallback(async (provider: AuthProvider) => {
     if (!privacyConsented) {
@@ -61,37 +56,10 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
     }
   }, [privacyConsented, isLoggingIn, setLoggingIn, t])
 
-  const handleLogout = useCallback(async () => {
-    await logout()
-    onOpenChange(false)
-  }, [onOpenChange])
-
-  const handleResetPassword = useCallback(async () => {
-    if (!user?.email || cooldown > 0)
-      return
-    setResettingPassword(true)
-    try {
-      const redirectUrl = `${window.location.origin}/reset-password`
-      await forgotPassword(user.email, redirectUrl)
-      toast.success(t('auth.forgotPassword.success', { email: user.email }))
-      startCooldown()
-    }
-    catch (err) {
-      const lang = i18n.language.startsWith('zh') ? 'zh' : 'en'
-      const message = err instanceof ApiError
-        ? err.getLocalizedMessage(lang)
-        : t('auth.error')
-      toast.error(message)
-    }
-    finally {
-      setResettingPassword(false)
-    }
-  }, [user?.email, cooldown, startCooldown, t, i18n.language])
-
   const providers = getAuthProviders()
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
       <DrawerContent className="max-h-[80vh] border-none bg-transparent backdrop-blur-none">
         <DrawerHeader className="hidden">
           <DrawerTitle>{t('auth.drawer.login.title')}</DrawerTitle>
@@ -99,142 +67,97 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange }) => {
         </DrawerHeader>
         <div className={cn(glassPanel, 'flex flex-col overflow-hidden rounded-t-2xl')}>
           <div className="flex-1 overflow-y-auto p-4 pb-safe">
-            {user
-              ? (
-                  /* Logged-in state */
-                  <div className="flex flex-col items-center gap-4 py-4">
-                    <img
-                      src={user.avatarUrl}
-                      alt={user.name}
-                      className="size-16 rounded-full object-cover"
-                      referrerPolicy="no-referrer"
+            <div className="flex flex-col gap-4 py-2">
+              <div className="text-center">
+                <h2 className="text-text text-lg font-semibold">{t('auth.drawer.login.title')}</h2>
+                <p className="text-text-secondary mt-1 text-sm">{t('auth.drawer.login.description')}</p>
+              </div>
+
+              <Separator className="bg-fill-secondary" />
+
+              {/* Login method tabs */}
+              <div className="bg-fill-secondary flex rounded-xl p-1">
+                {(['otp', 'password'] as const).map(method => (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => setLoginMethod(method)}
+                    className={cn(
+                      'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
+                      loginMethod === method
+                        ? 'bg-white/90 dark:bg-white/15 text-text shadow-sm'
+                        : 'text-text/50 hover:text-text',
+                    )}
+                  >
+                    {t(`auth.method.${method}`)}
+                  </button>
+                ))}
+              </div>
+
+              {loginMethod === 'otp'
+                ? (
+                    <EmailLoginForm
+                      onSuccess={() => onOpenChange(false)}
+                      disabled={!privacyConsented}
                     />
-                    <div className="text-center">
-                      <p className="text-text text-sm">
-                        {t('auth.loggedInAs', { name: user.name })}
-                      </p>
-                      {user.email && (
-                        <p className="text-text-secondary mt-0.5 text-xs">{user.email}</p>
+                  )
+                : (
+                    <PasswordLoginForm
+                      onSuccess={() => onOpenChange(false)}
+                      disabled={!privacyConsented}
+                    />
+                  )}
+
+              <div className="flex items-center gap-3">
+                <Separator className="bg-fill-secondary flex-1" />
+                <span className="text-text-secondary text-xs">{t('auth.email.separator')}</span>
+                <Separator className="bg-fill-secondary flex-1" />
+              </div>
+
+              <div className="flex gap-3">
+                {providers.map((provider) => {
+                  const isActive = activeProvider === provider.type
+                  return (
+                    <button
+                      key={provider.type}
+                      type="button"
+                      disabled={isLoggingIn}
+                      onClick={() => handleLogin(provider)}
+                      className={cn(
+                        'bg-fill-secondary hover:bg-fill-tertiary flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors',
+                        'text-text disabled:opacity-50',
+                        isActive && 'cursor-wait',
+                        isLoggingIn && !isActive && 'cursor-not-allowed',
                       )}
-                    </div>
-                    <div className="flex w-full gap-3">
-                      {user.email && (
-                        <button
-                          type="button"
-                          disabled={resettingPassword || cooldown > 0}
-                          onClick={handleResetPassword}
-                          className="bg-fill-secondary hover:bg-fill-tertiary text-text flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors disabled:opacity-50"
-                        >
-                          {resettingPassword && <Spinner className="size-4" />}
-                          {cooldown > 0
-                            ? t('auth.email.resendIn', { seconds: cooldown })
-                            : t('auth.account.resetPassword')}
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="bg-fill-secondary hover:bg-fill-tertiary text-text flex-1 rounded-xl px-4 py-3 text-sm font-medium transition-colors"
-                      >
-                        {t('auth.logout')}
-                      </button>
-                    </div>
-                  </div>
-                )
-              : (
-                  /* Login state */
-                  <div className="flex flex-col gap-4 py-2">
-                    <div className="text-center">
-                      <h2 className="text-text text-lg font-semibold">{t('auth.drawer.login.title')}</h2>
-                      <p className="text-text-secondary mt-1 text-sm">{t('auth.drawer.login.description')}</p>
-                    </div>
-
-                    <Separator className="bg-fill-secondary" />
-
-                    {/* Login method tabs */}
-                    <div className="bg-fill-secondary flex rounded-xl p-1">
-                      {(['otp', 'password'] as const).map(method => (
-                        <button
-                          key={method}
-                          type="button"
-                          onClick={() => setLoginMethod(method)}
-                          className={cn(
-                            'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-                            loginMethod === method
-                              ? 'bg-white/90 dark:bg-white/15 text-text shadow-sm'
-                              : 'text-text/50 hover:text-text',
-                          )}
-                        >
-                          {t(`auth.method.${method}`)}
-                        </button>
-                      ))}
-                    </div>
-
-                    {loginMethod === 'otp'
-                      ? (
-                          <EmailLoginForm
-                            onSuccess={() => onOpenChange(false)}
-                            disabled={!privacyConsented}
-                          />
-                        )
-                      : (
-                          <PasswordLoginForm
-                            onSuccess={() => onOpenChange(false)}
-                            disabled={!privacyConsented}
-                          />
-                        )}
-
-                    <div className="flex items-center gap-3">
-                      <Separator className="bg-fill-secondary flex-1" />
-                      <span className="text-text-secondary text-xs">{t('auth.email.separator')}</span>
-                      <Separator className="bg-fill-secondary flex-1" />
-                    </div>
-
-                    <div className="flex gap-3">
-                      {providers.map((provider) => {
-                        const isActive = activeProvider === provider.type
-                        return (
-                          <button
-                            key={provider.type}
-                            type="button"
-                            disabled={isLoggingIn}
-                            onClick={() => handleLogin(provider)}
-                            className={cn(
-                              'bg-fill-secondary hover:bg-fill-tertiary flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-colors',
-                              'text-text disabled:opacity-50',
-                              isActive && 'cursor-wait',
-                              isLoggingIn && !isActive && 'cursor-not-allowed',
-                            )}
-                          >
-                            {isActive ? <Spinner className="size-5" /> : <provider.icon />}
-                            <span>
-                              {provider.type === 'google'
-                                ? t('auth.login.oauth.google')
-                                : t('auth.login.oauth.github')}
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
-
-                    <label className="flex cursor-pointer select-none items-start gap-2">
-                      <Checkbox
-                        checked={privacyConsented}
-                        onCheckedChange={checked => setPrivacyConsented(checked === true)}
-                        className="mt-0.5"
-                      />
-                      <span className="text-text-secondary text-xs leading-relaxed">
-                        {t('auth.privacy.agree')}
-                        {' '}
-                        <a href="#" className="text-primary hover:underline">{t('auth.privacy.privacyPolicy')}</a>
-                        {' '}
-                        {t('auth.privacy.and')}
-                        {' '}
-                        <a href="#" className="text-primary hover:underline">{t('auth.privacy.termsOfService')}</a>
+                    >
+                      {isActive ? <Spinner className="size-5" /> : <provider.icon />}
+                      <span>
+                        {provider.type === 'google'
+                          ? t('auth.login.oauth.google')
+                          : t('auth.login.oauth.github')}
                       </span>
-                    </label>
-                  </div>
-                )}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <label className="flex cursor-pointer select-none items-start gap-2">
+                <Checkbox
+                  checked={privacyConsented}
+                  onCheckedChange={checked => setPrivacyConsented(checked === true)}
+                  className="mt-0.5"
+                />
+                <span className="text-text-secondary text-xs leading-relaxed">
+                  {t('auth.privacy.agree')}
+                  {' '}
+                  <a href="#" className="text-primary hover:underline">{t('auth.privacy.privacyPolicy')}</a>
+                  {' '}
+                  {t('auth.privacy.and')}
+                  {' '}
+                  <a href="#" className="text-primary hover:underline">{t('auth.privacy.termsOfService')}</a>
+                </span>
+              </label>
+            </div>
           </div>
         </div>
       </DrawerContent>

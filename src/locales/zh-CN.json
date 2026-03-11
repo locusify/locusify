@@ -146,14 +146,6 @@
   "gallery.photo.count": "{{count}} 张照片",
   "gallery.remove": "移除照片",
 
-  "splash.brand.name": "Locusify",
-  "splash.hero.subtitle": "将旅行照片转换为可视化路线图和电影级视频",
-  "splash.features.photoUpload": "照片上传",
-  "splash.features.routeMaps": "路线地图",
-  "splash.features.autoVlogs": "自动视频",
-  "splash.cta.getStarted": "开始使用",
-  "splash.cta.createAccount": "创建账户",
-
   "auth.email.placeholder": "请输入邮箱",
   "auth.email.sendCode": "发送验证码",
   "auth.email.sending": "发送中...",
@@ -247,6 +239,7 @@
 
   "settings.title": "设置",
   "settings.section.appearance": "外观",
+  "settings.section.account": "账户",
   "settings.section.about": "关于",
   "settings.language.label": "语言",
   "settings.language.en": "English",

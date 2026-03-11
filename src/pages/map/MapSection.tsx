@@ -3,7 +3,7 @@ import type { PhotoMarker } from '@/types/map'
 import type { Photo } from '@/types/photo'
 import pkg from '@pkg'
 import { AnimatePresence, m } from 'motion/react'
-import { lazy, useCallback, useMemo, useRef, useState } from 'react'
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
 import { useLongPress } from '@/hooks/useLongPress'
@@ -11,6 +11,7 @@ import { useRecordingFlow } from '@/hooks/useRecordingFlow'
 import { useRegionPhotoMapping } from '@/hooks/useRegionPhotoMapping'
 import { extractExifData } from '@/lib/exif'
 import { SettingsDrawer } from '@/pages/settings'
+import { useAuthStore } from '@/stores/authStore'
 import { useGlobeOrbitStore } from '@/stores/globeOrbitStore'
 import { usePhotoStore } from '@/stores/photoStore'
 import { useRegionStore } from '@/stores/regionStore'
@@ -36,6 +37,7 @@ const ANNOUNCEMENT_STORAGE_KEY = 'locusify:version'
 const GUIDE_STORAGE_KEY = 'locusify:onboarding-guide-dismissed'
 
 function MapSectionContent() {
+  const user = useAuthStore(s => s.user)
   const markers = usePhotoStore(s => s.markers)
   const selectedMarkerId = usePhotoStore(s => s.selectedMarkerId)
   const setSelectedMarkerId = usePhotoStore(s => s.setSelectedMarkerId)
@@ -76,7 +78,7 @@ function MapSectionContent() {
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [galleryOpen, setGalleryOpen] = useState(false)
-  const [loginDrawerOpen, setLoginDrawerOpen] = useState(false)
+  const [loginDrawerOpen, setLoginDrawerOpen] = useState(() => !user)
   const [announcementOpen, setAnnouncementOpen] = useState(
     () => localStorage.getItem(ANNOUNCEMENT_STORAGE_KEY) !== ANNOUNCEMENT_VERSION,
   )
@@ -88,6 +90,12 @@ function MapSectionContent() {
   const pendingLngLat = useRef<{ lng: number, lat: number } | null>(null)
   const contextMenuFileInputRef = useRef<HTMLInputElement>(null)
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number, y: number } | null>(null)
+
+  // Re-open login drawer when user logs out
+  useEffect(() => {
+    if (!user)
+      setLoginDrawerOpen(true)
+  }, [user])
 
   const handleMarkerClick = useCallback((marker: PhotoMarker) => {
     setSelectedMarkerId(selectedMarkerId === marker.id ? null : marker.id)
@@ -218,7 +226,7 @@ function MapSectionContent() {
   return (
     <div className="absolute size-full">
       {/* Hide menu button during active recording (intro + playback) */}
-      {!recordingActive && !isRecording && (
+      {!recordingActive && !isRecording && !!user && (
         <MapMenuButton
           onUploadClick={() => {
             setUploadDrawerOpen(true)
@@ -240,12 +248,12 @@ function MapSectionContent() {
         onOpenChange={setUploadDrawerOpen}
       />
 
-      <SettingsDrawer open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsDrawer open={settingsOpen} onOpenChange={setSettingsOpen} onLogout={() => setLoginDrawerOpen(true)} />
       <GalleryDrawer open={galleryOpen} onOpenChange={setGalleryOpen} />
-      <LoginDrawer open={loginDrawerOpen} onOpenChange={setLoginDrawerOpen} />
+      <LoginDrawer open={loginDrawerOpen} onOpenChange={setLoginDrawerOpen} dismissible={!!user} />
 
-      {!isInAnyReplay && (
-        <LoginButton onClick={() => setLoginDrawerOpen(true)} />
+      {!isInAnyReplay && !!user && (
+        <LoginButton onClick={() => setSettingsOpen(true)} />
       )}
 
       {isReplayMode && (
@@ -269,7 +277,7 @@ function MapSectionContent() {
 
       {/* Announcement dialog — shown once per version */}
       <AnimatePresence>
-        {announcementOpen && (
+        {announcementOpen && !!user && (
           <AnnouncementDialog
             open={announcementOpen}
             onClose={handleDismissAnnouncement}
@@ -279,7 +287,7 @@ function MapSectionContent() {
 
       {/* Onboarding guide — shown once for new users */}
       <AnimatePresence>
-        {guideOpen && markers.length === 0 && !announcementOpen && !isReplayMode && (
+        {guideOpen && markers.length === 0 && !announcementOpen && !isReplayMode && !!user && (
           <OnboardingGuide
             open
             onDismiss={handleDismissGuide}
@@ -299,7 +307,7 @@ function MapSectionContent() {
         )}
       </AnimatePresence>
 
-      {!isInAnyReplay && (
+      {!isInAnyReplay && !!user && (
         <MapContextMenu
           position={contextMenuPos}
           onAddPhotos={handleContextMenuAddPhotos}
@@ -311,7 +319,7 @@ function MapSectionContent() {
         initial={{ opacity: 0, scale: 1.02 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="size-full isolate"
+        className={`size-full isolate${!user ? ' pointer-events-none' : ''}`}
         {...(!isInAnyReplay ? longPressHandlers : {})}
       >
         <Maplibre
