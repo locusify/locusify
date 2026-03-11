@@ -18,6 +18,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { getAuthProviders } from '@/lib/auth'
 import { cn, glassPanel } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
+import { useSettingsStore } from '@/stores/settingsStore'
 
 interface LoginDrawerProps {
   open: boolean
@@ -34,6 +35,7 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange, dismissi
   const [activeProvider, setActiveProvider] = useState<AuthProviderType | null>(null)
   const [privacyConsented, setPrivacyConsented] = useState(false)
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('otp')
+  const { language, setLanguage } = useSettingsStore()
 
   const handleLogin = useCallback(async (provider: AuthProvider) => {
     if (!privacyConsented) {
@@ -68,7 +70,15 @@ export const LoginDrawer: FC<LoginDrawerProps> = ({ open, onOpenChange, dismissi
         <div className={cn(glassPanel, 'flex flex-col overflow-hidden rounded-t-2xl')}>
           <div className="flex-1 overflow-y-auto p-4 pb-safe">
             <div className="flex flex-col gap-4 py-2">
-              <div className="text-center">
+              <div className="text-center relative">
+                <button
+                  type="button"
+                  onClick={() => setLanguage(language === 'en' ? 'zh-CN' : 'en')}
+                  className="bg-fill-secondary hover:bg-fill-tertiary text-text absolute top-0 right-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors"
+                >
+                  <i className="i-mingcute-translate-2-line size-4" />
+                  {language === 'en' ? '中文' : 'EN'}
+                </button>
                 <h2 className="text-text text-lg font-semibold">{t('auth.drawer.login.title')}</h2>
                 <p className="text-text-secondary mt-1 text-sm">{t('auth.drawer.login.description')}</p>
               </div>

@@ -14,7 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyMedia } from '@/components/ui/lazy-media'
 import { formatCoordinates } from '@/lib/formatters'
 import { cn, glassPanel } from '@/lib/utils'
 import { usePhotoStore } from '@/stores/photoStore'
@@ -82,10 +82,14 @@ export const GalleryDrawer: FC<GalleryDrawerProps> = ({ open, onOpenChange }) =>
                         onClick={() => handlePhotoClick(photo.id)}
                         className="group relative aspect-square overflow-hidden rounded-lg focus:outline-none"
                       >
-                        <LazyImage
+                        <LazyMedia
                           src={photo.preview}
                           alt={photo.name}
                           className="size-full"
+                          videoSource={photo.videoSource}
+                          imageFile={photo.file}
+                          hoverToPlay
+                          showBadge
                         />
 
                         {/* Remove button */}

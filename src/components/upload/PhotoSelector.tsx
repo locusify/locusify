@@ -1,4 +1,4 @@
-import type { GPSCoordinates } from '@/types/map'
+import type { GPSCoordinates, VideoSource } from '@/types/map'
 import type { Photo } from '@/types/photo'
 import { Camera } from 'lucide-react'
 import { m } from 'motion/react'
@@ -6,10 +6,61 @@ import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { env } from '@/lib/env'
 import { extractExifData } from '@/lib/exif'
-import { cn } from '@/lib/utils'
+import { cn, isVideoFile } from '@/lib/utils'
 import { convertExifGPSToDecimal } from '@/pages/map/utils'
 import { getCamera, isNative } from '@/platforms'
 import { GPSDirection } from '@/types/map'
+
+/** Get the filename stem without extension (e.g. "IMG_1234" from "IMG_1234.HEIC") */
+function getFilenameStem(name: string): string {
+  const lastDot = name.lastIndexOf('.')
+  return lastDot > 0 ? name.substring(0, lastDot) : name
+}
+
+/**
+ * Categorize files into images, paired Live Photo videos, and standalone videos.
+ * Videos with a matching image filename stem are treated as Live Photos;
+ * unmatched videos become standalone media items.
+ */
+function categorizeFiles(allFiles: File[]): {
+  imageFiles: File[]
+  videoMap: Map<string, File>
+  standaloneVideos: File[]
+} {
+  const imageFiles: File[] = []
+  const videoFiles: File[] = []
+
+  for (const file of allFiles) {
+    if (isVideoFile(file)) {
+      videoFiles.push(file)
+    }
+    else if (file.type.startsWith('image/')) {
+      imageFiles.push(file)
+    }
+  }
+
+  // Build a set of image filename stems for pairing
+  const imageStems = new Set<string>()
+  for (const img of imageFiles) {
+    imageStems.add(getFilenameStem(img.name).toLowerCase())
+  }
+
+  // Partition videos into paired (Live Photo) and standalone
+  const videoMap = new Map<string, File>()
+  const standaloneVideos: File[] = []
+
+  for (const vf of videoFiles) {
+    const stem = getFilenameStem(vf.name).toLowerCase()
+    if (imageStems.has(stem)) {
+      videoMap.set(stem, vf)
+    }
+    else {
+      standaloneVideos.push(vf)
+    }
+  }
+
+  return { imageFiles, videoMap, standaloneVideos }
+}
 
 // Mock GPS locations for dev testing (Japan locations)
 const MOCK_GPS_LOCATIONS: GPSCoordinates[] = [
@@ -51,15 +102,11 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
   // Process an array of File objects into Photo[]
   const processFileArray = useCallback(
     async (fileArray: File[]) => {
+      const { imageFiles, videoMap, standaloneVideos } = categorizeFiles(fileArray)
       const files: Photo[] = []
 
-      for (let i = 0; i < fileArray.length; i++) {
-        const file = fileArray[i]
-
-        // Only accept image files
-        if (!file.type.startsWith('image/')) {
-          continue
-        }
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i]
 
         // Create preview URL
         const preview = URL.createObjectURL(file)
@@ -100,6 +147,18 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
           }
         }
 
+        // Check for paired Live Photo video (Apple: filename matching)
+        const stem = getFilenameStem(file.name).toLowerCase()
+        const pairedVideo = videoMap.get(stem)
+        let videoFile: File | undefined
+        let videoSource: VideoSource | undefined
+
+        if (pairedVideo) {
+          videoFile = pairedVideo
+          const videoUrl = URL.createObjectURL(pairedVideo)
+          videoSource = { type: 'live-photo', videoUrl }
+        }
+
         const uploadFile: Photo = {
           id: `${file.name}-${file.lastModified}`,
           file,
@@ -112,6 +171,44 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
           exif: exif ?? undefined,
           dateTaken,
           camera,
+          videoFile,
+          videoSource,
+        }
+
+        files.push(uploadFile)
+      }
+
+      // Process standalone videos (no matching image → independent media)
+      for (let i = 0; i < standaloneVideos.length; i++) {
+        const videoFile = standaloneVideos[i]
+        const preview = URL.createObjectURL(videoFile)
+        const videoUrl = preview // video blob URL serves as both preview and source
+
+        // Use mock metadata in dev mode if enabled (offset index by imageFiles.length)
+        let gpsInfo: GPSCoordinates | undefined
+        let dateTaken: string | undefined
+        let camera: { make?: string, model?: string } | undefined
+
+        if (useMockMetadata && env.NODE_ENV === 'development') {
+          const idx = imageFiles.length + i
+          gpsInfo = MOCK_GPS_LOCATIONS[idx % MOCK_GPS_LOCATIONS.length]
+          camera = MOCK_CAMERAS[idx % MOCK_CAMERAS.length]
+          dateTaken = generateMockDate(idx)
+        }
+
+        const uploadFile: Photo = {
+          id: `${videoFile.name}-${videoFile.lastModified}`,
+          file: videoFile,
+          preview,
+          name: videoFile.name,
+          size: videoFile.size,
+          type: videoFile.type,
+          lastModified: videoFile.lastModified,
+          gpsInfo,
+          dateTaken,
+          camera,
+          videoFile,
+          videoSource: { type: 'video', videoUrl },
         }
 
         files.push(uploadFile)
@@ -169,10 +266,10 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*"
         multiple
+        hidden
         onChange={handleFileInputChange}
-        className="hidden"
       />
 
       {/* Click to select area */}

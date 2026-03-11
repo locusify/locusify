@@ -1,7 +1,7 @@
 import type { Photo } from '@/types/photo'
 import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyMedia } from '@/components/ui/lazy-media'
 import { cn } from '@/lib/utils'
 
 interface GPSInfoPanelProps {
@@ -73,12 +73,14 @@ export function GPSInfoPanel({
                 <i className="i-mingcute-close-line text-xs" />
               </button>
 
-              {/* Image preview */}
+              {/* Image/Video preview */}
               <div className="aspect-square overflow-hidden">
-                <LazyImage
+                <LazyMedia
                   src={file.preview}
                   alt={file.name}
-                  className="size-full object-cover transition-transform group-hover:scale-105"
+                  className="size-full transition-transform group-hover:scale-105"
+                  videoSource={file.videoSource}
+                  showBadge={false}
                   rootMargin="100px"
                   threshold={0.1}
                 />

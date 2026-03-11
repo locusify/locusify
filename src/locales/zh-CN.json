@@ -430,5 +430,20 @@
   "stats.bar.distance": "总里程",
   "stats.bar.scanQr": "扫码查看足迹",
   "stats.bar.durationUnit": "天",
-  "stats.bar.distanceUnit": "公里"
+  "stats.bar.distanceUnit": "公里",
+
+  "photo.live.badge": "实况",
+  "photo.live.playing": "正在播放实况照片",
+  "photo.live.tooltip.desktop": "点击实况标识播放",
+  "photo.live.tooltip.mobile": "轻触实况标识播放",
+  "photo.video.badge": "视频",
+
+  "upload.complete.title": "上传完成！",
+  "upload.uploading.title": "上传中...",
+  "upload.complete.description": "所有文件已成功上传。",
+  "upload.uploading.description": "请稍候，文件正在上传中。",
+  "upload.overall.progress": "总进度",
+  "upload.files.completed": "已上传 {{count}} 个文件",
+  "upload.files.uploading": "已上传 {{completed}} / {{total}} 个文件",
+  "upload.complete.hint": "您现在可以关闭此页面或继续上传更多文件。"
 }

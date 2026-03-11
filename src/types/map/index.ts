@@ -221,6 +221,13 @@ export interface PhotoInfo {
   description: string
 }
 
+// Video source sum type: Live Photo or Motion Photo
+export type VideoSource
+  = | { type: 'live-photo', videoUrl: string }
+    | { type: 'motion-photo', imageUrl: string, offset: number, size?: number, presentationTimestamp?: number }
+    | { type: 'video', videoUrl: string }
+    | { type: 'none' }
+
 /** Photo manifest item interface */
 export interface PhotoManifestItem extends PhotoInfo {
   id: string
@@ -234,11 +241,9 @@ export interface PhotoManifestItem extends PhotoInfo {
   lastModified: string
   size: number
   exif: PickedExif | null
-  toneAnalysis: ToneAnalysis | null // 影调分析结果
-  isLivePhoto?: boolean
+  toneAnalysis: ToneAnalysis | null
+  video?: VideoSource
   isHDR?: boolean
-  livePhotoVideoUrl?: string
-  livePhotoVideoS3Key?: string
 }
 /**
  * Photo marker interface for map display

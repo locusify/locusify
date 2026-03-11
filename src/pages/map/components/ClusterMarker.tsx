@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react'
 import { Marker } from 'react-map-gl/maplibre'
 import { GlassButton } from '@/components/ui/glass-button'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyMedia } from '@/components/ui/lazy-media'
 import { ClusterPhotoGrid } from './ClusterPhotoGrid'
 
 interface ClusterMarkerProps {
@@ -99,14 +99,13 @@ export function ClusterMarker({
                         className="absolute opacity-30"
                         style={position}
                       >
-                        <LazyImage
-                          src={
-                            photoMarker.photo.thumbnailUrl
-                            || photoMarker.photo.originalUrl
-                          }
+                        <LazyMedia
+                          src={photoMarker.photo.thumbnailUrl || photoMarker.photo.originalUrl}
                           alt={photoMarker.photo.title || photoMarker.photo.id}
                           thumbHash={photoMarker.photo.thumbHash}
-                          className="size-full object-cover"
+                          className="size-full"
+                          videoSource={photoMarker.photo.video}
+                          showBadge={false}
                           rootMargin="100px"
                           threshold={0.1}
                         />

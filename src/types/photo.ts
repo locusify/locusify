@@ -1,4 +1,4 @@
-import type { GPSCoordinates, PickedExif } from './map'
+import type { GPSCoordinates, PickedExif, VideoSource } from './map'
 
 export interface Photo {
   id: string
@@ -21,6 +21,10 @@ export interface Photo {
     make?: string
     model?: string
   }
+
+  // Live Photo / Motion Photo video
+  videoFile?: File
+  videoSource?: VideoSource
 }
 
 export interface PhotoProgress {

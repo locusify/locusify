@@ -24,6 +24,7 @@ function photoToManifestItem(photo: Photo): PhotoManifestItem {
     size: photo.size,
     exif: photo.exif || null,
     toneAnalysis: null,
+    video: photo.videoSource,
   }
 }
 
@@ -43,6 +44,15 @@ function deriveMarkers(photos: Photo[]): PhotoMarker[] {
         photo: photoToManifestItem(photo),
       }
     })
+}
+
+function revokePhotoBlobUrls(photo: Photo): void {
+  if (photo.preview.startsWith('blob:')) {
+    URL.revokeObjectURL(photo.preview)
+  }
+  if (photo.videoSource && 'videoUrl' in photo.videoSource && photo.videoSource.videoUrl?.startsWith('blob:')) {
+    URL.revokeObjectURL(photo.videoSource.videoUrl)
+  }
 }
 
 interface PhotoState {
@@ -69,6 +79,9 @@ export const usePhotoStore = create<PhotoState>(set => ({
   },
   removePhoto: (fileId) => {
     set((state) => {
+      const removed = state.photos.find(p => p.id === fileId)
+      if (removed)
+        revokePhotoBlobUrls(removed)
       const photos = state.photos.filter(p => p.id !== fileId)
       return {
         photos,
@@ -77,6 +90,10 @@ export const usePhotoStore = create<PhotoState>(set => ({
       }
     })
   },
-  clearPhotos: () => set({ photos: [], markers: [], selectedMarkerId: null }),
+  clearPhotos: () => {
+    const { photos } = usePhotoStore.getState()
+    photos.forEach(revokePhotoBlobUrls)
+    set({ photos: [], markers: [], selectedMarkerId: null })
+  },
   setSelectedMarkerId: id => set({ selectedMarkerId: id }),
 }))

@@ -430,5 +430,20 @@
   "stats.bar.distance": "Distance",
   "stats.bar.scanQr": "Scan to explore",
   "stats.bar.durationUnit": "d",
-  "stats.bar.distanceUnit": "km"
+  "stats.bar.distanceUnit": "km",
+
+  "photo.live.badge": "Live",
+  "photo.live.playing": "Playing Live Photo",
+  "photo.live.tooltip.desktop": "Click the Live badge to play",
+  "photo.live.tooltip.mobile": "Tap the Live badge to play",
+  "photo.video.badge": "Video",
+
+  "upload.complete.title": "Upload Complete!",
+  "upload.uploading.title": "Uploading...",
+  "upload.complete.description": "All files have been uploaded successfully.",
+  "upload.uploading.description": "Please wait while your files are being uploaded.",
+  "upload.overall.progress": "Overall Progress",
+  "upload.files.completed": "{{count}} files uploaded",
+  "upload.files.uploading": "{{completed}} of {{total}} files uploaded",
+  "upload.complete.hint": "You can now close this page or upload more files."
 }

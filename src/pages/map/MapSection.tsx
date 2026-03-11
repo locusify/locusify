@@ -10,6 +10,7 @@ import { useLongPress } from '@/hooks/useLongPress'
 import { useRecordingFlow } from '@/hooks/useRecordingFlow'
 import { useRegionPhotoMapping } from '@/hooks/useRegionPhotoMapping'
 import { extractExifData } from '@/lib/exif'
+import { isVideoFile } from '@/lib/utils'
 import { SettingsDrawer } from '@/pages/settings'
 import { useAuthStore } from '@/stores/authStore'
 import { useGlobeOrbitStore } from '@/stores/globeOrbitStore'
@@ -169,26 +170,32 @@ function MapSectionContent() {
 
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i]
-      if (!file.type.startsWith('image/'))
+      const isVideo = isVideoFile(file)
+      const isImage = file.type.startsWith('image/')
+
+      if (!isImage && !isVideo)
         continue
 
       const preview = URL.createObjectURL(file)
-      const exif = await extractExifData(file)
 
       let dateTaken: string | undefined
       let camera: { make?: string, model?: string } | undefined
+      let exif: Awaited<ReturnType<typeof extractExifData>> | undefined
 
-      if (exif) {
-        const dateTimeOriginal = exif.DateTimeOriginal
-        const createDate = exif.CreateDate
-        if (dateTimeOriginal) {
-          dateTaken = dateTimeOriginal instanceof Date ? dateTimeOriginal.toISOString() : dateTimeOriginal
-        }
-        else if (createDate) {
-          dateTaken = createDate instanceof Date ? createDate.toISOString() : createDate
-        }
-        if (exif.Make || exif.Model) {
-          camera = { make: exif.Make, model: exif.Model }
+      if (isImage) {
+        exif = (await extractExifData(file)) ?? undefined
+        if (exif) {
+          const dateTimeOriginal = exif.DateTimeOriginal
+          const createDate = exif.CreateDate
+          if (dateTimeOriginal) {
+            dateTaken = dateTimeOriginal instanceof Date ? dateTimeOriginal.toISOString() : dateTimeOriginal
+          }
+          else if (createDate) {
+            dateTaken = createDate instanceof Date ? createDate.toISOString() : createDate
+          }
+          if (exif.Make || exif.Model) {
+            camera = { make: exif.Make, model: exif.Model }
+          }
         }
       }
 
@@ -209,6 +216,10 @@ function MapSectionContent() {
         exif: exif ?? undefined,
         dateTaken,
         camera,
+        ...(isVideo && {
+          videoFile: file,
+          videoSource: { type: 'video' as const, videoUrl: preview },
+        }),
       })
     }
 
@@ -337,10 +348,10 @@ function MapSectionContent() {
       <input
         ref={contextMenuFileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*"
         multiple
+        hidden
         onChange={handleContextMenuFileChange}
-        className="hidden"
       />
     </div>
   )

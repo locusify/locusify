@@ -2,7 +2,7 @@ import type { FC } from 'react'
 import type { Photo } from '@/types/photo'
 import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
-import { LazyImage } from '@/components/ui/lazy-image'
+import { LazyMedia } from '@/components/ui/lazy-media'
 import { cn } from '@/lib/utils'
 
 interface ProgressProps {
@@ -19,7 +19,7 @@ export const Progress: FC<ProgressProps> = ({
   const { t } = useTranslation()
 
   const overallProgress = files.length > 0
-    ? Object.values(progress).reduce((sum, p) => sum + p, 0) / files.length
+    ? files.reduce((sum, f) => sum + (progress[f.id] || 0), 0) / files.length
     : 0
 
   return (
@@ -119,10 +119,12 @@ export const Progress: FC<ProgressProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.6 + index * 0.02 }}
             >
-              <LazyImage
+              <LazyMedia
                 src={file.preview}
                 alt={file.name}
-                className="size-full object-cover"
+                className="size-full"
+                videoSource={file.videoSource}
+                showBadge={false}
                 rootMargin="100px"
                 threshold={0.1}
               />
