@@ -27,7 +27,7 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
       const results = await Promise.all(
         audioTracks
           .filter(t => t.id !== 'none')
-          .map(async track => {
+          .map(async (track) => {
             const available = await AudioManager.probeTrack(track.id)
             return { id: track.id, available }
           }),
@@ -86,7 +86,7 @@ export function TemplateCustomizer({ config, onChange }: TemplateCustomizerProps
         {activeTab === 'music' && (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
-              {audioTracks.map(track => {
+              {audioTracks.map((track) => {
                 const isUnavailable = track.id !== 'none' && unavailableTracks.has(track.id)
                 return (
                   <button

@@ -163,7 +163,8 @@ export function TrajectoryController() {
         if (Math.abs(bearingDiff) >= 8) {
           cam.bearing = smoothBearing(cam.bearing, ideal.bearing, damping * 0.3)
         }
-      } else {
+      }
+      else {
         cam.bearing = 0
       }
       cam.pitch = pitchEnabled

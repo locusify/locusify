@@ -58,7 +58,8 @@ export function TrajectoryLineLayer() {
           ])
         }
       }
-    } else if (currentWaypointIndex < waypoints.length) {
+    }
+    else if (currentWaypointIndex < waypoints.length) {
       // At a waypoint, no partial progress — add the waypoint itself
       coordinates.push(waypoints[currentWaypointIndex].position)
     }
@@ -94,11 +95,16 @@ export function TrajectoryLineLayer() {
         'interpolate',
         ['linear'],
         ['line-progress'],
-        0, `${lineStyle.color}00`,
-        0.4, `${lineStyle.color}33`,
-        0.7, `${lineStyle.color}88`,
-        0.95, `${lineStyle.color}dd`,
-        1, lineStyle.color,
+        0,
+        `${lineStyle.color}00`,
+        0.4,
+        `${lineStyle.color}33`,
+        0.7,
+        `${lineStyle.color}88`,
+        0.95,
+        `${lineStyle.color}dd`,
+        1,
+        lineStyle.color,
       ] as ExpressionSpecification
     : undefined
 

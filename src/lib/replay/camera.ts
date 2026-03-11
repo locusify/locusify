@@ -3,7 +3,8 @@ import { computeBearing } from '@/lib/geo'
 
 /** Continuous log-scale mapping from distance (km) to ideal zoom level. */
 export function computeSegmentZoom(distanceKm: number): number {
-  if (distanceKm < 0.5) return 15
+  if (distanceKm < 0.5)
+    return 15
   // log curve: 0.5km → z15, 1000km → z4
   const zoom = 15 - (Math.log10(distanceKm) / Math.log10(1000)) * 11
   return Math.max(4, Math.min(15, zoom))
@@ -88,7 +89,8 @@ export function computeCameraTarget(
     if (aheadIdx > curveIdx) {
       bearing = computeBearing(seg.curvePoints[curveIdx], seg.curvePoints[aheadIdx])
     }
-  } else {
+  }
+  else {
     const from = waypoints[currentWaypointIndex]?.position
     const to = waypoints[currentWaypointIndex + 1]?.position
     if (from && to) {
