@@ -1,3 +1,5 @@
+import { getStorage } from '@/platforms'
+
 const STORAGE_KEY = 'locusify-tokens'
 
 interface Tokens {
@@ -5,9 +7,9 @@ interface Tokens {
   refreshToken: string
 }
 
-export function getTokens(): { accessToken: string | null, refreshToken: string | null } {
+export async function getTokens(): Promise<{ accessToken: string | null, refreshToken: string | null }> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = await getStorage().get(STORAGE_KEY)
     if (!raw)
       return { accessToken: null, refreshToken: null }
     const parsed: Tokens = JSON.parse(raw)
@@ -18,14 +20,15 @@ export function getTokens(): { accessToken: string | null, refreshToken: string 
   }
 }
 
-export function setTokens(accessToken: string, refreshToken: string): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ accessToken, refreshToken }))
+export async function setTokens(accessToken: string, refreshToken: string): Promise<void> {
+  await getStorage().set(STORAGE_KEY, JSON.stringify({ accessToken, refreshToken }))
 }
 
-export function clearTokens(): void {
-  localStorage.removeItem(STORAGE_KEY)
+export async function clearTokens(): Promise<void> {
+  await getStorage().remove(STORAGE_KEY)
 }
 
-export function getAccessToken(): string | null {
-  return getTokens().accessToken
+export async function getAccessToken(): Promise<string | null> {
+  const tokens = await getTokens()
+  return tokens.accessToken
 }

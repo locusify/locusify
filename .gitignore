@@ -13,3 +13,11 @@ supabase/.temp/
 
 # claude
 .claude/settings.local.json
+
+# Capacitor — native build artifacts (keep ios/ and android/ in version control)
+ios/App/Pods/
+ios/capacitor-cordova-ios-plugins/
+android/.gradle/
+android/app/build/
+android/build/
+android/capacitor-cordova-android-plugins/build/

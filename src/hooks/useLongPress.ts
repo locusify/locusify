@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { getHaptics } from '@/platforms'
 
 interface UseLongPressOptions {
   delay?: number
@@ -34,7 +35,7 @@ export function useLongPress(
 
     timerRef.current = setTimeout(() => {
       callbackRef.current({ clientX: touch.clientX, clientY: touch.clientY })
-      navigator.vibrate?.(50)
+      getHaptics().impact('light')
       timerRef.current = null
     }, delay)
   }, [delay, clear])

@@ -24,9 +24,17 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint --fix",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "cap:sync": "cap sync",
+    "cap:open:ios": "cap open ios",
+    "cap:open:android": "cap open android",
+    "build:mobile": "pnpm build && cap sync"
   },
   "dependencies": {
+    "@capacitor/android": "^8.2.0",
+    "@capacitor/app": "^8.0.1",
+    "@capacitor/core": "^8.2.0",
+    "@capacitor/ios": "^8.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-hover-card": "^1.1.15",
@@ -64,6 +72,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.2.0",
+    "@capacitor/cli": "^8.2.0",
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
     "@egoist/tailwindcss-icons": "^1.9.0",

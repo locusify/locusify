@@ -8,6 +8,7 @@ import { env } from '@/lib/env'
 import { extractExifData } from '@/lib/exif'
 import { cn } from '@/lib/utils'
 import { convertExifGPSToDecimal } from '@/pages/map/utils'
+import { getCamera, isNative } from '@/platforms'
 import { GPSDirection } from '@/types/map'
 
 // Mock GPS locations for dev testing (Japan locations)
@@ -47,13 +48,13 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [useMockMetadata, setUseMockMetadata] = useState(false)
 
-  // Handle file processing
-  const processFiles = useCallback(
-    async (fileList: FileList) => {
+  // Process an array of File objects into Photo[]
+  const processFileArray = useCallback(
+    async (fileArray: File[]) => {
       const files: Photo[] = []
 
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i]
+      for (let i = 0; i < fileArray.length; i++) {
+        const file = fileArray[i]
 
         // Only accept image files
         if (!file.type.startsWith('image/')) {
@@ -121,6 +122,18 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
     [onFilesSelected, useMockMetadata],
   )
 
+  // Handle file processing from FileList (web file input)
+  const processFiles = useCallback(
+    async (fileList: FileList) => {
+      const fileArray: File[] = []
+      for (let i = 0; i < fileList.length; i++) {
+        fileArray.push(fileList[i])
+      }
+      await processFileArray(fileArray)
+    },
+    [processFileArray],
+  )
+
   // Handle file input change
   const handleFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,9 +146,17 @@ export function PhotoSelector({ onFilesSelected }: PhotoSelectorProps) {
   )
 
   // Handle click to open file picker
-  const handleClick = useCallback(() => {
-    fileInputRef.current?.click()
-  }, [])
+  const handleClick = useCallback(async () => {
+    if (isNative()) {
+      const results = await getCamera().pickPhotos()
+      if (results.length > 0) {
+        await processFileArray(results.map(r => r.file))
+      }
+    }
+    else {
+      fileInputRef.current?.click()
+    }
+  }, [processFileArray])
 
   return (
     <m.div

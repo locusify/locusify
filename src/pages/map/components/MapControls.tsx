@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useMap } from 'react-map-gl/maplibre'
 import { cn, glassPanel } from '@/lib/utils'
+import { getGeolocation } from '@/platforms'
 import { useRegionStore } from '@/stores/regionStore'
 
 interface MapControlsProps {
@@ -36,34 +37,29 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
   }
 
   const handleGeolocate = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { longitude, latitude } = position.coords
-          if (map) {
-            map.flyTo({
-              center: [longitude, latitude],
-              zoom: isFragmentMode ? 3 : 14,
-              duration: 1000,
-            })
-          }
-          onGeolocate?.(longitude, latitude)
-        },
-        (error) => {
-          console.warn('Geolocation error:', error)
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000,
-        },
-      )
-    }
+    getGeolocation().getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000,
+    }).then((position) => {
+      const { longitude, latitude } = position
+      if (map) {
+        map.flyTo({
+          center: [longitude, latitude],
+          zoom: isFragmentMode ? 3 : 14,
+          duration: 1000,
+        })
+      }
+      onGeolocate?.(longitude, latitude)
+    }).catch((error) => {
+      console.warn('Geolocation error:', error)
+    })
   }
 
   return (
     <m.div
       className="absolute bottom-4 left-2 z-40 flex flex-col gap-2 sm:left-4 sm:gap-3"
+      style={{ paddingBottom: 'var(--safe-area-bottom)', paddingLeft: 'var(--safe-area-left)' }}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}

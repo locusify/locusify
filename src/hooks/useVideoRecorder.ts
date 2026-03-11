@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { isNative } from '@/platforms'
 import { useReplayStore } from '@/stores/replayStore'
 
 export type RecordingStatus = 'idle' | 'recording' | 'processing' | 'unsupported'
@@ -6,6 +7,9 @@ export type RecordingStatus = 'idle' | 'recording' | 'processing' | 'unsupported
 // ─── Capability detection ──────────────────────────────────────────────────────
 
 function detectCapability(): 'screen-capture' | 'unsupported' {
+  if (isNative()) {
+    return 'unsupported'
+  }
   if (typeof navigator.mediaDevices?.getDisplayMedia === 'function') {
     return 'screen-capture'
   }
