@@ -28,6 +28,11 @@ export function TrajectoryController() {
     if (!map)
       return
 
+    // Set left padding so all camera ops center on the right 60% (unoccluded by photo panel)
+    const mapInstance = map.getMap()
+    const panelWidth = Math.round(mapInstance.getContainer().offsetWidth * 0.4)
+    mapInstance.setPadding({ left: panelWidth, top: 0, right: 0, bottom: 0 })
+
     const cam = cameraRef.current
     cam.initialised = false
     cam.earthZoomHandled = false
@@ -60,7 +65,7 @@ export function TrajectoryController() {
       }
     }
 
-    return useReplayStore.subscribe((state, prevState) => {
+    const unsub = useReplayStore.subscribe((state, prevState) => {
       const { earthZoomPhase } = state
 
       // Skip camera control while earth zoom is actively running
@@ -180,6 +185,11 @@ export function TrajectoryController() {
         pitch: cam.pitch,
       })
     })
+
+    return () => {
+      unsub()
+      mapInstance.setPadding({ left: 0, top: 0, right: 0, bottom: 0 })
+    }
   }, [map])
 
   return null

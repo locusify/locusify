@@ -13,7 +13,7 @@ interface TemplateCustomizerProps {
 type Tab = 'music' | 'filter' | 'text' | 'transition' | 'speed' | 'line' | 'camera'
 
 const FILTER_TYPES: FilterType[] = ['none', 'vintage', 'warm', 'cool', 'b&w', 'film', 'cinematic']
-const TRANSITION_TYPES: TransitionType[] = ['cut', 'crossfade', 'slide-left', 'zoom-in', 'blur']
+const TRANSITION_TYPES: TransitionType[] = ['cut', 'crossfade', 'slide-left', 'slide-up', 'zoom-in', 'blur']
 const TEXT_STYLES: TextOverlayStyle[] = ['handwritten', 'minimal', 'bold', 'typewriter', 'neon']
 const TEXT_POSITIONS = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'] as const
 

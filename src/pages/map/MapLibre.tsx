@@ -17,7 +17,6 @@ import { GlobeOrbitController } from './components/GlobeOrbitController'
 import { MapControls } from './components/MapControls'
 import { PhotoMarkerPin } from './components/PhotoMarkerPin'
 import { RegionFillLayer } from './components/RegionFillLayer'
-import { ReplayPhotoCard } from './components/replay/ReplayPhotoCard'
 import { StarfieldCanvas } from './components/StarfieldCanvas'
 import { TrajectoryController } from './components/TrajectoryController'
 import { TrajectoryLineLayer } from './components/TrajectoryLineLayer'
@@ -490,7 +489,6 @@ export function Maplibre({
             {!earthZoomActive && (
               <>
                 <TrajectoryLineLayer />
-                <ReplayPhotoCard />
                 <WaypointDot />
               </>
             )}

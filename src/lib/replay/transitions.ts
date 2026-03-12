@@ -32,6 +32,13 @@ export function getTransitionVariants(type: TransitionType, duration: number): T
         exit: { opacity: 0, x: -60 },
         transition: { duration: duration / 1000, ease },
       }
+    case 'slide-up':
+      return {
+        initial: { opacity: 0, y: 60 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -60 },
+        transition: { duration: duration / 1000, ease },
+      }
     case 'zoom-in':
       return {
         initial: { opacity: 0, scale: 0.7 },

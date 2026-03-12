@@ -389,6 +389,7 @@
   "template.transition.cut": "硬切",
   "template.transition.crossfade": "交叉淡化",
   "template.transition.slide-left": "滑动",
+  "template.transition.slide-up": "上滑",
   "template.transition.zoom-in": "放大",
   "template.transition.blur": "模糊",
 
@@ -445,5 +446,7 @@
   "upload.overall.progress": "总进度",
   "upload.files.completed": "已上传 {{count}} 个文件",
   "upload.files.uploading": "已上传 {{completed}} / {{total}} 个文件",
-  "upload.complete.hint": "您现在可以关闭此页面或继续上传更多文件。"
+  "upload.complete.hint": "您现在可以关闭此页面或继续上传更多文件。",
+
+  "replay.rotateLandscape": "请将设备横屏以获得最佳体验"
 }

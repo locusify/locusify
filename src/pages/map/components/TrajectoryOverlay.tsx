@@ -6,8 +6,8 @@ import { getTemplateById } from '@/data/templates'
 import { cn } from '@/lib/utils'
 import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
+import { PhotoPanel } from './replay/PhotoPanel'
 import { ReplayControls } from './replay/ReplayControls'
-import { ReplayTextOverlay } from './replay/ReplayTextOverlay'
 import { TemplateCustomizer } from './replay/TemplateCustomizer'
 import { TemplateSelector } from './replay/TemplateSelector'
 import { TrajectoryStatsBar } from './replay/TrajectoryStatsBar'
@@ -22,7 +22,7 @@ interface TrajectoryOverlayProps {
  * Overlay container for replay mode.
  * Contains the template config UI, text overlay, stats, and bottom controls.
  * Intro animation is now rendered at the MapSection level (shared with globe orbit).
- * Photo card is now rendered as a map Marker (see MapLibre.tsx).
+ * Photo panel is rendered as a split layout alongside the map.
  */
 export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClick }: TrajectoryOverlayProps) {
   const { t } = useTranslation()
@@ -105,13 +105,13 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
 
   return (
     <div className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-end">
-      {/* Text overlay — shown during playback */}
-      {templateConfig && (
-        <ReplayTextOverlay config={templateConfig.textOverlay} />
-      )}
+      {/* Split layout — photo panel */}
+      <PhotoPanel />
 
-      {/* Stats bar — always visible in replay mode */}
-      <TrajectoryStatsBar />
+      {/* Stats bar — visible only during recording */}
+      <div className="relative z-30">
+        <TrajectoryStatsBar />
+      </div>
 
       {/* Template panel — above controls, shown when play clicked during configuring OR via template button during playback */}
       <AnimatePresence>
@@ -122,7 +122,7 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              'pointer-events-auto absolute left-2 right-2 z-40 max-h-[55vh] overflow-y-auto',
+              'pointer-events-auto absolute left-[calc(40%+0.5rem)] right-2 z-40 max-h-[55vh] overflow-y-auto',
               'rounded-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85',
               isConfiguring ? 'bottom-28' : 'bottom-28',
             )}
@@ -168,7 +168,7 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              'pointer-events-auto absolute left-2 right-2 z-40 max-h-[60vh] overflow-y-auto',
+              'pointer-events-auto absolute left-[calc(40%+0.5rem)] right-2 z-40 max-h-[60vh] overflow-y-auto',
               'rounded-2xl border border-fill-tertiary bg-white/95 p-4 shadow-2xl backdrop-blur-[120px] dark:bg-black/85',
               'bottom-28',
             )}
@@ -206,9 +206,9 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
 
       {/* Bottom gradient + controls — always shown except during recording */}
       {!recordingActive && (
-        <>
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
-          <div className="pointer-events-auto relative mx-2 pb-2 sm:pb-4">
+        <div className="relative z-30">
+          <div className="absolute bottom-0 left-[40%] right-0 h-48 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="pointer-events-auto relative ml-[calc(40%+0.5rem)] mr-2 pb-2 sm:pb-4">
             <ReplayControls
               onPlayClick={handlePlayClick}
               onTemplateClick={() => {
@@ -221,7 +221,7 @@ export function TrajectoryOverlay({ onBeginRecording, onShowIntro, onUpgradeClic
               }}
             />
           </div>
-        </>
+        </div>
       )}
     </div>
   )

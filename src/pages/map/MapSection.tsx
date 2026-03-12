@@ -10,7 +10,7 @@ import { useLongPress } from '@/hooks/useLongPress'
 import { useRecordingFlow } from '@/hooks/useRecordingFlow'
 import { useRegionPhotoMapping } from '@/hooks/useRegionPhotoMapping'
 import { extractExifData } from '@/lib/exif'
-import { categorizeFiles, getFilenameStem } from '@/lib/utils'
+import { categorizeFiles, cn, getFilenameStem } from '@/lib/utils'
 import { SettingsDrawer } from '@/pages/settings'
 import { useAuthStore } from '@/stores/authStore'
 import { useGlobeOrbitStore } from '@/stores/globeOrbitStore'
@@ -24,6 +24,7 @@ import { GlobeOrbitOverlay } from './components/GlobeOrbitOverlay'
 import { MapContextMenu } from './components/MapContextMenu'
 import { MapMenuButton } from './components/MapMenuButton'
 import { OnboardingGuide } from './components/OnboardingGuide'
+import { PortraitLockOverlay } from './components/replay/PortraitLockOverlay'
 import { ReplayIntroOverlay } from './components/replay/ReplayIntroOverlay'
 import { SaveVideoDialog } from './components/SaveVideoDialog'
 import { TrajectoryOverlay } from './components/TrajectoryOverlay'
@@ -290,6 +291,10 @@ function MapSectionContent() {
       )}
 
       {isReplayMode && (
+        <PortraitLockOverlay />
+      )}
+
+      {isReplayMode && (
         <TrajectoryOverlay
           onBeginRecording={beginRecording}
           onShowIntro={showIntro}
@@ -301,12 +306,14 @@ function MapSectionContent() {
 
       {/* Shared intro overlay — controlled by useRecordingFlow */}
       {/* Force logo-fade for globe orbit or earth zoom, even if template has intro: 'none' */}
-      <ReplayIntroOverlay
-        visible={introVisible}
-        onExitComplete={onIntroComplete}
-        introStyle={(isOrbiting || earthZoomActive) ? 'logo-fade' : templateConfig.intro.style}
-        autoHide={!earthZoomActive}
-      />
+      <div className="absolute inset-0">
+        <ReplayIntroOverlay
+          visible={introVisible}
+          onExitComplete={onIntroComplete}
+          introStyle={(isOrbiting || earthZoomActive) ? 'logo-fade' : templateConfig.intro.style}
+          autoHide={!earthZoomActive}
+        />
+      </div>
 
       {/* Announcement dialog — shown once per version */}
       <AnimatePresence>
@@ -352,7 +359,10 @@ function MapSectionContent() {
         initial={{ opacity: 0, scale: 1.02 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className={`size-full isolate${!user ? ' pointer-events-none' : ''}`}
+        className={cn(
+          'isolate size-full transition-all duration-500 ease-in-out',
+          !user && 'pointer-events-none',
+        )}
         {...(!isInAnyReplay ? longPressHandlers : {})}
       >
         <Maplibre

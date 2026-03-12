@@ -9,14 +9,14 @@ import { AnimatedNumber } from './AnimatedNumber'
 /**
  * Bottom stats bar shown during trajectory playback.
  * Left: logo + brand name. Middle: 2 animated stats. Right: QR code.
- * Visible from configuring through playing/paused/completed — including recording.
+ * Visible only when recording is active.
  */
 export function TrajectoryStatsBar() {
   const { t } = useTranslation()
-  const status = useReplayStore(s => s.status)
+  const recordingActive = useReplayStore(s => s.recordingActive)
   const stats = useReplayStats()
 
-  const isVisible = status === 'configuring' || status === 'playing' || status === 'paused' || status === 'completed'
+  const isVisible = recordingActive
 
   const items = [
     {

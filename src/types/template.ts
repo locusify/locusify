@@ -58,6 +58,6 @@ export interface ReplayTemplateConfig {
   defaultSpeed: number
 }
 
-export type TransitionType = 'cut' | 'crossfade' | 'slide-left' | 'zoom-in' | 'blur'
+export type TransitionType = 'cut' | 'crossfade' | 'slide-left' | 'slide-up' | 'zoom-in' | 'blur'
 export type FilterType = 'none' | 'vintage' | 'warm' | 'cool' | 'b&w' | 'film' | 'cinematic'
 export type TextOverlayStyle = 'handwritten' | 'minimal' | 'bold' | 'typewriter' | 'neon'

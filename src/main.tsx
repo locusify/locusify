@@ -10,6 +10,8 @@ import initialize from './lib/initialize'
  */
 // @ts-expect-error - Font package not installed, ignoring missing module error
 import '@fontsource-variable/inconsolata'
+// @ts-expect-error - Font package not installed, ignoring missing module error
+import '@fontsource-variable/caveat'
 import './index.css'
 
 initialize().finally(() => createRoot(document.getElementById('root')!).render(

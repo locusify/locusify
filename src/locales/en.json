@@ -389,6 +389,7 @@
   "template.transition.cut": "Cut",
   "template.transition.crossfade": "Crossfade",
   "template.transition.slide-left": "Slide",
+  "template.transition.slide-up": "Slide Up",
   "template.transition.zoom-in": "Zoom In",
   "template.transition.blur": "Blur",
 
@@ -445,5 +446,7 @@
   "upload.overall.progress": "Overall Progress",
   "upload.files.completed": "{{count}} files uploaded",
   "upload.files.uploading": "{{completed}} of {{total}} files uploaded",
-  "upload.complete.hint": "You can now close this page or upload more files."
+  "upload.complete.hint": "You can now close this page or upload more files.",
+
+  "replay.rotateLandscape": "Please rotate your device to landscape mode"
 }
