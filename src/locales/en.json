@@ -215,6 +215,9 @@
   "auth.privacy.termsOfService": "Terms of Service",
   "auth.privacy.required": "Please agree to the Privacy Policy and Terms of Service first",
 
+  "auth.legal.privacyPolicy.title": "Privacy Policy",
+  "auth.legal.termsOfService.title": "Terms of Service",
+
   "auth.login.forgotPassword": "Forgot password?",
 
   "auth.forgotPassword.description": "Enter your email to receive a password reset link",

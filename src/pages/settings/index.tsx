@@ -1,6 +1,7 @@
 import type { FC } from 'react'
 import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { LegalDrawer } from '@/components/auth/LegalDrawer'
 import {
   Drawer,
   DrawerContent,
@@ -33,6 +34,7 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange, on
   const user = useAuthStore(s => s.user)
   const { subscription, isPro } = useSubscriptionStore()
   const [pricingOpen, setPricingOpen] = useState(false)
+  const [legalType, setLegalType] = useState<'privacy-policy' | 'terms-of-service' | null>(null)
 
   const handleLogout = useCallback(() => {
     onOpenChange(false)
@@ -100,11 +102,27 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange, on
               <SettingsSection label={t('settings.section.about')}>
                 <AboutSection />
               </SettingsSection>
+              <div className="flex items-center justify-center gap-3 py-3 text-xs text-text/40">
+                <button type="button" onClick={() => setLegalType('privacy-policy')} className="hover:text-text/60 transition-colors">
+                  {t('auth.privacy.privacyPolicy')}
+                </button>
+                <span>·</span>
+                <button type="button" onClick={() => setLegalType('terms-of-service')} className="hover:text-text/60 transition-colors">
+                  {t('auth.privacy.termsOfService')}
+                </button>
+              </div>
             </div>
           </div>
         </DrawerContent>
       </Drawer>
       <PricingDrawer open={pricingOpen} onOpenChange={setPricingOpen} />
+      {legalType && (
+        <LegalDrawer
+          type={legalType}
+          open
+          onOpenChange={open => !open && setLegalType(null)}
+        />
+      )}
     </>
   )
 }

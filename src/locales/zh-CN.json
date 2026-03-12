@@ -215,6 +215,9 @@
   "auth.privacy.termsOfService": "服务条款",
   "auth.privacy.required": "请先同意隐私政策和服务条款",
 
+  "auth.legal.privacyPolicy.title": "隐私政策",
+  "auth.legal.termsOfService.title": "服务条款",
+
   "auth.login.forgotPassword": "忘记密码？",
 
   "auth.forgotPassword.description": "输入邮箱以接收密码重置链接",
