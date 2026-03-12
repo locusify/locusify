@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/drawer'
 import { Separator } from '@/components/ui/separator'
 import { cn, glassPanel } from '@/lib/utils'
+import { FeedbackDialog } from '@/pages/map/components/FeedbackDialog'
 import { PricingDrawer } from '@/pages/pricing'
 import { useAuthStore } from '@/stores/authStore'
 import { useSubscriptionStore } from '@/stores/subscriptionStore'
@@ -35,11 +36,16 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange, on
   const { subscription, isPro } = useSubscriptionStore()
   const [pricingOpen, setPricingOpen] = useState(false)
   const [legalType, setLegalType] = useState<'privacy-policy' | 'terms-of-service' | null>(null)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
 
   const handleLogout = useCallback(() => {
     onOpenChange(false)
     onLogout?.()
   }, [onOpenChange, onLogout])
+
+  const handleCloseFeedback = useCallback(() => {
+    setFeedbackOpen(false)
+  }, [])
 
   return (
     <>
@@ -101,6 +107,20 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange, on
               </SettingsSection>
               <SettingsSection label={t('settings.section.about')}>
                 <AboutSection />
+                <Separator />
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenChange(false)
+                    setTimeout(() => setFeedbackOpen(true), 300)
+                  }}
+                  className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-fill-secondary"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="i-mingcute-message-3-line size-4 text-text/50" />
+                    <span className="text-sm font-medium text-text">{t('settings.feedback')}</span>
+                  </div>
+                </button>
               </SettingsSection>
               <div className="flex justify-center py-3">
                 <a href="https://www.buymeacoffee.com/daiqin1046z" target="_blank" rel="noopener noreferrer">
@@ -125,6 +145,7 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange, on
         </DrawerContent>
       </Drawer>
       <PricingDrawer open={pricingOpen} onOpenChange={setPricingOpen} />
+      <FeedbackDialog open={feedbackOpen} onClose={handleCloseFeedback} />
       {legalType && (
         <LegalDrawer
           type={legalType}

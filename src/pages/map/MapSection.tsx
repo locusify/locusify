@@ -19,6 +19,7 @@ import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { GPSDirection } from '@/types/map'
 import { AnnouncementDialog } from './components/AnnouncementDialog'
+import { FeedbackDialog } from './components/FeedbackDialog'
 import { GalleryDrawer } from './components/GalleryDrawer'
 import { GlobeOrbitOverlay } from './components/GlobeOrbitOverlay'
 import { MapContextMenu } from './components/MapContextMenu'
@@ -37,6 +38,8 @@ const Maplibre = lazy(() =>
 const ANNOUNCEMENT_VERSION = pkg.version
 const ANNOUNCEMENT_STORAGE_KEY = 'locusify:version'
 const GUIDE_STORAGE_KEY = 'locusify:onboarding-guide-dismissed'
+const FEEDBACK_STORAGE_KEY = 'locusify:feedback-last-shown'
+const FEEDBACK_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 function MapSectionContent() {
   const user = useAuthStore(s => s.user)
@@ -88,6 +91,14 @@ function MapSectionContent() {
   const [guideOpen, setGuideOpen] = useState(
     () => localStorage.getItem(GUIDE_STORAGE_KEY) !== 'true',
   )
+  const [feedbackOpen, setFeedbackOpen] = useState(() => {
+    const last = localStorage.getItem(FEEDBACK_STORAGE_KEY)
+    if (!last) {
+      localStorage.setItem(FEEDBACK_STORAGE_KEY, String(Date.now()))
+      return false
+    }
+    return Date.now() - Number(last) >= FEEDBACK_INTERVAL_MS
+  })
 
   // Context menu state
   const pendingLngLat = useRef<{ lng: number, lat: number } | null>(null)
@@ -132,6 +143,11 @@ function MapSectionContent() {
   const handleDismissGuide = useCallback(() => {
     localStorage.setItem(GUIDE_STORAGE_KEY, 'true')
     setGuideOpen(false)
+  }, [])
+
+  const handleDismissFeedback = useCallback(() => {
+    localStorage.setItem(FEEDBACK_STORAGE_KEY, String(Date.now()))
+    setFeedbackOpen(false)
   }, [])
 
   const handleMapContextMenu = useCallback((e: MapLayerMouseEvent) => {
@@ -323,6 +339,16 @@ function MapSectionContent() {
             isProcessing={isProcessing}
             onSave={saveVideo}
             onDiscard={discardVideo}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Feedback dialog — shown every 7 days, lowest priority */}
+      <AnimatePresence>
+        {feedbackOpen && !!user && !announcementOpen && !guideOpen && !videoDialogOpen && (
+          <FeedbackDialog
+            open
+            onClose={handleDismissFeedback}
           />
         )}
       </AnimatePresence>

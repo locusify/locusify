@@ -459,5 +459,18 @@
   "metadata.editor.done": "Done",
   "metadata.editor.title": "Title",
   "metadata.editor.titlePlaceholder": "Enter photo title...",
-  "metadata.editor.dateTaken": "Date & Time"
+  "metadata.editor.dateTaken": "Date & Time",
+
+  "feedback.title": "Rate Your Experience",
+  "feedback.subtitle": "How are you enjoying Locusify?",
+  "feedback.textLabel": "Tell us more",
+  "feedback.textPlaceholder": "What could we improve?",
+  "feedback.textRequired": "Please share your feedback so we can improve",
+  "feedback.submit": "Submit",
+  "feedback.skip": "Not now",
+  "feedback.thankYou.title": "Thank you!",
+  "feedback.thankYou.body": "Your feedback helps us make Locusify better for everyone.",
+  "feedback.thankYou.dismiss": "Done",
+
+  "settings.feedback": "Feedback"
 }

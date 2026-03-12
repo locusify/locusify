@@ -459,5 +459,18 @@
   "metadata.editor.done": "完成",
   "metadata.editor.title": "标题",
   "metadata.editor.titlePlaceholder": "输入照片标题...",
-  "metadata.editor.dateTaken": "拍摄时间"
+  "metadata.editor.dateTaken": "拍摄时间",
+
+  "feedback.title": "为体验评分",
+  "feedback.subtitle": "你觉得 Locusify 用起来怎么样？",
+  "feedback.textLabel": "告诉我们更多",
+  "feedback.textPlaceholder": "有什么可以改进的地方？",
+  "feedback.textRequired": "请分享你的反馈，帮助我们改进",
+  "feedback.submit": "提交",
+  "feedback.skip": "暂时跳过",
+  "feedback.thankYou.title": "感谢反馈！",
+  "feedback.thankYou.body": "你的反馈将帮助我们让 Locusify 变得更好。",
+  "feedback.thankYou.dismiss": "完成",
+
+  "settings.feedback": "用户反馈"
 }
