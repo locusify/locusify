@@ -33,6 +33,7 @@ export function useRecordingFlow(options: RecordingFlowOptions = {}) {
     isRecording,
     isProcessing,
     pendingVideo,
+    conversionProgress,
   } = useVideoRecorder()
 
   // Intro state
@@ -140,11 +141,11 @@ export function useRecordingFlow(options: RecordingFlowOptions = {}) {
     const anyCompleted = replayStatus === 'completed' || orbitStatus === 'completed'
     if (!anyCompleted)
       return
-    if (!isRecording && !pendingVideo)
+    if (!isRecording && !isProcessing && !pendingVideo)
       return
     const t = setTimeout(() => setVideoDialogOpen(true), STOP_DELAY_MS)
     return () => clearTimeout(t)
-  }, [replayStatus, orbitStatus, isRecording, pendingVideo])
+  }, [replayStatus, orbitStatus, isRecording, isProcessing, pendingVideo])
 
   // ── Convenience wrappers ────────────────────────────────────────────────────
 
@@ -171,6 +172,7 @@ export function useRecordingFlow(options: RecordingFlowOptions = {}) {
     isRecording,
     isProcessing,
     pendingVideo,
+    conversionProgress,
     // Actions
     beginRecording,
     showIntro,

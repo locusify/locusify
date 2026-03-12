@@ -100,6 +100,7 @@
 
   "workspace.recording.recording": "正在录制...",
   "workspace.recording.processing": "正在处理...",
+  "workspace.recording.converting": "正在转换为 MP4… {{progress}}%",
   "workspace.recording.ready.title": "轨迹视频已就绪",
   "workspace.recording.save": "保存视频",
   "workspace.recording.discard": "放弃",

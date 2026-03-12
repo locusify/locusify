@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { convertWebmToMp4 } from '@/lib/webm-to-mp4'
 import { isNative } from '@/platforms'
 import { useReplayStore } from '@/stores/replayStore'
 
@@ -27,7 +28,7 @@ interface SessionCallbacks {
   /** Called the moment the session decides to stop (transition to 'processing'). */
   onStopping: () => void
   /** Called once the encoded blob is ready (transition to 'idle'). */
-  onComplete: (blob: Blob, mimeType: string) => void
+  onComplete: (blob: Blob) => void | Promise<void>
 }
 
 // ─── ScreenRecordingSession ────────────────────────────────────────────────────
@@ -98,7 +99,7 @@ class ScreenRecordingSession {
     }
     this.recorder.onstop = () => {
       const blob = new Blob(this.chunks, { type: this.mimeType })
-      callbacks.onComplete(blob, this.mimeType)
+      callbacks.onComplete(blob)
     }
 
     // User stops sharing via browser UI
@@ -149,6 +150,7 @@ export function useVideoRecorder() {
     return detectCapability() === 'unsupported' ? 'unsupported' : 'idle'
   })
   const [pendingVideo, setPendingVideo] = useState<PendingVideo | null>(null)
+  const [conversionProgress, setConversionProgress] = useState<number | null>(null)
 
   const sessionRef = useRef<ScreenRecordingSession | null>(null)
 
@@ -165,8 +167,17 @@ export function useVideoRecorder() {
         setStatus('processing')
         useReplayStore.getState().setRecordingActive(false)
       },
-      onComplete: (blob, mimeType) => {
-        setPendingVideo({ blob, mimeType })
+      onComplete: async (blob) => {
+        setConversionProgress(0)
+        try {
+          const mp4Blob = await convertWebmToMp4(blob, setConversionProgress)
+          setPendingVideo({ blob: mp4Blob, mimeType: 'video/mp4' })
+        }
+        catch {
+          // Conversion failed — fall back to original WebM
+          setPendingVideo({ blob, mimeType: 'video/webm' })
+        }
+        setConversionProgress(null)
         setStatus('idle')
         sessionRef.current = null
       },
@@ -239,6 +250,7 @@ export function useVideoRecorder() {
   return {
     status,
     pendingVideo,
+    conversionProgress,
     startRecording,
     stopRecording,
     saveVideo,

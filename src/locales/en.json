@@ -100,6 +100,7 @@
 
   "workspace.recording.recording": "Recording...",
   "workspace.recording.processing": "Processing...",
+  "workspace.recording.converting": "Converting to MP4… {{progress}}%",
   "workspace.recording.ready.title": "Replay Video Ready",
   "workspace.recording.save": "Save",
   "workspace.recording.discard": "Discard",

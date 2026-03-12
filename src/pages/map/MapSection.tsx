@@ -69,6 +69,7 @@ function MapSectionContent() {
     isRecording,
     isProcessing,
     pendingVideo,
+    conversionProgress,
     beginRecording,
     showIntro,
     onIntroComplete,
@@ -337,6 +338,7 @@ function MapSectionContent() {
           <SaveVideoDialog
             pendingVideo={pendingVideo}
             isProcessing={isProcessing}
+            conversionProgress={conversionProgress}
             onSave={saveVideo}
             onDiscard={discardVideo}
           />
