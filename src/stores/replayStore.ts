@@ -156,6 +156,7 @@ interface ReplayState {
   setCaptions: (captions: string[]) => void
   startEarthZoom: () => void
   setEarthZoomPhase: (phase: EarthZoomPhase) => void
+  refreshReplay: (markers: PhotoMarker[]) => void
   /** Internal: advance animation by delta ms */
   _tick: (delta: number) => void
 }
@@ -362,6 +363,54 @@ export const useReplayStore = create<ReplayState>((set, get) => ({
       patch.currentSegmentMode = mode
     }
     set(patch as ReplayState)
+  },
+
+  refreshReplay: (markers) => {
+    const { status, segments: oldSegments } = get()
+    if (status !== 'configuring')
+      return
+    const waypoints = markersToWaypoints(markers)
+    if (waypoints.length < 2)
+      return
+    // Build a map of old transport modes by fromId-toId for preservation
+    const oldModeMap = new Map<string, TransportMode>()
+    const oldWaypoints = get().waypoints
+    for (const seg of oldSegments) {
+      const fromId = oldWaypoints[seg.fromIndex]?.id
+      const toId = oldWaypoints[seg.toIndex]?.id
+      if (fromId && toId)
+        oldModeMap.set(`${fromId}-${toId}`, seg.mode)
+    }
+    // Compute new segments, preserving user-set transport modes
+    const segments: SegmentMeta[] = []
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const from = waypoints[i]
+      const to = waypoints[i + 1]
+      const distanceKm = haversineDistance(from.position, to.position)
+      const timeDeltaMs = to.timestamp.getTime() - from.timestamp.getTime()
+      const preserved = oldModeMap.get(`${from.id}-${to.id}`)
+      const mode: TransportMode = preserved ?? 'walking'
+      const curvePoints = interpolateSegment(from.position, to.position, distanceKm, mode, i)
+      segments.push({
+        fromIndex: i,
+        toIndex: i + 1,
+        distanceKm,
+        timeDeltaMs,
+        mode,
+        curvePoints,
+        isLongJump: distanceKm > 200,
+      })
+    }
+    set({
+      waypoints,
+      segments,
+      currentWaypointIndex: 0,
+      segmentProgress: 0,
+      totalProgress: 0,
+      currentPosition: waypoints[0].position,
+      currentSegmentMode: segments[0]?.mode ?? 'walking',
+      dwellRemaining: 0,
+    })
   },
 
   _tick: (delta) => {

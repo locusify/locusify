@@ -58,11 +58,7 @@ export function useRecordingFlow() {
   const beginRecording = useCallback(async (onPlaybackStart: () => void) => {
     recorderDiscard()
     onPlaybackStartRef.current = onPlaybackStart
-    // Show intro FIRST so the opaque overlay is visible before recording starts.
-    // The getDisplayMedia dialog provides a natural delay (1-2s) for the overlay
-    // to fully render and fade in before any frames are captured.
     setIntroVisible(true)
-    // Best-effort: don't gate intro/playback on recording success
     await startRecording()
   }, [startRecording, recorderDiscard])
 

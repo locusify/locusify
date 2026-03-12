@@ -61,6 +61,7 @@ interface PhotoState {
   selectedMarkerId: string | null
   addPhotos: (files: Photo[]) => void
   removePhoto: (fileId: string) => void
+  updatePhoto: (photoId: string, updates: Partial<Pick<Photo, 'dateTaken' | 'name'>>) => void
   clearPhotos: () => void
   setSelectedMarkerId: (id: string | null) => void
 }
@@ -74,6 +75,14 @@ export const usePhotoStore = create<PhotoState>(set => ({
       const existingIds = new Set(state.photos.map(p => p.id))
       const newFiles = files.filter(f => !existingIds.has(f.id))
       const photos = [...state.photos, ...newFiles]
+      return { photos, markers: deriveMarkers(photos) }
+    })
+  },
+  updatePhoto: (photoId, updates) => {
+    set((state) => {
+      const photos = state.photos.map(p =>
+        p.id === photoId ? { ...p, ...updates } : p,
+      )
       return { photos, markers: deriveMarkers(photos) }
     })
   },

@@ -2,6 +2,7 @@ import { AnimatePresence, m } from 'motion/react'
 import { useEffect, useMemo, useRef } from 'react'
 import { getRandomQuote } from '@/data/journalQuotes'
 import { useReplayStore } from '@/stores/replayStore'
+import { MetadataEditor } from './MetadataEditor'
 import { PhotoPanelBackground } from './PhotoPanelBackground'
 import { PhotoTicket } from './PhotoTicket'
 
@@ -50,6 +51,16 @@ export function PhotoPanel() {
             waypointIndex={displayIndex}
             templateConfig={templateConfig}
           />
+
+          {/* Metadata editor — only in configuring mode */}
+          {status === 'configuring' && waypoint && (
+            <MetadataEditor
+              key={waypoint.id}
+              photoId={waypoint.id}
+              currentTitle={waypoint.marker.photo.title}
+              currentDateTaken={waypoint.marker.photo.dateTaken}
+            />
+          )}
 
           {/* Journal caption — below the polaroid */}
           <AnimatePresence mode="wait">

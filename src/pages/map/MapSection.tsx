@@ -6,7 +6,6 @@ import { AnimatePresence, m } from 'motion/react'
 import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LoginButton, LoginDrawer } from '@/components/auth'
 import { SelectPhotosDrawer } from '@/components/upload'
-import { useFullscreenSuggestion } from '@/hooks/useFullscreenSuggestion'
 import { useLongPress } from '@/hooks/useLongPress'
 import { useRecordingFlow } from '@/hooks/useRecordingFlow'
 import { useRegionPhotoMapping } from '@/hooks/useRegionPhotoMapping'
@@ -20,7 +19,6 @@ import { useRegionStore } from '@/stores/regionStore'
 import { useReplayStore } from '@/stores/replayStore'
 import { GPSDirection } from '@/types/map'
 import { AnnouncementDialog } from './components/AnnouncementDialog'
-import { FullscreenBanner } from './components/FullscreenBanner'
 import { GalleryDrawer } from './components/GalleryDrawer'
 import { GlobeOrbitOverlay } from './components/GlobeOrbitOverlay'
 import { MapContextMenu } from './components/MapContextMenu'
@@ -89,8 +87,6 @@ function MapSectionContent() {
   const [guideOpen, setGuideOpen] = useState(
     () => localStorage.getItem(GUIDE_STORAGE_KEY) !== 'true',
   )
-  const { fullscreenSuggestionOpen, dismiss: dismissFullscreen, dismissForever: dismissFullscreenForever } = useFullscreenSuggestion()
-  const [isFullscreen, setIsFullscreen] = useState(() => !!document.fullscreenElement)
 
   // Context menu state
   const pendingLngLat = useRef<{ lng: number, lat: number } | null>(null)
@@ -102,37 +98,6 @@ function MapSectionContent() {
     if (!user)
       setLoginDrawerOpen(true)
   }, [user])
-
-  // Track fullscreen state
-  useEffect(() => {
-    const onChange = () => setIsFullscreen(!!document.fullscreenElement)
-    document.addEventListener('fullscreenchange', onChange)
-    return () => document.removeEventListener('fullscreenchange', onChange)
-  }, [])
-
-  const handleEnterFullscreen = useCallback(async () => {
-    try {
-      await document.documentElement.requestFullscreen()
-    }
-    catch {
-      // Fullscreen request denied or not supported
-    }
-    dismissFullscreen()
-  }, [dismissFullscreen])
-
-  const handleFullscreenToggle = useCallback(async () => {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen()
-      }
-      else {
-        await document.documentElement.requestFullscreen()
-      }
-    }
-    catch {
-      // Fullscreen request denied or not supported
-    }
-  }, [])
 
   const handleMarkerClick = useCallback((marker: PhotoMarker) => {
     setSelectedMarkerId(selectedMarkerId === marker.id ? null : marker.id)
@@ -309,8 +274,6 @@ function MapSectionContent() {
           onExitReplay={handleExitReplay}
           isRecording={isRecording}
           isProcessing={isProcessing}
-          onFullscreenToggle={document.fullscreenEnabled ? handleFullscreenToggle : undefined}
-          isFullscreen={isFullscreen}
         />
       )}
 
@@ -368,17 +331,6 @@ function MapSectionContent() {
           <OnboardingGuide
             open
             onDismiss={handleDismissGuide}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Fullscreen suggestion banner — shown after onboarding on web */}
-      <AnimatePresence>
-        {fullscreenSuggestionOpen && !guideOpen && !!user && (
-          <FullscreenBanner
-            onDismiss={dismissFullscreen}
-            onDismissForever={dismissFullscreenForever}
-            onEnterFullscreen={handleEnterFullscreen}
           />
         )}
       </AnimatePresence>
