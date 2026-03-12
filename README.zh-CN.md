@@ -18,6 +18,7 @@
 
 <p align="center">
   <a href="https://www.producthunt.com/products/locusify"><img src="https://img.shields.io/badge/Product%20Hunt-Locusify-DA552F?logo=producthunt&logoColor=white" alt="Product Hunt" /></a>
+  <a href="https://www.buymeacoffee.com/daiqin1046z"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?logo=buymeacoffee&logoColor=000" alt="Buy Me a Coffee" /></a>
   <img src="https://img.shields.io/badge/license-ISC-blue" alt="License" />
   <img src="https://img.shields.io/badge/node-%3E%3D22-brightgreen" alt="Node" />
   <img src="https://img.shields.io/badge/pnpm-%3E%3D10-f69220" alt="pnpm" />
@@ -229,10 +230,6 @@ src/
 ---
 
 ## 支持我们
-
-如果你觉得 Locusify 对你有帮助，欢迎请我喝杯咖啡！
-
-<a href="https://www.buymeacoffee.com/daiqin1046z"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=daiqin1046z&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
 
 <p>
   <img src="public/support/wechat.jpg" alt="微信赞赏" width="200" />
