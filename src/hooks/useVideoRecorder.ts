@@ -39,8 +39,20 @@ class ScreenRecordingSession {
   private callbacks: SessionCallbacks
   private mimeType: string
 
-  static async create(callbacks: SessionCallbacks): Promise<ScreenRecordingSession | null> {
+  static async create(
+    callbacks: SessionCallbacks,
+    cropElement?: HTMLElement,
+  ): Promise<ScreenRecordingSession | null> {
     try {
+      // Pre-create CropTarget before getDisplayMedia (must be called before capture starts)
+      let cropTarget: CropTarget | null = null
+      if (cropElement && typeof CropTarget !== 'undefined') {
+        try {
+          cropTarget = await CropTarget.fromElement(cropElement)
+        }
+        catch { /* Region Capture unavailable — continue without cropping */ }
+      }
+
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: 'browser',
@@ -52,8 +64,16 @@ class ScreenRecordingSession {
         surfaceSwitching: 'exclude',
       } as DisplayMediaStreamOptions)
 
-      // Keep audio tracks if present (for capturing background music during replay)
-      // Audio tracks are now captured via getDisplayMedia({ audio: true })
+      // Crop the captured stream to the target element's bounding box
+      if (cropTarget) {
+        try {
+          const videoTrack = stream.getVideoTracks()[0] as BrowserCaptureMediaStreamTrack
+          if (typeof videoTrack.cropTo === 'function') {
+            await videoTrack.cropTo(cropTarget)
+          }
+        }
+        catch { /* cropTo failed — continue with full-tab capture */ }
+      }
 
       return new ScreenRecordingSession(stream, callbacks)
     }
@@ -136,7 +156,7 @@ export function useVideoRecorder() {
    * Starts recording using Screen Capture API.
    * Returns true if recording started successfully, false if user denied or unsupported.
    */
-  const startRecording = useCallback(async (): Promise<boolean> => {
+  const startRecording = useCallback(async (cropElement?: HTMLElement | null): Promise<boolean> => {
     if (status !== 'idle')
       return false
 
@@ -152,7 +172,7 @@ export function useVideoRecorder() {
       },
     }
 
-    const session = await ScreenRecordingSession.create(callbacks)
+    const session = await ScreenRecordingSession.create(callbacks, cropElement ?? undefined)
     if (!session)
       return false
 

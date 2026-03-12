@@ -44,6 +44,7 @@ function MapSectionContent() {
   const selectedMarkerId = usePhotoStore(s => s.selectedMarkerId)
   const setSelectedMarkerId = usePhotoStore(s => s.setSelectedMarkerId)
   const mapRef = useRef<MapRef>(null)
+  const cropRef = useRef<HTMLDivElement>(null)
 
   // Region photo mapping — auto GPS→country matching
   useRegionPhotoMapping()
@@ -71,7 +72,7 @@ function MapSectionContent() {
     saveVideo,
     discardVideo,
     exitRecording,
-  } = useRecordingFlow()
+  } = useRecordingFlow({ cropRef })
 
   const earthZoomPhase = useReplayStore(s => s.earthZoomPhase)
   const earthZoomActive = earthZoomPhase !== 'idle' && earthZoomPhase !== 'done'
@@ -258,7 +259,7 @@ function MapSectionContent() {
   const isInAnyReplay = isReplayMode || isOrbiting
 
   return (
-    <div className="absolute size-full">
+    <div className={cn('absolute size-full', recordingActive && 'bg-black')}>
       {/* Hide menu button during active recording (intro + playback) */}
       {!recordingActive && !isRecording && !!user && (
         <MapMenuButton
@@ -293,27 +294,6 @@ function MapSectionContent() {
       {isReplayMode && (
         <PortraitLockOverlay />
       )}
-
-      {isReplayMode && (
-        <TrajectoryOverlay
-          onBeginRecording={beginRecording}
-          onShowIntro={showIntro}
-          onUpgradeClick={() => setSettingsOpen(true)}
-        />
-      )}
-
-      {isOrbiting && <GlobeOrbitOverlay onBeginRecording={beginRecording} />}
-
-      {/* Shared intro overlay — controlled by useRecordingFlow */}
-      {/* Force logo-fade for globe orbit or earth zoom, even if template has intro: 'none' */}
-      <div className="absolute inset-0">
-        <ReplayIntroOverlay
-          visible={introVisible}
-          onExitComplete={onIntroComplete}
-          introStyle={(isOrbiting || earthZoomActive) ? 'logo-fade' : templateConfig.intro.style}
-          autoHide={!earthZoomActive}
-        />
-      </div>
 
       {/* Announcement dialog — shown once per version */}
       <AnimatePresence>
@@ -355,27 +335,57 @@ function MapSectionContent() {
         />
       )}
 
-      <m.div
-        initial={{ opacity: 0, scale: 1.02 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
+      {/* Crop container — fixed 16:9 during recording for Region Capture */}
+      <div
+        ref={cropRef}
         className={cn(
-          'isolate size-full transition-all duration-500 ease-in-out',
-          !user && 'pointer-events-none',
+          'relative overflow-hidden',
+          recordingActive ? 'mx-auto aspect-video max-h-full max-w-full' : 'size-full',
         )}
-        {...(!isInAnyReplay ? longPressHandlers : {})}
       >
-        <Maplibre
-          markers={displayMarkers}
-          initialViewState={initialViewState}
-          autoFitBounds={false}
-          selectedMarkerId={isInAnyReplay ? null : selectedMarkerId}
-          onMarkerClick={handleMarkerClick}
-          onContextMenu={isInAnyReplay ? undefined : handleMapContextMenu}
-          className="size-full"
-          mapRef={mapRef}
-        />
-      </m.div>
+        {isReplayMode && (
+          <TrajectoryOverlay
+            onBeginRecording={beginRecording}
+            onShowIntro={showIntro}
+            onUpgradeClick={() => setSettingsOpen(true)}
+          />
+        )}
+
+        {isOrbiting && <GlobeOrbitOverlay onBeginRecording={beginRecording} />}
+
+        {/* Shared intro overlay — controlled by useRecordingFlow */}
+        {/* Force logo-fade for globe orbit or earth zoom, even if template has intro: 'none' */}
+        <div className="absolute inset-0">
+          <ReplayIntroOverlay
+            visible={introVisible}
+            onExitComplete={onIntroComplete}
+            introStyle={(isOrbiting || earthZoomActive) ? 'logo-fade' : templateConfig.intro.style}
+            autoHide={!earthZoomActive}
+          />
+        </div>
+
+        <m.div
+          initial={{ opacity: 0, scale: 1.02 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className={cn(
+            'isolate size-full transition-all duration-500 ease-in-out',
+            !user && 'pointer-events-none',
+          )}
+          {...(!isInAnyReplay ? longPressHandlers : {})}
+        >
+          <Maplibre
+            markers={displayMarkers}
+            initialViewState={initialViewState}
+            autoFitBounds={false}
+            selectedMarkerId={isInAnyReplay ? null : selectedMarkerId}
+            onMarkerClick={handleMarkerClick}
+            onContextMenu={isInAnyReplay ? undefined : handleMapContextMenu}
+            className="size-full"
+            mapRef={mapRef}
+          />
+        </m.div>
+      </div>
 
       <input
         ref={contextMenuFileInputRef}

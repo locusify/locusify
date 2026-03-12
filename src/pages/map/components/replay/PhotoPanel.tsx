@@ -44,7 +44,7 @@ export function PhotoPanel() {
       <PhotoPanelBackground />
 
       {/* Ticket area — vertically centered */}
-      <div className="relative flex flex-1 items-start justify-center px-10 pt-24">
+      <div className="relative flex flex-1 items-start justify-center overflow-hidden px-10 pt-24">
         <div className="w-full max-w-md">
           <PhotoTicket
             marker={waypoint?.marker ?? null}
@@ -73,7 +73,7 @@ export function PhotoPanel() {
               className="mt-12 px-2"
             >
               {waypoint?.marker.photo.title && (
-                <h3 className="font-serif text-[1.05rem] font-semibold tracking-[0.02em] text-black/90 dark:text-white/90">
+                <h3 className="truncate font-serif text-[1.05rem] font-semibold tracking-[0.02em] text-black/90 dark:text-white/90">
                   {waypoint.marker.photo.title}
                 </h3>
               )}

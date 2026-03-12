@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGlobeOrbitStore } from '@/stores/globeOrbitStore'
 import { useReplayStore } from '@/stores/replayStore'
@@ -18,7 +19,12 @@ const STOP_DELAY_MS = 2000
  *     → logo intro → onPlaybackStart callback
  *     → playback … → auto-stop → save dialog
  */
-export function useRecordingFlow() {
+interface RecordingFlowOptions {
+  cropRef?: RefObject<HTMLElement | null>
+}
+
+export function useRecordingFlow(options: RecordingFlowOptions = {}) {
+  const { cropRef } = options
   const {
     startRecording,
     stopRecording,
@@ -59,8 +65,8 @@ export function useRecordingFlow() {
     recorderDiscard()
     onPlaybackStartRef.current = onPlaybackStart
     setIntroVisible(true)
-    await startRecording()
-  }, [startRecording, recorderDiscard])
+    await startRecording(cropRef?.current)
+  }, [startRecording, recorderDiscard, cropRef])
 
   /**
    * Show only the intro (no new recording session).
