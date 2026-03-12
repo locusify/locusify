@@ -111,6 +111,7 @@
   "explory.loading.map": "Loading map...",
   "explory.map.error.title": "Map Loading Error",
   "explory.map.error.description": "Unable to load the map. Please try again later.",
+  "explory.map.error.retry": "Reload",
   "explory.back.to.gallery": "Back to Gallery",
   "explory.cluster.photos": "{{count}} photos",
   "explory.cluster.click.details": "Click to view details",
@@ -277,6 +278,13 @@
   "map.announcement.title": "What's New",
   "map.announcement.body": "Welcome to Locusify! Upload your GPS-tagged photos to generate visual route maps and cinematic travel vlogs automatically.",
   "map.announcement.dismiss": "Got it",
+
+  "map.fullscreen.title": "Fullscreen Mode",
+  "map.fullscreen.tapToEnter": "Tap to enter fullscreen for the best experience",
+  "map.fullscreen.dontShowAgain": "Don't show again",
+
+  "menu.fullscreen": "Fullscreen",
+  "menu.exitFullscreen": "Exit Fullscreen",
 
   "share.appTitle": "Locusify",
   "share.appText": "Transform your travel photos into visual route maps and cinematic vlogs",

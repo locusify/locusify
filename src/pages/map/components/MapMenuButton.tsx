@@ -33,6 +33,10 @@ interface MapMenuButtonProps {
   isRecording?: boolean
   /** Whether recorded video is being processed */
   isProcessing?: boolean
+  /** Callback to toggle fullscreen (only provided on web when fullscreen is supported) */
+  onFullscreenToggle?: () => void
+  /** Whether the app is currently in fullscreen */
+  isFullscreen?: boolean
 }
 
 /**
@@ -49,6 +53,8 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
   onExitReplay,
   isRecording,
   isProcessing,
+  onFullscreenToggle,
+  isFullscreen,
 }) => {
   const { t } = useTranslation()
   const { shareLink } = useWebShare()
@@ -87,6 +93,13 @@ export const MapMenuButton: FC<MapMenuButtonProps> = ({
         })
       },
     },
+    ...(onFullscreenToggle
+      ? [{
+          icon: isFullscreen ? 'i-mingcute-fullscreen-exit-line' : 'i-mingcute-fullscreen-line',
+          label: isFullscreen ? t('menu.exitFullscreen', { defaultValue: 'Exit Fullscreen' }) : t('menu.fullscreen', { defaultValue: 'Fullscreen' }),
+          onClick: onFullscreenToggle,
+        }]
+      : []),
     {
       icon: 'i-mingcute-settings-3-line',
       label: t('settings.title', { defaultValue: 'Settings' }),

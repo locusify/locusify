@@ -111,6 +111,7 @@
   "explory.loading.map": "加载地图...",
   "explory.map.error.title": "地图加载错误",
   "explory.map.error.description": "无法加载地图。请稍后再试。",
+  "explory.map.error.retry": "重新加载",
   "explory.back.to.gallery": "返回图库",
   "explory.cluster.photos": "{{count}} 张照片",
   "explory.cluster.click.details": "点击查看详情",
@@ -277,6 +278,13 @@
   "map.announcement.title": "最新公告",
   "map.announcement.body": "欢迎使用 Locusify！上传带有GPS信息的照片，即可自动生成可视化路线图和电影级旅行视频。",
   "map.announcement.dismiss": "我知道了",
+
+  "map.fullscreen.title": "全屏模式",
+  "map.fullscreen.tapToEnter": "点击进入全屏以获得最佳体验",
+  "map.fullscreen.dontShowAgain": "不再提示",
+
+  "menu.fullscreen": "全屏",
+  "menu.exitFullscreen": "退出全屏",
 
   "share.appTitle": "Locusify",
   "share.appText": "将旅行照片转换为可视化路线图和电影级视频",
