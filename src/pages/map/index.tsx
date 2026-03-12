@@ -37,12 +37,16 @@ function MapSkeleton() {
   )
 }
 
-function MapError() {
+function MapError({ resetErrorBoundary }: { resetErrorBoundary: () => void }) {
   const { t } = useTranslation()
+
+  function handleReload() {
+    resetErrorBoundary()
+  }
 
   return (
     <m.div
-      className="flex size-full items-center justify-center"
+      className="flex size-full items-center justify-center bg-neutral-950"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -57,7 +61,7 @@ function MapError() {
           ❌
         </m.div>
         <m.div
-          className="text-lg font-medium text-red-900 dark:text-red-100"
+          className="text-lg font-medium text-white"
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
@@ -65,13 +69,22 @@ function MapError() {
           {t('explory.map.error.title')}
         </m.div>
         <m.p
-          className="text-sm text-red-600 dark:text-red-400"
+          className="mb-4 text-sm text-white/50"
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.3 }}
         >
           {t('explory.map.error.description')}
         </m.p>
+        <m.button
+          className="rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20"
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+          onClick={handleReload}
+        >
+          {t('explory.map.error.retry')}
+        </m.button>
       </div>
     </m.div>
   )
@@ -80,7 +93,7 @@ function MapError() {
 export function Map() {
   return (
     <Suspense fallback={<MapSkeleton />}>
-      <ErrorBoundary fallback={<MapError />}>
+      <ErrorBoundary FallbackComponent={MapError}>
         <MapSection />
       </ErrorBoundary>
     </Suspense>
