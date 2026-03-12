@@ -225,3 +225,17 @@ src/
 ## 开源协议
 
 [ISC](LICENSE) © caterpi11ar
+
+---
+
+## 支持我们
+
+如果你觉得 Locusify 对你有帮助，欢迎请我喝杯咖啡！
+
+<a href="https://www.buymeacoffee.com/daiqin1046z"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=daiqin1046z&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a>
+
+<p>
+  <img src="public/support/wechat.jpg" alt="微信赞赏" width="200" />
+  &nbsp;&nbsp;
+  <img src="public/support/alipay.jpg" alt="支付宝赞赏" width="200" />
+</p>

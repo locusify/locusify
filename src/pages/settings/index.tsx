@@ -102,6 +102,15 @@ export const SettingsDrawer: FC<SettingsDrawerProps> = ({ open, onOpenChange, on
               <SettingsSection label={t('settings.section.about')}>
                 <AboutSection />
               </SettingsSection>
+              <div className="flex justify-center py-3">
+                <a href="https://www.buymeacoffee.com/daiqin1046z" target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=daiqin1046z&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"
+                    alt="Buy me a coffee"
+                    className="h-10"
+                  />
+                </a>
+              </div>
               <div className="flex items-center justify-center gap-3 py-3 text-xs text-text/40">
                 <button type="button" onClick={() => setLegalType('privacy-policy')} className="hover:text-text/60 transition-colors">
                   {t('auth.privacy.privacyPolicy')}
