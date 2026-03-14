@@ -37,6 +37,8 @@ export const useAuthStore = create<AuthState>()(
       clearUser: () => {
         set({ user: null, profile: null })
         useSubscriptionStore.getState().clear()
+        // Lazy import to avoid circular dependency (presenceStore → authStore)
+        import('@/stores/presenceStore').then(m => m.usePresenceStore.getState().clear())
       },
       setLoggingIn: isLoggingIn => set({ isLoggingIn }),
     }),

@@ -256,7 +256,7 @@
   "settings.section.privacy": "Privacy",
   "settings.privacy.heading": "Our Privacy Commitment",
   "settings.privacy.noCollection": "We do not collect personal information or sell your data",
-  "settings.privacy.locationDisplay": "Location data is used only for map display and is never stored on our servers",
+  "settings.privacy.locationDisplay": "Location data is used for map display and the optional Social Presence feature. You can disable sharing in Settings at any time",
   "settings.privacy.localOnly": "All photo processing happens locally on your device",
   "settings.privacy.noTracking": "We use anonymous page-view analytics (Google Analytics) to improve the app — no personal data is shared",
 
@@ -473,5 +473,24 @@
   "feedback.thankYou.body": "Your feedback helps us make Locusify better for everyone.",
   "feedback.thankYou.dismiss": "Done",
 
-  "settings.feedback": "Feedback"
+  "settings.feedback": "Feedback",
+
+  "presence.nearby.title": "Nearby Explorers",
+  "presence.nearby.you": "You",
+  "presence.nearby.empty": "No explorers nearby",
+  "presence.nearby.count_one": "{{count}} explorer nearby",
+  "presence.nearby.count_other": "{{count}} explorers nearby",
+  "presence.nearby.distance": "{{distance}} km away",
+  "presence.nearby.lastSeen": "Last seen {{time}} ago",
+  "presence.nearby.online": "Online now",
+  "presence.nearby.recentlyActive": "Recently active",
+  "presence.nearby.away": "Away",
+  "presence.nearby.offline": "Offline",
+  "presence.settings.title": "Social Presence",
+  "presence.settings.visibility": "Visibility",
+  "presence.settings.visible": "Visible to nearby users",
+  "presence.settings.invisible": "Hidden from nearby users",
+  "presence.settings.status": "Status",
+  "presence.settings.statusPlaceholder": "What are you up to?",
+  "presence.settings.statusHint": "Max 100 characters"
 }

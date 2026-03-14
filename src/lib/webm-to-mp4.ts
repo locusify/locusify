@@ -14,10 +14,12 @@ export async function convertWebmToMp4(
     audio: { codec: 'aac', bitrate: 128_000 },
   })
 
-  if (onProgress) conversion.onProgress = onProgress
+  if (onProgress)
+    conversion.onProgress = onProgress
   await conversion.execute()
 
   const buffer = (output.target as BufferTarget).buffer
-  if (!buffer) throw new Error('MP4 conversion produced no output')
+  if (!buffer)
+    throw new Error('MP4 conversion produced no output')
   return new Blob([buffer], { type: 'video/mp4' })
 }

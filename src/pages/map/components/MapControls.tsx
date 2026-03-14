@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useMap } from 'react-map-gl/maplibre'
 import { cn, glassPanel } from '@/lib/utils'
 import { getGeolocation } from '@/platforms'
+import { useAuthStore } from '@/stores/authStore'
+import { usePresenceStore } from '@/stores/presenceStore'
 import { useRegionStore } from '@/stores/regionStore'
 
 interface MapControlsProps {
@@ -15,6 +17,10 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
   const { t } = useTranslation()
   const isFragmentMode = useRegionStore(s => s.isFragmentMode)
   const toggleFragmentMode = useRegionStore(s => s.toggleFragmentMode)
+  const user = useAuthStore(s => s.user)
+  const reportLocation = usePresenceStore(s => s.reportLocation)
+  const fetchNearbyUsers = usePresenceStore(s => s.fetchNearbyUsers)
+  const setMyLocation = usePresenceStore(s => s.setMyLocation)
 
   const handleZoomIn = () => {
     if (map) {
@@ -42,7 +48,7 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
       timeout: 10000,
       maximumAge: 60000,
     }).then((position) => {
-      const { longitude, latitude } = position
+      const { longitude, latitude, accuracy } = position
       if (map) {
         map.flyTo({
           center: [longitude, latitude],
@@ -51,6 +57,13 @@ export function MapControls({ onGeolocate }: MapControlsProps) {
         })
       }
       onGeolocate?.(longitude, latitude)
+
+      // Update my marker immediately, then report & fetch asynchronously
+      if (user) {
+        setMyLocation(latitude, longitude)
+        reportLocation(latitude, longitude, accuracy)
+        fetchNearbyUsers(latitude, longitude)
+      }
     }).catch((error) => {
       console.warn('Geolocation error:', error)
     })

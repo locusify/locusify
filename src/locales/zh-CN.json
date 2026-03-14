@@ -256,7 +256,7 @@
   "settings.section.privacy": "隐私",
   "settings.privacy.heading": "隐私承诺",
   "settings.privacy.noCollection": "我们不收集个人信息，也不出售您的数据",
-  "settings.privacy.locationDisplay": "位置数据仅用于地图展示，不会上传或存储至服务器",
+  "settings.privacy.locationDisplay": "位置数据用于地图展示及可选的社交在场功能，您可随时在设置中关闭位置共享",
   "settings.privacy.localOnly": "所有照片处理均在您的设备本地完成",
   "settings.privacy.noTracking": "我们使用匿名页面访问分析（Google Analytics）以改善应用体验，不共享任何个人数据",
 
@@ -473,5 +473,24 @@
   "feedback.thankYou.body": "你的反馈将帮助我们让 Locusify 变得更好。",
   "feedback.thankYou.dismiss": "完成",
 
-  "settings.feedback": "用户反馈"
+  "settings.feedback": "用户反馈",
+
+  "presence.nearby.title": "附近的探索者",
+  "presence.nearby.you": "我",
+  "presence.nearby.empty": "附近暂无其他用户",
+  "presence.nearby.count_one": "{{count}} 位探索者在附近",
+  "presence.nearby.count_other": "{{count}} 位探索者在附近",
+  "presence.nearby.distance": "{{distance}} 公里外",
+  "presence.nearby.lastSeen": "{{time}}前在线",
+  "presence.nearby.online": "在线中",
+  "presence.nearby.recentlyActive": "最近活跃",
+  "presence.nearby.away": "离开",
+  "presence.nearby.offline": "离线",
+  "presence.settings.title": "社交在场",
+  "presence.settings.visibility": "可见性",
+  "presence.settings.visible": "对附近用户可见",
+  "presence.settings.invisible": "对附近用户隐藏",
+  "presence.settings.status": "状态",
+  "presence.settings.statusPlaceholder": "你在做什么？",
+  "presence.settings.statusHint": "最多 100 个字符"
 }

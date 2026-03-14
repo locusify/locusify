@@ -2,12 +2,15 @@ import type { CSSProperties, RefObject } from 'react'
 import type { MapLayerMouseEvent, MapRef, StyleSpecification } from 'react-map-gl/maplibre'
 
 import type { PhotoMarker } from '@/types/map'
+import type { NearbyUser } from '@/types/presence'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Map from 'react-map-gl/maplibre'
 import { getGeolocation } from '@/platforms'
+import { useAuthStore } from '@/stores/authStore'
 import { computeOrbitZoom, useGlobeOrbitStore } from '@/stores/globeOrbitStore'
 import { useMapStore } from '@/stores/mapStore'
+import { usePresenceStore } from '@/stores/presenceStore'
 import { useRegionStore } from '@/stores/regionStore'
 
 import { useReplayStore } from '@/stores/replayStore'
@@ -15,6 +18,7 @@ import { EarthZoomController } from './components/EarthZoomController'
 import { GeoJsonLayer } from './components/GeoJsonLayer'
 import { GlobeOrbitController } from './components/GlobeOrbitController'
 import { MapControls } from './components/MapControls'
+import { NearbyUserMarker } from './components/NearbyUserMarker'
 import { PhotoMarkerPin } from './components/PhotoMarkerPin'
 import { RegionFillLayer } from './components/RegionFillLayer'
 import { StarfieldCanvas } from './components/StarfieldCanvas'
@@ -28,6 +32,66 @@ import { calculateMapBounds, calculateZoomFromBounds } from './utils'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 const MAP_STYLE: CSSProperties = { width: '100%', height: '100%', position: 'relative', zIndex: 10 }
+
+export interface UserClusterPoint {
+  user: NearbyUser
+  clusteredUsers?: NearbyUser[]
+  coordinates: [number, number]
+}
+
+/**
+ * Cluster nearby users using the same algorithm as photo markers.
+ * Uses Euclidean distance with a zoom-adaptive threshold.
+ */
+function clusterNearbyUsers(users: NearbyUser[], zoom: number): UserClusterPoint[] {
+  if (users.length === 0)
+    return []
+
+  // At high zoom, don't cluster
+  if (zoom >= 15) {
+    return users.map(u => ({
+      user: u,
+      coordinates: [u.longitude, u.latitude] as [number, number],
+    }))
+  }
+
+  const result: UserClusterPoint[] = []
+  const processed = new Set<string>()
+  const threshold = Math.max(0.001, 0.01 / 2 ** (zoom - 10))
+
+  for (const user of users) {
+    if (processed.has(user.userId))
+      continue
+
+    const group = [user]
+    processed.add(user.userId)
+
+    for (const other of users) {
+      if (processed.has(other.userId))
+        continue
+
+      const dist = Math.sqrt(
+        (user.longitude - other.longitude) ** 2
+        + (user.latitude - other.latitude) ** 2,
+      )
+      if (dist < threshold) {
+        group.push(other)
+        processed.add(other.userId)
+      }
+    }
+
+    const lng = group.reduce((s, u) => s + u.longitude, 0) / group.length
+    const lat = group.reduce((s, u) => s + u.latitude, 0) / group.length
+
+    result.push({
+      user: group[0],
+      clusteredUsers: group.length > 1 ? group : undefined,
+      coordinates: [lng, lat],
+    })
+  }
+
+  return result
+}
 
 export interface ClusterPoint {
   type: 'Feature'
@@ -184,6 +248,8 @@ export function Maplibre({
   const isOrbiting = useGlobeOrbitStore(s => s.isOrbiting)
   const isFragmentMode = useRegionStore(s => s.isFragmentMode)
   const setPreviousViewState = useRegionStore(s => s.setPreviousViewState)
+  const nearbyUsers = usePresenceStore(s => s.nearbyUsers)
+  const myLocation = usePresenceStore(s => s.myLocation)
   const registerMap = useMapStore(s => s.registerMap)
   const unregisterMap = useMapStore(s => s.unregisterMap)
   const [currentZoom, setCurrentZoom] = useState(initialViewState.zoom)
@@ -192,6 +258,11 @@ export function Maplibre({
   const [hasInitialFitCompleted, setHasInitialFitCompleted] = useState(false)
 
   // Get user's geolocation on mount to set initial view
+  const user = useAuthStore(s => s.user)
+  const reportLocation = usePresenceStore(s => s.reportLocation)
+  const fetchNearbyUsers = usePresenceStore(s => s.fetchNearbyUsers)
+  const setMyLocation = usePresenceStore(s => s.setMyLocation)
+
   useEffect(() => {
     getGeolocation().getCurrentPosition({
       enableHighAccuracy: true,
@@ -209,6 +280,25 @@ export function Maplibre({
       console.warn('Geolocation error:', error)
     })
   }, [])
+
+  // Report presence when user is available — separate from map init to avoid
+  // re-triggering geolocation when auth state changes.
+  useEffect(() => {
+    if (!user)
+      return
+    getGeolocation().getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 60000,
+    }).then((position) => {
+      const { longitude, latitude, accuracy } = position
+      setMyLocation(latitude, longitude)
+      reportLocation(latitude, longitude, accuracy)
+      fetchNearbyUsers(latitude, longitude)
+    }).catch(() => {
+      // Geolocation may have already been handled above
+    })
+  }, [user, setMyLocation, reportLocation, fetchNearbyUsers])
 
   // Handle marker click - only call the external callback
   const handleMarkerClick = useCallback(
@@ -230,6 +320,20 @@ export function Maplibre({
       }
     }
   }, [selectedMarkerId, onMarkerClick, markers])
+
+  // Merge self + nearby users, then cluster together
+  const allPresenceUsers = useMemo(() => {
+    const all: NearbyUser[] = []
+    if (myLocation)
+      all.push(myLocation)
+    all.push(...nearbyUsers)
+    return all
+  }, [myLocation, nearbyUsers])
+
+  const nearbyUserClusters = useMemo(
+    () => clusterNearbyUsers(allPresenceUsers, currentZoom),
+    [allPresenceUsers, currentZoom],
+  )
 
   // Clustered markers
   const clusteredMarkers = useMemo(
@@ -460,6 +564,17 @@ export function Maplibre({
 
         {/* Region Fill Layer — country photo fills (below markers) */}
         <RegionFillLayer />
+
+        {/* Nearby User Markers — hidden in fragment/replay mode */}
+        {!isFragmentMode && !isReplayMode && nearbyUserClusters.map(cp => (
+          <NearbyUserMarker
+            key={cp.user.userId}
+            user={cp.user}
+            clusteredUsers={cp.clusteredUsers}
+            longitude={cp.coordinates[0]}
+            latitude={cp.coordinates[1]}
+          />
+        ))}
 
         {/* Photo Markers — hidden in fragment mode */}
         {!isFragmentMode && clusteredMarkers.map((clusterPoint) => {
